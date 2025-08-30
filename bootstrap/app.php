@@ -16,13 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         
-        $middleware->alias([
-        //     'auth.custom'=>AuthMiddleware::class,
-        //     'guest.custom'=>RedirectIfAuthenticated::class
-         'auth.sanctum'  =>EnsureFrontendRequestsAreStateful::class,
-
-        ]);
-        
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
