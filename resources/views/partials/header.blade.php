@@ -1,18 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'LokAyukta CRMS')</title>
-    <!-- CSS files -->
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-</head>
-<body>
-    <header>
-        <nav>
-            <h1>LokAyukta CRMS</h1>
-            <!-- Add nav menu here -->
-        </nav>
-    </header>
-    <main>
+<nav class="bg-blue-600 p-4 text-white flex justify-between">
+    <div class="text-xl font-bold">LokAyukta CRMS</div>
+    <ul class="flex space-x-4">
+        <li><a href="{{ url('/dashboard') }}" class="hover:underline">Dashboard</a></li>
+        <li><a href="#" class="hover:underline">Complaints</a></li>
+        <li><a href="#" class="hover:underline">Reports</a></li>
+        <li><a href="{{url('/logout') }}" class="hover:underline">Logout</a></li>
+    </ul>
+</nav>
