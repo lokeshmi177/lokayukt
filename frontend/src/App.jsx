@@ -8,12 +8,7 @@ import ProgressRegister from './components/ProgressRegister';
 import SearchReports from './components/SearchReports';
 import UserManagement from './components/UserManagement';
 import MasterData from './components/MasterData';
-// import Dashboard from './components/Dashboard';
-// import Complaints from './pages/Complaints';
-// import Progress from './pages/Progress';
-// import Reports from './pages/Reports';
-// import Users from './pages/Users';
-// import MasterData from './pages/MasterData';
+
 
 function App() {
   return (
