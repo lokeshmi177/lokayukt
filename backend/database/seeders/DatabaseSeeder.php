@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
     {
           $this->call(RoleSeeder::class);
 
+          $this->call([
+        DistrictMasterSeeder::class,
+    ]);
+
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
