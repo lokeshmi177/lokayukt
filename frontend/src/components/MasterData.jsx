@@ -187,46 +187,49 @@ const MasterData = () => {
   );
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl sm:text-3xl font-bold">Master Data / मास्टर डेटा</h1>
-        <button className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
-          <FaDatabase className="w-4 h-4" />
-          Backup Data
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="border-b border-gray-200">
-          <nav className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
-            {masterDataTabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center justify-center gap-2 py-3 text-sm font-medium border-b-2 ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden md:inline">{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+    <div className="bg-gray-50 min-h-screen overflow-hidden">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Master Data / मास्टर डेटा</h1>
+          <button className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
+            <FaDatabase className="w-4 h-4" />
+            Backup Data
+          </button>
         </div>
 
-        {/* Tab Content */}
-        <div className="p-3 sm:p-4">
-          {masterDataTabs.map((tab) =>
-            activeTab === tab.id ? (
-              <MasterDataTable key={tab.id} data={tab.data} title={`${tab.label} / ${tab.labelHi}`} />
-            ) : null
-          )}
+        {/* Tabs Component with Dashboard-like styling */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          {/* Tab Navigation with Dashboard styling */}
+          <div className="space-y-6">
+            <div className="inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+              {masterDataTabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-1 ${
+                      activeTab === tab.id ? "bg-white text-gray-900 shadow-sm" : ""
+                    }`}
+                  >
+                    <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden md:inline text-xs lg:text-sm">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Tab Content */}
+            <div className="p-3 sm:p-4">
+              {masterDataTabs.map((tab) =>
+                activeTab === tab.id ? (
+                  <div key={tab.id} className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <MasterDataTable data={tab.data} title={`${tab.label} / ${tab.labelHi}`} />
+                  </div>
+                ) : null
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

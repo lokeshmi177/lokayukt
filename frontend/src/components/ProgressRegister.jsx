@@ -182,187 +182,184 @@ const ProgressRegister = () => {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs Component with Dashboard-like styling */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          {/* Tab Navigation - Prevent Scroll */}
-          <div className="border-b border-gray-200 overflow-hidden">
-            <nav className="flex w-full" aria-label="Tabs">
+          {/* Tab Navigation with Dashboard styling */}
+          <div className="space-y-6">
+            <div className="inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
               <button
                 onClick={() => setActiveTab('movements')}
-                className={`flex-1 py-3 sm:py-4 px-1 sm:px-2 text-xs sm:text-sm font-medium border-b-2 text-center min-w-0 ${
-                  activeTab === 'movements'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
+                  activeTab === 'movements' ? "bg-white text-gray-900 shadow-sm" : ""
                 }`}
               >
-                <span className="truncate">File Movements</span>
+                File Movements
               </button>
-              
               <button
                 onClick={() => setActiveTab('status')}
-                className={`flex-1 py-3 sm:py-4 px-1 sm:px-2 text-xs sm:text-sm font-medium border-b-2 text-center min-w-0 ${
-                  activeTab === 'status'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
+                  activeTab === 'status' ? "bg-white text-gray-900 shadow-sm" : ""
                 }`}
               >
-                <span className="truncate">Current Status</span>
+                Current Status
               </button>
-              
               <button
                 onClick={() => setActiveTab('analytics')}
-                className={`flex-1 py-3 sm:py-4 px-1 sm:px-2 text-xs sm:text-sm font-medium border-b-2 text-center min-w-0 ${
-                  activeTab === 'analytics'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1 ${
+                  activeTab === 'analytics' ? "bg-white text-gray-900 shadow-sm" : ""
                 }`}
               >
-                <span className="truncate">Analytics</span>
+                Analytics
               </button>
-            </nav>
-          </div>
+            </div>
 
-          {/* Tab Content */}
-          <div className="p-3 sm:p-6 overflow-hidden">
-            {/* File Movements Tab */}
-           {activeTab === 'movements' && (
-  <div className="overflow-hidden">
-    <div className="flex items-center gap-2 mb-3 sm:mb-4">
-      <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-      <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Recent File Movements</h3>
-    </div>
-
-    {/* Table wrapper prevents page-level horizontal scroll */}
-    <div className="flow-root">
-      <div className="overflow-x-auto">
-        <div className="inline-block min-w-full align-middle">
-          <table className="min-w-full table-auto text-[11px] sm:text-xs">
-            <thead className="bg-gray-50">
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Complaint No.</th>
-                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Complainant</th>
-                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Movement</th>
-                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">Note</th>
-                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Timestamp</th>
-                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Status</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {filteredMovements.map((movement) => (
-                <tr key={movement.id} className="hover:bg-gray-50">
-                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
-                    {movement.complaintNo}
-                  </td>
-                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
-                    {movement.complainant}
-                  </td>
-                  <td className="py-2 px-2 sm:py-3 sm:px-3">
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <span className="text-[11px] sm:text-xs text-gray-600 whitespace-nowrap">{movement.fromRole}</span>
-                      <FaArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
-                      <span className="text-[11px] sm:text-xs font-medium text-gray-900 whitespace-nowrap">{movement.toRole}</span>
+            {/* Tab Content */}
+            <div className="p-3 sm:p-6 overflow-hidden">
+              {/* File Movements Tab */}
+              {activeTab === 'movements' && (
+                <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  <div className="overflow-hidden">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                      <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Recent File Movements</h3>
                     </div>
-                  </td>
-                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[14rem] truncate hidden lg:table-cell">
-                    {movement.note}
-                  </td>
-                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600 whitespace-nowrap">
-                    {movement.timestamp}
-                  </td>
-                  <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getStatusColor(movement.status)}`}>
-                      {getStatusText(movement.status)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
 
-
-            {/* Current Status Tab */}
-            {activeTab === 'status' && (
-              <div className="overflow-hidden">
-                <div className="flex items-center gap-2 mb-4">
-                  <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">Current Complaint Status</h3>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <div className="min-w-full">
-                    <table className="w-full text-xs sm:text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Complaint No.</th>
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Complainant</th>
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Current Stage</th>
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 hidden xl:table-cell">Assigned To</th>
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Days</th>
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 hidden lg:table-cell">Target Date</th>
-                          <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredStatus.map((complaint) => (
-                          <tr key={complaint.complaintNo} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">{complaint.complaintNo}</td>
-                            <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700">{complaint.complainant}</td>
-                            <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700">{complaint.currentStage}</td>
-                            <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700 hidden xl:table-cell">{complaint.assignedTo}</td>
-                            <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-600">{complaint.daysElapsed}</td>
-                            <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-600 hidden lg:table-cell">{complaint.targetDate}</td>
-                            <td className="py-2 sm:py-3 px-2 sm:px-4">
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(complaint.status)}`}>
-                                {getStatusText(complaint.status)}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    {/* Table wrapper prevents page-level horizontal scroll */}
+                    <div className="flow-root">
+                      <div className="overflow-x-auto">
+                        <div className="inline-block min-w-full align-middle">
+                          <table className="min-w-full table-auto text-[11px] sm:text-xs">
+                            <thead className="bg-gray-50">
+                              <tr className="border-b border-gray-200">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Complaint No.</th>
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Complainant</th>
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Movement</th>
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">Note</th>
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Timestamp</th>
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                              {filteredMovements.map((movement) => (
+                                <tr key={movement.id} className="hover:bg-gray-50">
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                    {movement.complaintNo}
+                                  </td>
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
+                                    {movement.complainant}
+                                  </td>
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3">
+                                    <div className="flex items-center gap-1 sm:gap-2">
+                                      <span className="text-[11px] sm:text-xs text-gray-600 whitespace-nowrap">{movement.fromRole}</span>
+                                      <FaArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-400" />
+                                      <span className="text-[11px] sm:text-xs font-medium text-gray-900 whitespace-nowrap">{movement.toRole}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[14rem] truncate hidden lg:table-cell">
+                                    {movement.note}
+                                  </td>
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600 whitespace-nowrap">
+                                    {movement.timestamp}
+                                  </td>
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
+                                    <span className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getStatusColor(movement.status)}`}>
+                                      {getStatusText(movement.status)}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Analytics Tab */}
-            {activeTab === 'analytics' && (
-              <div className="overflow-hidden">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                      <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Average Processing Time</h3>
+              {/* Current Status Tab */}
+              {activeTab === 'status' && (
+                <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  <div className="overflow-hidden">
+                    <div className="flex items-center gap-2 mb-4">
+                      <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">Current Complaint Status</h3>
                     </div>
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">12.5 days</div>
-                    <p className="text-xs sm:text-sm text-gray-600">From entry to disposal</p>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-lg border border-yellow-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
-                      <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Files in Transit</h3>
+                    
+                    <div className="overflow-x-auto">
+                      <div className="min-w-full">
+                        <table className="w-full text-xs sm:text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Complaint No.</th>
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Complainant</th>
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Current Stage</th>
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 hidden xl:table-cell">Assigned To</th>
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Days</th>
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900 hidden lg:table-cell">Target Date</th>
+                              <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredStatus.map((complaint) => (
+                              <tr key={complaint.complaintNo} className="border-b border-gray-100 hover:bg-gray-50">
+                                <td className="py-2 sm:py-3 px-2 sm:px-4 font-medium text-gray-900">{complaint.complaintNo}</td>
+                                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700">{complaint.complainant}</td>
+                                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700">{complaint.currentStage}</td>
+                                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700 hidden xl:table-cell">{complaint.assignedTo}</td>
+                                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-600">{complaint.daysElapsed}</td>
+                                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-600 hidden lg:table-cell">{complaint.targetDate}</td>
+                                <td className="py-2 sm:py-3 px-2 sm:px-4">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(complaint.status)}`}>
+                                    {getStatusText(complaint.status)}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div className="text-2xl sm:text-3xl font-bold text-yellow-700 mb-1">23</div>
-                    <p className="text-xs sm:text-sm text-gray-600">Currently moving between roles</p>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg border border-red-200 sm:col-span-2 lg:col-span-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
-                      <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Overdue Files</h3>
-                    </div>
-                    <div className="text-2xl sm:text-3xl font-bold text-red-700 mb-1">5</div>
-                    <p className="text-xs sm:text-sm text-gray-600">Past target date</p>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Analytics Tab */}
+              {activeTab === 'analytics' && (
+                <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                  <div className="overflow-hidden">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Average Processing Time</h3>
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">12.5 days</div>
+                        <p className="text-xs sm:text-sm text-gray-600">From entry to disposal</p>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-lg border border-yellow-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Files in Transit</h3>
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-yellow-700 mb-1">23</div>
+                        <p className="text-xs sm:text-sm text-gray-600">Currently moving between roles</p>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg border border-red-200 sm:col-span-2 lg:col-span-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900">Overdue Files</h3>
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-bold text-red-700 mb-1">5</div>
+                        <p className="text-xs sm:text-sm text-gray-600">Past target date</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

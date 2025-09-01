@@ -12,26 +12,54 @@ import {
   FaGlobe,
   FaChevronLeft,
   FaChevronRight,
-  FaBars,
   FaTimes
 } from 'react-icons/fa';
 
-const Sidebar = ({ onToggle }) => {
+const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSidebar }) => {
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isHindi, setIsHindi] = useState(false);
+
+  // Simple translation object
+  const translations = {
+    english: {
+      title: "LokAyukta",
+      subtitle: "CRMS",
+      description: "Complaint Management",
+      admin: "Admin",
+      dashboard: "Dashboard",
+      complaints: "Complaints",
+      progressRegister: "Progress Register",
+      searchReports: "Search & Reports",
+      userManagement: "User Management",
+      masterData: "Master Data",
+      copyright: "© 2025 LokAyukta Office",
+      version: "v1.0.0"
+    },
+    hindi: {
+      title: "लोकायुक्त",
+      subtitle: "CRMS",
+      description: "शिकायत प्रबंधन",
+      admin: "व्यवस्थापक",
+      dashboard: "डैशबोर्ड",
+      complaints: "शिकायतें",
+      progressRegister: "प्रगति रजिस्टर",
+      searchReports: "खोज और रिपोर्ट",
+      userManagement: "उपयोगकर्ता प्रबंधन",
+      masterData: "मुख्य डेटा",
+      copyright: "© 2025 लोकायुक्त कार्यालय",
+      version: "v1.0.0"
+    }
+  };
+
+  // Get current translations
+  const t = isHindi ? translations.hindi : translations.english;
 
   // Check screen size and set mobile state
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      
-      // Close mobile menu when switching to desktop
-      if (!mobile) {
-        setMobileMenuOpen(false);
-      }
     };
 
     checkScreenSize();
@@ -42,6 +70,11 @@ const Sidebar = ({ onToggle }) => {
     };
   }, []);
 
+  // Toggle language function
+  const toggleLanguage = () => {
+    setIsHindi(!isHindi);
+  };
+
   // Function to check if current route is active
   const isActive = (href) => {
     if (href === '/dashboard' || href === '/') {
@@ -50,69 +83,42 @@ const Sidebar = ({ onToggle }) => {
     return location.pathname.startsWith(href);
   };
 
-  // Toggle sidebar collapse (desktop only)
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-    if (onToggle) {
-      onToggle(!isCollapsed);
-    }
-  };
-
-  // Toggle mobile menu
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  // Close mobile menu
-  const closeMobileMenu = () => {
-    setMobileMenuOpen(false);
-  };
-
   // Close mobile menu when clicking link
   const handleLinkClick = () => {
     if (isMobile) {
-      closeMobileMenu();
+      toggleMobileMenu();
     }
   };
 
   return (
     <>
-      {/* Mobile Hamburger Button */}
-      {isMobile && !mobileMenuOpen && (
-        <button
-          onClick={toggleMobileMenu}
-          className="fixed top-4 left-4 z-[60] p-3 bg-slate-800 text-white rounded-lg shadow-lg hover:bg-slate-700 transition-colors"
-        >
-          <FaBars className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* Mobile Close Button */}
-      {isMobile && mobileMenuOpen && (
-        <button
-          onClick={closeMobileMenu}
-          className="fixed top-4 left-4 z-[60] p-3 bg-slate-800 text-white rounded-lg shadow-lg hover:bg-slate-700 transition-colors"
-        >
-          <FaTimes className="w-5 h-5" />
-        </button>
-      )}
-
       {/* Mobile Overlay */}
-      {isMobile && mobileMenuOpen && (
+      {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={closeMobileMenu}
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={toggleMobileMenu}
         />
       )}
 
-      {/* Sidebar - Full Height from Top */}
+      {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col z-30 ${
+        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col z-40 ${
           isMobile
-            ? `w-72 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+            ? `w-72 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
             : `${isCollapsed ? 'w-16' : 'w-72'}`
         }`}
       >
+        
+        {/* Mobile Close Button */}
+        {isMobile && isMobileMenuOpen && (
+          <button
+            onClick={toggleMobileMenu}
+            className="absolute top-4 right-4 p-2 text-white hover:bg-slate-700 rounded-lg transition-colors z-50"
+            aria-label="Close menu"
+          >
+            <FaTimes className="w-5 h-5" />
+          </button>
+        )}
         
         {/* Desktop Toggle Button */}
         {!isMobile && (
@@ -123,6 +129,7 @@ const Sidebar = ({ onToggle }) => {
                 ? '-right-3 top-6 p-2' 
                 : '-right-4 top-6 p-3'
             }`}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? (
               <FaChevronRight className="w-4 h-4" />
@@ -145,9 +152,9 @@ const Sidebar = ({ onToggle }) => {
             }`}>⚖️</div>
             {(isMobile || !isCollapsed) && (
               <div className="transition-all duration-300">
-                <h3 className="text-xl font-bold text-white">LokAyukta</h3>
-                <h4 className="text-lg font-semibold text-slate-200">CRMS</h4>
-                <span className="text-xs text-slate-400">Complaint Management</span>
+                <h3 className="text-xl font-bold text-white">{t.title}</h3>
+                <h4 className="text-lg font-semibold text-slate-200">{t.subtitle}</h4>
+                <span className="text-xs text-slate-400">{t.description}</span>
               </div>
             )}
           </div>
@@ -156,7 +163,7 @@ const Sidebar = ({ onToggle }) => {
           {(isMobile || !isCollapsed) && (
             <div className="mb-3 transition-all duration-300">
               <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                Admin
+                {t.admin}
               </span>
             </div>
           )}
@@ -164,9 +171,12 @@ const Sidebar = ({ onToggle }) => {
           {/* Header Actions */}
           {(isMobile || !isCollapsed) && (
             <div className="flex gap-2 transition-all duration-300">
-              <button className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
+              <button 
+                onClick={toggleLanguage}
+                className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
+              >
                 <FaGlobe className="w-3 h-3" />
-                हि
+                {isHindi ? 'EN' : 'हि'}
               </button>
               <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
                 <FaBell className="w-3 h-3" />
@@ -178,7 +188,10 @@ const Sidebar = ({ onToggle }) => {
           {/* Collapsed Header Actions */}
           {!isMobile && isCollapsed && (
             <div className="flex flex-col gap-2 items-center transition-all duration-300">
-              <button className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
+              <button 
+                onClick={toggleLanguage}
+                className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
+              >
                 <FaGlobe className="w-3 h-3" />
               </button>
               <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
@@ -208,10 +221,10 @@ const Sidebar = ({ onToggle }) => {
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
                     : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
                 }`}
-                title={(!isMobile && isCollapsed) ? 'Dashboard' : ''}
+                title={(!isMobile && isCollapsed) ? t.dashboard : ''}
               >
                 <FaHome className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">Dashboard</span>}
+                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.dashboard}</span>}
               </Link>
             </li>
 
@@ -229,10 +242,10 @@ const Sidebar = ({ onToggle }) => {
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
                     : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
                 }`}
-                title={(!isMobile && isCollapsed) ? 'Complaints' : ''}
+                title={(!isMobile && isCollapsed) ? t.complaints : ''}
               >
                 <FaFileAlt className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">Complaints</span>}
+                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.complaints}</span>}
               </Link>
             </li>
 
@@ -250,10 +263,10 @@ const Sidebar = ({ onToggle }) => {
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
                     : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
                 }`}
-                title={(!isMobile && isCollapsed) ? 'Progress Register' : ''}
+                title={(!isMobile && isCollapsed) ? t.progressRegister : ''}
               >
                 <FaChartBar className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">Progress Register</span>}
+                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.progressRegister}</span>}
               </Link>
             </li>
 
@@ -271,10 +284,10 @@ const Sidebar = ({ onToggle }) => {
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
                     : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
                 }`}
-                title={(!isMobile && isCollapsed) ? 'Search & Reports' : ''}
+                title={(!isMobile && isCollapsed) ? t.searchReports : ''}
               >
                 <FaSearch className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">Search & Reports</span>}
+                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.searchReports}</span>}
               </Link>
             </li>
 
@@ -292,10 +305,10 @@ const Sidebar = ({ onToggle }) => {
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
                     : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
                 }`}
-                title={(!isMobile && isCollapsed) ? 'User Management' : ''}
+                title={(!isMobile && isCollapsed) ? t.userManagement : ''}
               >
                 <FaUsers className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">User Management</span>}
+                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.userManagement}</span>}
               </Link>
             </li>
 
@@ -313,10 +326,10 @@ const Sidebar = ({ onToggle }) => {
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
                     : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
                 }`}
-                title={(!isMobile && isCollapsed) ? 'Master Data' : ''}
+                title={(!isMobile && isCollapsed) ? t.masterData : ''}
               >
                 <FaDatabase className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">Master Data</span>}
+                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.masterData}</span>}
               </Link>
             </li>
           </ul>
@@ -325,8 +338,8 @@ const Sidebar = ({ onToggle }) => {
         {/* Footer */}
         {(isMobile || !isCollapsed) && (
           <div className="p-6 border-t border-slate-700 text-center transition-all duration-300 flex-shrink-0 mt-auto">
-            <p className="text-xs text-slate-400">© 2025 LokAyukta Office</p>
-            <p className="text-xs text-slate-500">v1.0.0</p>
+            <p className="text-xs text-slate-400">{t.copyright}</p>
+            <p className="text-xs text-slate-500">{t.version}</p>
           </div>
         )}
       </div>
