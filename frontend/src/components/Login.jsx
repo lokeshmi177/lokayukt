@@ -22,6 +22,7 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState(''); // ✅ Added for general errors like wrong password
   const [formData, setFormData] = useState({
     user_name: '',
     password: ''
@@ -30,6 +31,7 @@ const Login = () => {
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     setErrors({});
+    setGeneralError(''); // ✅ Clear general error
   };
 
   const handleInputChange = (e) => {
@@ -43,12 +45,14 @@ const Login = () => {
         [e.target.name]: ''
       });
     }
+    setGeneralError(''); // ✅ Clear general error when typing
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
+    setGeneralError(''); // ✅ Clear general error
 
     try {
       const response = await api.post('/login', {
@@ -61,8 +65,9 @@ const Login = () => {
         localStorage.setItem('access_token', response.data.data.access_token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
         
-        // ✅ Show success toast using react-toastify
-        toast.success('Login Successful! Redirecting to dashboard...')
+        // Show success toast
+        toast.success('Login Successful! Redirecting to dashboard...');
+        
         // Navigate to dashboard after a short delay
         setTimeout(() => {
           navigate('/dashboard');
@@ -70,25 +75,16 @@ const Login = () => {
       }
     } catch (error) {
       if (error.response?.data?.status === 'error') {
-        // Handle validation errors from backend
-        if (error.response.data.data) {
+        // Handle validation errors from backend (field-specific errors)
+        if (error.response.data.data && typeof error.response.data.data === 'object') {
           setErrors(error.response.data.data);
-          // ✅ Show error toast for validation errors
-        
         } else {
-          // ✅ Show error toast for login failure
-          
+          // ✅ Handle general error messages like "Wrong password" - show below password field
+          setGeneralError(error.response.data.message || 'Login failed');
         }
       } else {
-        // ✅ Show error toast for network errors
-        toast.error('Network error. Please check your connection and try again.', {
-          position: "top-right",
-          autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        // Handle network or other errors
+        toast.error('Network error. Please check your connection and try again.');
       }
     } finally {
       setIsLoading(false);
@@ -96,7 +92,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4" >
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         
@@ -155,15 +151,23 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
+                  errors.password || generalError ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter password"
               />
             </div>
+            {/* Show field-specific password error */}
             {errors.password && (
               <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
                 <FaExclamationTriangle className="text-xs" />
                 {errors.password}
+              </p>
+            )}
+            {/* ✅ Show general error like "Wrong password" below password field */}
+            {generalError && (
+              <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                <FaExclamationTriangle className="text-xs" />
+                {generalError}
               </p>
             )}
           </div>
@@ -274,7 +278,7 @@ const Login = () => {
 
       </div>
 
-      {/* ✅ ToastContainer for react-toastify */}
+      {/* ToastContainer for react-toastify */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
