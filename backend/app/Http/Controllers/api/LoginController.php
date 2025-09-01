@@ -157,4 +157,11 @@ public function resetPassword(Request $request)
 
     return ApiResponse::generateResponse('success', 'Password reset successful.');
 }
+
+  public function logout(Request $request){
+
+        $request->user()->currentAccessToken()->delete();
+
+        return ApiResponse::generateResponse('success','Logout Successfully');
+    }
 }

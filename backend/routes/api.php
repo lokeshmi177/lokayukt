@@ -9,6 +9,8 @@ Route::post('/login',[LoginController::class,'login']);
 
 Route::middleware('auth:sanctum')->group(function(){
 
+Route::post('/logout', [LoginController::class, 'logout']);
+
 Route::get('/all-district',[CommonController::class,'fetch_district']);
 
 Route::post('/complaints',[ComplaintsController::class,'complaint_register']);
