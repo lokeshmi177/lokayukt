@@ -15,6 +15,7 @@ function App() {
     <Routes>
       {/* Root / pe login page */}
       <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
 
       {/* Layout ke andar wale routes */}
       <Route path="/" element={<Layout />}>
