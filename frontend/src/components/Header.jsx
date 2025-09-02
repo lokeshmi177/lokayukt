@@ -2,10 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import { FaSync, FaBars} from 'react-icons/fa';
 import { RxExit } from "react-icons/rx";
+import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 
 const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
+  const navigate = useNavigate();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Create axios instance with token (moved inside component to get fresh token)
+  const getApiInstance = () => {
+    const token = localStorage.getItem("access_token");
+    return axios.create({
+      baseURL: BASE_URL,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+  };
 
   // Check screen size
   useEffect(() => {
@@ -45,6 +64,61 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
     return `${day} ${month} ${year}, ${time}`;
   };
 
+  // Logout function with API call
+  const handleLogout = async () => {
+    if (isLoggingOut) return; // Prevent multiple calls
+    
+    setIsLoggingOut(true);
+    
+    try {
+      const api = getApiInstance();
+      const response = await api.post('/logout');
+
+      if (response.data.status === 'success') {
+        toast.success('Logout Successfully');
+        
+        // Clear localStorage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        
+        // Navigate to login page after a short delay
+        setTimeout(()=>{
+          window.open("/login", "_self");
+
+        },1500)
+       
+      } else {
+        toast.error('Logout failed. Please try again.');
+      }
+    } catch (error) {
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Network error during logout. Please try again.');
+      }
+      console.error('Logout error:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  // Handle refresh button
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+  // Get user data from localStorage
+  const getUserData = () => {
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const user = getUserData();
+
   return (
     <header 
       className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 transition-all duration-300"
@@ -59,38 +133,55 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
           {isMobile ? (
             <button
               onClick={toggleMobileMenu}
-              className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100"
+              className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <FaBars className="w-5 h-5" />
             </button>
           ) : (
             <button
               onClick={toggleSidebar}
-              className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100"
+              className="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
             >
-            
+              <FaBars className="w-5 h-5" />
             </button>
           )}
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="w-2 h-2 bg-orange-400 rounded-full"></span>
-            <span>{formatDateTime()}</span>
+            <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
+            <span className="font-medium">{formatDateTime()}</span>
           </div>
         </div>
 
         {/* Right side - User Info */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">श्री राजेश कुमार</span>
-            <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">Admin</span>
+            <span className="font-medium text-gray-900">
+              {user?.name || 'श्री राजेश कुमार'}
+            </span>
+            <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">
+              {user?.role || 'Admin'}
+            </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-gray-600 text-xs">rajesh.kumar@lokayukta.mp.gov.in</span>
+            <span className="text-gray-600 text-xs">
+              {user?.email || 'rajesh.kumar@lokayukta.mp.gov.in'}
+            </span>
             <div className="flex items-center gap-2">
-              <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
+              <button 
+                className="p-1.5 text-gray-500 hover:text-blue-600 transition-colors rounded-md hover:bg-gray-100"
+                onClick={handleRefresh}
+                title="Refresh"
+              >
                 <FaSync className="w-4 h-4" />
               </button>
-              <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
-                <RxExit className="w-4 h-4" />
+              <button 
+                className={`p-1.5 text-gray-500 hover:text-red-600 transition-colors rounded-md hover:bg-gray-100 ${
+                  isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                title="Logout"
+              >
+                <RxExit className={`w-4 h-4 ${isLoggingOut ? 'animate-pulse' : ''}`} />
               </button>
             </div>
           </div>
