@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
         DistrictMasterSeeder::class,
     ]);
 
+    
+
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
