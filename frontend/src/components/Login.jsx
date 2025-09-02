@@ -69,9 +69,11 @@ const Login = () => {
         toast.success('Login Successful! Redirecting to dashboard...');
         
         // Navigate to dashboard after a short delay
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+
+        setTimeout(()=>{
+          window.open("/dashboard", "_self");
+        },1500)
+       
       }
     } catch (error) {
       if (error.response?.data?.status === 'error') {
