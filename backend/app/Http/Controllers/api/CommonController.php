@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\ComplainType;
+use App\Models\Department;
 use App\Models\Designation;
 use App\Models\District;
 use App\Models\RejectionReasons;
@@ -26,6 +27,12 @@ class CommonController extends Controller
         // dd($designation->toArray());
         return ApiResponse::generateResponse('success','Designation fetch successfully',$designation);
     }
+       public function fetch_department(){
+
+        $department = Department::get();
+        // dd($designation->toArray());
+        return ApiResponse::generateResponse('success','Department fetch successfully',$department);
+    }
     public function fetch_subject(){
 
         $designation = Subjects::get();
@@ -45,6 +52,89 @@ class CommonController extends Controller
         // dd($designation->toArray());
         return ApiResponse::generateResponse('success','Rejection Reasons fetch successfully',$designation);
     }
+
+       public function addDepartment(Request $request)
+    {
+        // dd($request->all());
+        $validation = Validator::make($request->all(), [
+            'name' => 'required|string|max:150',
+            'name_h' => 'string|max:150',
+         
+          
+        ], [
+            'name.required' => 'Name is required.',
+            // 'name_h.required' => 'Name is required.',
+            // 'status.digits' => 'Status must be a digit.',
+           
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+
+        $department = new Department();
+        $department->name = $request->name;
+        $department->name_h = $request->name_h;
+        $department->status = $request->status;
+    
+        $department->save(); // ✅ Insert into DB
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Department added successfully.',
+            'data' => $department
+        ], 201);
+    }
+     public function editDepartment(Request $request,$id)
+    {
+        // dd($request->all());
+        $validation = Validator::make($request->all(), [
+            'name' => 'required|string|max:150',
+            'name_h' => 'string|max:150',
+         
+          
+        ], [
+            'name.required' => 'Name is required.',
+            // 'name_h.required' => 'Name is required.',
+            // 'status.digits' => 'Status must be a digit.',
+           
+        ]);
+
+       
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+
+        $department = Department::find($id);
+
+         if(!$department){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid department ID.'
+            ], 400);
+
+        }
+
+        $department->name = $request->name;
+        $department->name_h = $request->name_h;
+        $department->status = $request->status;
+    
+        $department->save(); // ✅ Insert into DB
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Department update successfully.',
+            'data' => $department
+        ], 200);
+    }
+
 
      public function addDesignation(Request $request)
     {

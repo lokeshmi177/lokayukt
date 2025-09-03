@@ -24,6 +24,12 @@ Route::get('/progress-register',[ComplaintsController::class,'progress_report'])
 
 Route::post('/user-management',[UserManagement::class,'user_management']);
 
+/**
+ * Designation
+ */
+Route::post('/department',[CommonController::class,'fetch_department']);
+Route::post('/add-department',[CommonController::class,'addDepartment']);
+Route::post('/edit-department/{id}',[CommonController::class,'editDepartment']);
 
 
 /**

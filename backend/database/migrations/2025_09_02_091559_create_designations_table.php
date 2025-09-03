@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('name_h')->nullable();
-            $table->string('status', 15);
+            $table->enum('status',['0','1'])->comment('0=Active, 1=Inactive');
             $table->timestamps();
         });
     }
