@@ -78,7 +78,7 @@ class CommonController extends Controller
         $department = new Department();
         $department->name = $request->name;
         $department->name_hindi= $request->name_hindi;
-        $department->status = $request->status;
+        $department->status = 1;
     
         $department->save(); // ✅ Insert into DB
 
@@ -124,7 +124,7 @@ class CommonController extends Controller
 
         $department->name = $request->name;
         $department->name_hindi = $request->name_hindi;
-        $department->status = $request->status;
+        $department->status = 1;
     
         $department->save(); // ✅ Insert into DB
 
@@ -161,7 +161,7 @@ class CommonController extends Controller
         $designation = new Designation();
         $designation->name = $request->name;
         $designation->name_h = $request->name_h;
-        $designation->status = $request->status;
+        $designation->status = 1;
     
         $designation->save(); // ✅ Insert into DB
 
@@ -207,7 +207,7 @@ class CommonController extends Controller
 
         $designation->name = $request->name;
         $designation->name_h = $request->name_h;
-        $designation->status = $request->status;
+        $designation->status = 1;
     
         $designation->save(); // ✅ Insert into DB
 
@@ -243,7 +243,7 @@ class CommonController extends Controller
         $subject = new Subjects();
         $subject->name = $request->name;
         $subject->name_h = $request->name_h;
-        $subject->status = $request->status;
+        $subject->status = 1;
     
         $subject->save(); // ✅ Insert into DB
 
@@ -289,7 +289,7 @@ class CommonController extends Controller
 
         $subject->name = $request->name;
         $subject->name_h = $request->name_h;
-        $subject->status = $request->status;
+        $subject->status = 1;
     
         $subject->save(); // ✅ Insert into DB
 
@@ -327,7 +327,7 @@ class CommonController extends Controller
         $complainType = new ComplainType();
         $complainType->name = $request->name;
         $complainType->name_h = $request->name_h;
-        $complainType->status = $request->status;
+        $complainType->status = 1;
         $complainType->description = $request->description;
     
         $complainType->save(); // ✅ Insert into DB
@@ -376,7 +376,7 @@ class CommonController extends Controller
 
         $complaintype->name = $request->name;
         $complaintype->name_h = $request->name_h;
-        $complaintype->status = $request->status;
+        $complaintype->status = 1;
         $complaintype->description = $request->description;
     
         $complaintype->save(); // ✅ Insert into DB
@@ -415,7 +415,7 @@ class CommonController extends Controller
         $rejection = new RejectionReasons();
         $rejection->name = $request->name;
         $rejection->name_h = $request->name_h;
-        $rejection->status = $request->status;
+        $rejection->status = 1;
         $rejection->description = $request->description;
     
         $rejection->save(); // ✅ Insert into DB
@@ -464,7 +464,7 @@ class CommonController extends Controller
 
         $rejectionReason->name = $request->name;
         $rejectionReason->name_h = $request->name_h;
-        $rejectionReason->status = $request->status;
+        $rejectionReason->status = 1;
         $rejectionReason->description = $request->description;
     
         $rejectionReason->save(); // ✅ Insert into DB

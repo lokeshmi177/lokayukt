@@ -16,11 +16,11 @@ class DatabaseSeeder extends Seeder
         //   $this->call(RoleSeeder::class);
         //   $this->call(SubRolesSeeder::class);
 
-    //       $this->call([
-    //     // DistrictMasterSeeder::class,
-    //     // DesignationSeeder::class,
-    //     // SubjectSeeder::class,
-    // ]);
+          $this->call([
+        DistrictMasterSeeder::class,
+        // DesignationSeeder::class,
+        // SubjectSeeder::class,
+    ]);
 
     
 
