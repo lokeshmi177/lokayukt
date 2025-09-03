@@ -26,6 +26,12 @@ Route::post('/user-management',[UserManagement::class,'user_management']);
 Route::get('/users',[UserManagement::class,'index']);
 
 /**
+ * District
+ */
+Route::get('/district',[CommonController::class,'fetch_district']);
+Route::post('/add-district',[CommonController::class,'addDistrict']);
+Route::post('/edit-district/{id}',[CommonController::class,'editDistrict']);
+/**
  * Designation
  */
 Route::get('/department',[CommonController::class,'fetch_department']);

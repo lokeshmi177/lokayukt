@@ -53,6 +53,92 @@ class CommonController extends Controller
         return ApiResponse::generateResponse('success','Rejection Reasons fetch successfully',$designation);
     }
 
+    
+
+       public function addDistrct(Request $request)
+    {
+        // dd($request->all());
+        $validation = Validator::make($request->all(), [
+            'district_name' => 'required|string|max:150',
+            'dist_name_hi' => 'string|max:150',
+            'district_code' => 'string|max:150',
+         
+          
+        ], [
+            'district_name.required' => 'District Name is required.',
+            // 'name_h.required' => 'Name is required.',
+            // 'status.digits' => 'Status must be a digit.',
+           
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+
+        $district = new District();
+        $district->district_name = $request->district_name;
+        $district->dist_name_hi= $request->dist_name_hi;
+        $district->district_code= $request->district_code;
+        $district->status = 1;
+    
+        $district->save(); // ✅ Insert into DB
+
+        return response()->json([
+            'status' => true,
+            'message' => 'District added successfully.',
+            'data' => $district
+        ], 201);
+    }
+     public function editDistrct(Request $request,$id)
+    {
+        // dd($request->all());
+        $validation = Validator::make($request->all(), [
+            'district_name' => 'required|string|max:150',
+            'dist_name_hi' => 'string|max:150',
+            'district_code' => 'string|max:150',
+         
+          
+        ], [
+            'district_name.required' => 'District Name is required.',
+            // 'name_hindi.required' => 'Name is required.',
+            // 'status.digits' => 'Status must be a digit.',
+           
+        ]);
+
+       
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+
+        $district = District::find($id);
+
+         if(!$district){
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid department ID.'
+            ], 400);
+
+        }
+
+        $district->district_name = $request->district_name;
+        $district->dist_name_hi= $request->dist_name_hi;
+        $district->district_code= $request->district_code;
+        $district->status = 1;
+        $district->save(); // ✅ Insert into DB
+
+        return response()->json([
+            'status' => true,
+            'message' => 'District update successfully.',
+            'data' => $district
+        ], 200);
+    }
        public function addDepartment(Request $request)
     {
         // dd($request->all());
