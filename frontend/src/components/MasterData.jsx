@@ -1,5 +1,5 @@
 // pages/MasterData.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
   FaPlus,
@@ -9,8 +9,11 @@ import {
   FaMapMarkerAlt,
   FaBuilding,
   FaUsers,
-  FaFileAlt
+  FaFileAlt,
+  FaSpinner
 } from 'react-icons/fa';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -24,9 +27,206 @@ const api = axios.create({
   },
 });
 
+// Separate Edit Modal Component to prevent re-rendering issues
+const EditModal = ({ 
+  isOpen, 
+  onClose, 
+  activeTab, 
+  editingItem, 
+  onSave 
+}) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    nameHi: '',
+    description: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Initialize form data when modal opens
+  useEffect(() => {
+    if (isOpen && editingItem) {
+      setFormData({
+        name: editingItem.name || '',
+        nameHi: editingItem.nameHi || '',
+        description: editingItem.description || ''
+      });
+    }
+  }, [isOpen, editingItem]);
+
+  // Memoized input change handler to prevent re-creation
+  const handleInputChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      let endpoint = '';
+      let requestData = {};
+
+      switch (activeTab) {
+        case 'departments':
+          endpoint = `/edit-department/${editingItem.id}`;
+          requestData = {
+            name: formData.name,
+            name_hindi: formData.nameHi
+          };
+          break;
+        case 'subjects':
+          endpoint = `/edit-subject/${editingItem.id}`;
+          requestData = {
+            name: formData.name,
+            name_h: formData.nameHi
+          };
+          break;
+        case 'designations':
+          endpoint = `/edit-designation/${editingItem.id}`;
+          requestData = {
+            name: formData.name,
+            name_h: formData.nameHi
+          };
+          break;
+        case 'complaint-types':
+          endpoint = `/edit-complainstype/${editingItem.id}`;
+          requestData = {
+            name: formData.name,
+            name_h: formData.nameHi,
+            description: formData.description
+          };
+          break;
+        case 'rejection-reasons':
+          endpoint = `/edit-rejection/${editingItem.id}`;
+          requestData = {
+            name: formData.name,
+            name_h: formData.nameHi,
+            description: formData.description
+          };
+          break;
+        default:
+          toast.error('Invalid tab selected');
+          return;
+      }
+
+      const response = await api.post(endpoint, requestData);
+
+      if (response.data.status === true) {
+        toast.success(response.data.message || 'Item updated successfully!');
+        onSave(formData);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Edit error:', error);
+      toast.error('Error updating item. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div className="px-4 py-3 border-b text-lg font-semibold">
+          Edit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="p-4 space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name (English) *
+              </label>
+              <input 
+                key="edit-name" // Stable key to prevent re-mounting
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                placeholder="Enter name"
+                required
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name (Hindi) *
+              </label>
+              <input 
+                key="edit-nameHi" // Stable key to prevent re-mounting
+                name="nameHi"
+                type="text"
+                value={formData.nameHi}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                placeholder="हिंदी में नाम दर्ज करें"
+                required
+                autoComplete="off"
+              />
+            </div>
+            {(activeTab === 'complaint-types' || activeTab === 'rejection-reasons') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea 
+                  key="edit-description" // Stable key to prevent re-mounting
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                  placeholder="Enter description"
+                  rows="3"
+                  autoComplete="off"
+                />
+              </div>
+            )}
+          </div>
+          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+                isSubmitting 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Update'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const MasterData = () => {
   const [activeTab, setActiveTab] = useState('districts');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
 
   // State for all master data
   const [districts, setDistricts] = useState([]);
@@ -47,9 +247,9 @@ const MasterData = () => {
             id: item.id,
             name: item.district_name,
             nameHi: item.dist_name_hi,
-            code: item.district_name.substring(0, 3).toUpperCase(), // first 3 letters uppercase
+            code: item.district_name.substring(0, 3).toUpperCase(),
             status: 'active',
-            createdAt: new Date().toISOString().split('T')[0] // placeholder date
+            createdAt: new Date().toISOString().split('T')[0]
           }));
           setDistricts(districtsData);
         }
@@ -123,10 +323,61 @@ const MasterData = () => {
 
       } catch (error) {
         console.error('Error fetching master data:', error);
+        toast.error('Error fetching data');
       }
     };
 
     fetchMasterData();
+  }, []);
+
+  // Memoized handle edit function
+  const handleEdit = useCallback((item) => {
+    setEditingItem(item);
+    setIsEditModalOpen(true);
+  }, []);
+
+  // Handle edit save
+  const handleEditSave = useCallback((formData) => {
+    const updatedItem = {
+      ...editingItem,
+      name: formData.name,
+      nameHi: formData.nameHi,
+      description: formData.description
+    };
+
+    switch (activeTab) {
+      case 'departments':
+        setDepartments(prev => prev.map(item => 
+          item.id === editingItem.id ? updatedItem : item
+        ));
+        break;
+      case 'subjects':
+        setSubjects(prev => prev.map(item => 
+          item.id === editingItem.id ? updatedItem : item
+        ));
+        break;
+      case 'designations':
+        setDesignations(prev => prev.map(item => 
+          item.id === editingItem.id ? updatedItem : item
+        ));
+        break;
+      case 'complaint-types':
+        setComplaintTypes(prev => prev.map(item => 
+          item.id === editingItem.id ? updatedItem : item
+        ));
+        break;
+      case 'rejection-reasons':
+        setRejectionReasons(prev => prev.map(item => 
+          item.id === editingItem.id ? updatedItem : item
+        ));
+        break;
+    }
+  }, [activeTab, editingItem]);
+
+  // Close edit modal
+  const handleEditClose = useCallback(() => {
+    setIsEditModalOpen(false);
+    setEditingItem(null);
   }, []);
 
   const masterDataTabs = [
@@ -195,10 +446,16 @@ const MasterData = () => {
                 <td className="py-2 sm:py-3 px-2 sm:px-3 text-gray-600">{item.createdAt}</td>
                 <td className="py-2 sm:py-3 px-2 sm:px-3">
                   <div className="flex gap-2">
-                    <button className="px-2 py-1 border rounded text-xs hover:bg-gray-50">
-                      <FaEdit className="w-3 h-3 text-blue-600" />
-                    </button>
-                    <button className="px-2 py-1 border rounded text-xs hover:bg-gray-50">
+                    {activeTab !== 'districts' && (
+                      <button 
+                        onClick={() => handleEdit(item)}
+                        className="px-2 py-1 border rounded text-xs hover:bg-gray-50"
+                        title="Edit"
+                      >
+                        <FaEdit className="w-3 h-3 text-blue-600" />
+                      </button>
+                    )}
+                    <button className="px-2 py-1 border rounded text-xs hover:bg-gray-50" title="Delete">
                       <FaTrash className="w-3 h-3 text-red-600" />
                     </button>
                   </div>
@@ -209,7 +466,7 @@ const MasterData = () => {
         </table>
       </div>
 
-      {/* Simple Modal */}
+      {/* Add Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
@@ -258,6 +515,20 @@ const MasterData = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
+      
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Master Data / मास्टर डेटा</h1>
@@ -302,6 +573,15 @@ const MasterData = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <EditModal
+        isOpen={isEditModalOpen}
+        onClose={handleEditClose}
+        activeTab={activeTab}
+        editingItem={editingItem}
+        onSave={handleEditSave}
+      />
     </div>
   );
 };
