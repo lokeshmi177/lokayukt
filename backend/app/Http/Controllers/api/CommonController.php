@@ -58,7 +58,7 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_hindi' => 'string|max:150',
          
           
         ], [
@@ -77,7 +77,7 @@ class CommonController extends Controller
 
         $department = new Department();
         $department->name = $request->name;
-        $department->name_h = $request->name_h;
+        $department->name_hindi= $request->name_hindi;
         $department->status = $request->status;
     
         $department->save(); // ✅ Insert into DB
@@ -98,7 +98,7 @@ class CommonController extends Controller
           
         ], [
             'name.required' => 'Name is required.',
-            // 'name_h.required' => 'Name is required.',
+            // 'name_hindi.required' => 'Name is required.',
             // 'status.digits' => 'Status must be a digit.',
            
         ]);
@@ -123,7 +123,7 @@ class CommonController extends Controller
         }
 
         $department->name = $request->name;
-        $department->name_h = $request->name_h;
+        $department->name_hindi = $request->name_hindi;
         $department->status = $request->status;
     
         $department->save(); // ✅ Insert into DB

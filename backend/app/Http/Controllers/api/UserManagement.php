@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Validator;
 
 class UserManagement extends Controller
 {
+    public function index()
+    {
+        $users = User::with('role')->get();
+        return response()->json([
+            'status' => true,
+            'data' => $users
+        ]);
+    }
     public function user_management(Request $request)
     {
         // Validate input

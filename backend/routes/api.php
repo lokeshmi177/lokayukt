@@ -23,6 +23,7 @@ Route::get('/progress-register',[ComplaintsController::class,'progress_report'])
 //USER-MANAGEMENT
 
 Route::post('/user-management',[UserManagement::class,'user_management']);
+Route::get('/users',[UserManagement::class,'index']);
 
 /**
  * Designation

@@ -52,21 +52,21 @@ class User extends Authenticatable
         ];
     }
 
-    // public function district()
-    // {
-    //     return $this->belongsTo(District::class);
-    // }
-
 //     public function district()
+//     {
+//         return $this->belongsTo(District::class);
+//     }
+
+//     public function department()
 // {
-//     return $this->belongsTo(DistrictMaster::class, 'district_id', 'district_code');
+//     return $this->belongsTo(Department::class, 'department_id', 'id');
 // }
 
 
-//     public function tehsil()
-// {
-//     return $this->belongsTo(Tehsil::class, 'tehsil_id', 'tehsil_code');
-// }
+    public function tehsil()
+{
+    return $this->belongsTo(Tehsil::class, 'tehsil_id', 'tehsil_code');
+}
     
 
     //   public function designation()
