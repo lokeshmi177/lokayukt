@@ -9,9 +9,10 @@ import {
   FaEnvelope,
   FaPhone
 } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const UserManagement = () => {
-  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [activeTab, setActiveTab] = useState('users');
@@ -108,6 +109,7 @@ const UserManagement = () => {
     console.log('Toggling user status for:', userId);
   };
 
+  const navigate = useNavigate()
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
       <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -115,7 +117,10 @@ const UserManagement = () => {
         <div className="flex items-start sm:items-center justify-between gap-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">User Management / उपयोगकर्ता प्रबंधन</h1>
           <button
-            onClick={() => setIsAddUserOpen(true)}
+         onClick={()=>{
+          navigate("add")
+         }}
+       
             className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
           >
             <FaUserPlus className="w-4 h-4" />
@@ -123,66 +128,6 @@ const UserManagement = () => {
           </button>
         </div>
 
-        {/* Add User Modal */}
-        {isAddUserOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-            <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg">
-              <div className="px-4 sm:px-6 py-4 border-b">
-                <h2 className="text-lg font-semibold">Add New User</h2>
-              </div>
-              <div className="px-4 sm:px-6 py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                    <input id="name" className="w-full p-2 border rounded-md" placeholder="Enter full name" />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input id="email" type="email" className="w-full p-2 border rounded-md" placeholder="Enter email" />
-                  </div>
-                  <div>
-                    <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-1">Mobile</label>
-                    <input id="mobile" className="w-full p-2 border rounded-md" placeholder="Enter mobile number" />
-                  </div>
-                  <div>
-                    <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                    <select id="role" className="w-full p-2 border rounded-md">
-                      <option>Select Role</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Secretary">Secretary</option>
-                      <option value="RO">RO</option>
-                      <option value="ARO">ARO</option>
-                      <option value="CIO">CIO</option>
-                      <option value="Section Officer">Section Officer</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="designation" className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                    <input id="designation" className="w-full p-2 border rounded-md" placeholder="Enter designation" />
-                  </div>
-                  <div>
-                    <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                    <input id="department" className="w-full p-2 border rounded-md" placeholder="Enter department" />
-                  </div>
-                </div>
-              </div>
-              <div className="px-4 sm:px-6 py-3 border-t flex items-center justify-end gap-2">
-                <button
-                  onClick={() => setIsAddUserOpen(false)}
-                  className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => setIsAddUserOpen(false)}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                >
-                  Create User
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Tabs Component with Dashboard-like styling */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">

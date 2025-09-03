@@ -9,6 +9,7 @@ import SearchReports from './components/SearchReports';
 import UserManagement from './components/UserManagement';
 import MasterData from './components/MasterData';
 import Login from './components/Login';  // <-- login component import
+import AddUserManagement from './components/AddUserManagement';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="progress-register" element={<ProgressRegister />} />
         <Route path="search-reports" element={<SearchReports />} />
         <Route path="user-management" element={<UserManagement />} />
+        <Route path="user-management/add" element={<AddUserManagement />} />
         <Route path="master-data" element={<MasterData />} />
       </Route>
     </Routes>
