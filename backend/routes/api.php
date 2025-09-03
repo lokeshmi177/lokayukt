@@ -27,7 +27,7 @@ Route::post('/user-management',[UserManagement::class,'user_management']);
 /**
  * Designation
  */
-Route::post('/department',[CommonController::class,'fetch_department']);
+Route::get('/department',[CommonController::class,'fetch_department']);
 Route::post('/add-department',[CommonController::class,'addDepartment']);
 Route::post('/edit-department/{id}',[CommonController::class,'editDepartment']);
 
@@ -35,28 +35,28 @@ Route::post('/edit-department/{id}',[CommonController::class,'editDepartment']);
 /**
  * Designation
  */
-Route::post('/designation',[CommonController::class,'fetch_designation']);
+Route::get('/designation',[CommonController::class,'fetch_designation']);
 Route::post('/add-designation',[CommonController::class,'addDesignation']);
 Route::post('/edit-designation/{id}',[CommonController::class,'editDesignation']);
 
 /**
  * Subject
  */
-Route::post('/subjects',[CommonController::class,'fetch_subject']);
+Route::get('/subjects',[CommonController::class,'fetch_subject']);
 Route::post('/add-subject',[CommonController::class,'addSubject']);
 Route::post('/edit-subject/{id}',[CommonController::class,'editSubject']);
 
 /**
  * Complain Type
  */
-Route::post('/complainstype',[CommonController::class,'fetch_complainstype']);
+Route::get('/complainstype',[CommonController::class,'fetch_complainstype']);
 Route::post('/add-complainstype',[CommonController::class,'addComplainType']);
 Route::post('/edit-complainstype/{id}',[CommonController::class,'editComplainType']);
 
 /**
  * Rejection Reason
  */
-Route::post('/rejections',[CommonController::class,'fetch_rejection']);
+Route::get('/rejections',[CommonController::class,'fetch_rejection']);
 Route::post('/add-rejection',[CommonController::class,'addRejection']);
 Route::post('/edit-rejection/{id}',[CommonController::class,'editRejection']);
 
