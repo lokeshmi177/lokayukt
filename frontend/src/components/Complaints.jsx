@@ -47,22 +47,52 @@ const Complaints = () => {
   });
 
   const [districts, setDistricts] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [complaintTypes, setComplaintTypes] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch districts on component mount
+  // Fetch all required data on component mount
   useEffect(() => {
-    const fetchDistricts = async () => {
+    const fetchAllData = async () => {
       try {
-        const response = await api.get(`/all-district`);
-        if (response.data.status === 'success') {
-          setDistricts(response.data.data);
+        // Fetch districts
+        const districtsResponse = await api.get(`/all-district`);
+        if (districtsResponse.data.status === 'success') {
+          setDistricts(districtsResponse.data.data);
+        }
+
+        // Fetch departments
+        const departmentsResponse = await api.get(`/department`);
+        if (departmentsResponse.data.status === 'success') {
+          setDepartments(departmentsResponse.data.data);
+        }
+
+        // Fetch designations
+        const designationsResponse = await api.get(`/designation`);
+        if (designationsResponse.data.status === 'success') {
+          setDesignations(designationsResponse.data.data);
+        }
+
+        // Fetch subjects
+        const subjectsResponse = await api.get(`/subjects`);
+        if (subjectsResponse.data.status === 'success') {
+          setSubjects(subjectsResponse.data.data);
+        }
+
+        // Fetch complaint types
+        const complaintTypesResponse = await api.get(`/complainstype`);
+        if (complaintTypesResponse.data.status === 'success') {
+          setComplaintTypes(complaintTypesResponse.data.data);
         }
       } catch (error) {
-        console.error('Failed to fetch districts:', error);
+        console.error('Failed to fetch data:', error);
       }
     };
-    fetchDistricts();
+
+    fetchAllData();
   }, []);
 
   const handleInputChange = (e) => {
@@ -97,7 +127,6 @@ const Complaints = () => {
 
     try {
       const response = await api.post('/complaints', formData);
-
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint registered successfully!');
         
@@ -165,7 +194,7 @@ const Complaints = () => {
             <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
               <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden xs:inline">Check Duplicates</span>
-              <span className="xs:hidden">Check</span>
+              <span className="xs:hidden">Check Duplicates</span>
             </button>
             <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
               <FaSave className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -191,61 +220,58 @@ const Complaints = () => {
                   <p className="text-xs sm:text-sm text-gray-500">शिकायतकर्ता विवरण</p>
                 </div>
               </div>
-
               <div className="space-y-3 sm:space-y-4">
                 {/* Name */}
-               <div>
-  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-    Name / नाम *
-  </label>
-  <input
-    type="text"
-    name="name"
-    value={formData.name}
-    onChange={(e) => {
-      const value = e.target.value;
-      // sirf letters aur spaces allow karo
-      if (/^[A-Za-z\s]*$/.test(value)) {
-        handleInputChange(e);
-      }
-    }}
-    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
-    placeholder="Enter full name"
-  />
-  {errors.name && (
-    <p className="mt-1 text-sm text-red-600">
-      {errors.name}
-    </p>
-  )}
-</div>
-
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Name / नाम *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // sirf letters aur spaces allow karo
+                      if (/^[A-Za-z\s]*$/.test(value)) {
+                        handleInputChange(e);
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="Enter full name"
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.name}
+                    </p>
+                  )}
+                </div>
 
                 {/* Mobile */}
                 <div>
-  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-    Mobile / मोबाइल *
-  </label>
-  <input
-    type="tel"
-    name="mobile"
-    value={formData.mobile}
-    onChange={(e) => {
-      const value = e.target.value;
-      // Sirf digits allow + max 10 digits
-      if (/^[0-9]*$/.test(value) && value.length <= 10) {
-        handleInputChange(e);
-      }
-    }}
-    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
-    placeholder="10-digit mobile number"
-  />
-  {errors.mobile && (
-    <p className="mt-1 text-sm text-red-600">
-      {errors.mobile}
-    </p>
-  )}
-</div>
-
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Mobile / मोबाइल *
+                  </label>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Sirf digits allow + max 10 digits
+                      if (/^[0-9]*$/.test(value) && value.length <= 10) {
+                        handleInputChange(e);
+                      }
+                    }}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="10-digit mobile number"
+                  />
+                  {errors.mobile && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.mobile}
+                    </p>
+                  )}
+                </div>
 
                 {/* Address */}
                 <div>
@@ -315,112 +341,110 @@ const Complaints = () => {
             </div>
 
             {/* Security Fee */}
-           <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-  <div className="flex items-center gap-3 mb-4">
-    <FaRupeeSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-    <div>
-      <h2 className="text-base sm:text-lg font-semibold text-gray-900">Security Fee</h2>
-      <p className="text-xs sm:text-sm text-gray-500">जमानत राशि</p>
-    </div>
-  </div>
+            <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-3 mb-4">
+                <FaRupeeSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Security Fee</h2>
+                  <p className="text-xs sm:text-sm text-gray-500">जमानत राशि</p>
+                </div>
+              </div>
+              <div className="space-y-3 sm:space-y-4">
+                {/* Fee Exempted Radio */}
+                <div>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        id="exempted"
+                        name="fee_exempted"
+                        type="radio"
+                        value="true"
+                        checked={formData.fee_exempted === true}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label htmlFor="exempted" className="text-xs sm:text-sm font-medium text-gray-700">
+                        Fee Exempted / शुल्क माफ
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        id="not_exempted"
+                        name="fee_exempted"
+                        type="radio"
+                        value="false"
+                        checked={formData.fee_exempted === false}
+                        onChange={handleInputChange}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      />
+                      <label htmlFor="not_exempted" className="text-xs sm:text-sm font-medium text-gray-700">
+                        Fee Paid / शुल्क भुगतान
+                      </label>
+                    </div>
+                  </div>
+                  {errors.fee_exempted && (
+                    <p className="mt-1 text-sm text-red-600">{errors.fee_exempted}</p>
+                  )}
+                </div>
 
-  <div className="space-y-3 sm:space-y-4">
-    {/* Fee Exempted Radio */}
-    <div>
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <input
-            id="exempted"
-            name="fee_exempted"
-            type="radio"
-            value="true"
-            checked={formData.fee_exempted === true}
-            onChange={handleInputChange}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-          />
-          <label htmlFor="exempted" className="text-xs sm:text-sm font-medium text-gray-700">
-            Fee Exempted / शुल्क माफ
-          </label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <input
-            id="not_exempted"
-            name="fee_exempted"
-            type="radio"
-            value="false"
-            checked={formData.fee_exempted === false}
-            onChange={handleInputChange}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-          />
-          <label htmlFor="not_exempted" className="text-xs sm:text-sm font-medium text-gray-700">
-            Fee Paid / शुल्क भुगतान
-          </label>
-        </div>
-      </div>
-      {errors.fee_exempted && (
-        <p className="mt-1 text-sm text-red-600">{errors.fee_exempted}</p>
-      )}
-    </div>
+                {/* Amount */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Amount / राशि
+                  </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    value={formData.amount}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
+                    placeholder="Enter amount"
+                    disabled={formData.fee_exempted}
+                  />
+                  {errors.amount && (
+                    <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
+                  )}
+                </div>
 
-    {/* Amount */}
-    <div>
-      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-        Amount / राशि
-      </label>
-      <input
-        type="number"
-        name="amount"
-        value={formData.amount}
-        onChange={handleInputChange}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
-        placeholder="Enter amount"
-        disabled={formData.fee_exempted}
-      />
-      {errors.amount && (
-        <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
-      )}
-    </div>
+                {/* Challan No */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Challan No. / चालान नं.
+                  </label>
+                  <input
+                    type="text"
+                    name="challan_no"
+                    value={formData.challan_no}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
+                    placeholder="Enter challan number"
+                    disabled={formData.fee_exempted}
+                  />
+                  {errors.challan_no && (
+                    <p className="mt-1 text-sm text-red-600">{errors.challan_no}</p>
+                  )}
+                </div>
 
-    {/* Challan No */}
-    <div>
-      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-        Challan No. / चालान नं.
-      </label>
-      <input
-        type="text"
-        name="challan_no"
-        value={formData.challan_no}
-        onChange={handleInputChange}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
-        placeholder="Enter challan number"
-        disabled={formData.fee_exempted}
-      />
-      {errors.challan_no && (
-        <p className="mt-1 text-sm text-red-600">{errors.challan_no}</p>
-      )}
-    </div>
-
-    {/* Date of Birth - show only if NOT exempted */}
-    {!formData.fee_exempted && (
-      <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-          Date of Birth / जन्म तिथि
-        </label>
-        <input
-          type="date"
-          name="dob"
-          value={formData.dob}
-          onChange={handleInputChange}
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
-        />
-        {errors.dob && (
-          <p className="mt-1 text-sm text-red-600">{errors.dob}</p>
-        )}
-      </div>
-    )}
-  </div>
-</div>
-
+                {/* Date of Birth - show only if NOT exempted */}
+                {!formData.fee_exempted && (
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                      Date of Birth / जन्म तिथि
+                    </label>
+                    <input
+                      type="date"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                    {errors.dob && (
+                      <p className="mt-1 text-sm text-red-600">{errors.dob}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Respondent Department - Full Width */}
@@ -432,7 +456,6 @@ const Complaints = () => {
                 <p className="text-xs sm:text-sm text-gray-500">प्रतिवादी विभाग</p>
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Department */}
               <div>
@@ -446,10 +469,11 @@ const Complaints = () => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Department</option>
-                  <option value="lok_nirman">Lok Nirman</option>
-                  <option value="education">Education</option>
-                  <option value="health">Health</option>
-                  <option value="police">Police</option>
+                  {departments.map(department => (
+                    <option key={department.id} value={department.id}>
+                      {department.name} ({department.name_hindi})
+                    </option>
+                  ))}
                 </select>
                 {errors.department && (
                   <p className="mt-1 text-sm text-red-600">
@@ -490,9 +514,11 @@ const Complaints = () => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Designation</option>
-                  <option value="collector">Collector</option>
-                  <option value="ceo">CEO</option>
-                  <option value="engineer">Engineer</option>
+                  {designations.map(designation => (
+                    <option key={designation.id} value={designation.id}>
+                      {designation.name} ({designation.name_h})
+                    </option>
+                  ))}
                 </select>
                 {errors.designation && (
                   <p className="mt-1 text-sm text-red-600">
@@ -534,7 +560,6 @@ const Complaints = () => {
                 <p className="text-xs sm:text-sm text-gray-500">शिकायत विवरण</p>
               </div>
             </div>
-
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {/* Subject */}
@@ -549,10 +574,11 @@ const Complaints = () => {
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select Subject</option>
-                    <option value="corruption">Corruption</option>
-                    <option value="delay_in_work">Delay in Work</option>
-                    <option value="misbehavior">Misbehavior</option>
-                    <option value="rule_violation">Rule Violation</option>
+                    {subjects.map(subject => (
+                      <option key={subject.id} value={subject.id}>
+                        {subject.name} ({subject.name_h})
+                      </option>
+                    ))}
                   </select>
                   {errors.subject && (
                     <p className="mt-1 text-sm text-red-600">
@@ -573,8 +599,11 @@ const Complaints = () => {
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select Nature</option>
-                    <option value="allegation">Allegation</option>
-                    <option value="grievance">Grievance</option>
+                    {complaintTypes.map(complaintType => (
+                      <option key={complaintType.id} value={complaintType.id}>
+                        {complaintType.name} ({complaintType.name_h})
+                      </option>
+                    ))}
                   </select>
                   {errors.nature && (
                     <p className="mt-1 text-sm text-red-600">

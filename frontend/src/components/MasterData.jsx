@@ -1,5 +1,6 @@
 // pages/MasterData.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   FaPlus,
   FaEdit,
@@ -11,68 +12,137 @@ import {
   FaFileAlt
 } from 'react-icons/fa';
 
+const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
+const token = localStorage.getItem("access_token");
+
+// Create axios instance with token if it exists
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  },
+});
+
 const MasterData = () => {
   const [activeTab, setActiveTab] = useState('districts');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const districts = [
-    { id: '1', name: 'Bhopal', nameHi: 'भोपाल', code: 'BPL', status: 'active', createdAt: '2023-01-01' },
-    { id: '2', name: 'Indore', nameHi: 'इंदौर', code: 'IDR', status: 'active', createdAt: '2023-01-01' },
-    { id: '3', name: 'Gwalior', nameHi: 'ग्वालियर', code: 'GWL', status: 'active', createdAt: '2023-01-01' },
-    { id: '4', name: 'Ujjain', nameHi: 'उज्जैन', code: 'UJN', status: 'active', createdAt: '2023-01-01' },
-    { id: '5', name: 'Jabalpur', nameHi: 'जबलपुर', code: 'JBP', status: 'active', createdAt: '2023-01-01' },
-  ];
+  // State for all master data
+  const [districts, setDistricts] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [designations, setDesignations] = useState([]);
+  const [complaintTypes, setComplaintTypes] = useState([]);
+  const [rejectionReasons, setRejectionReasons] = useState([]);
 
-  const departments = [
-    { id: '1', name: 'Revenue Department', nameHi: 'राजस्व विभाग', status: 'active', createdAt: '2023-01-01' },
-    { id: '2', name: 'PWD', nameHi: 'लोक निर्माण विभाग', status: 'active', createdAt: '2023-01-01' },
-    { id: '3', name: 'Social Welfare', nameHi: 'समाज कल्याण', status: 'active', createdAt: '2023-01-01' },
-    { id: '4', name: 'Rural Development', nameHi: 'ग्रामीण विकास', status: 'active', createdAt: '2023-01-01' },
-    { id: '5', name: 'Education', nameHi: 'शिक्षा विभाग', status: 'active', createdAt: '2023-01-01' },
-  ];
+  // Fetch all master data on component mount
+  useEffect(() => {
+    const fetchMasterData = async () => {
+      try {
+        // Fetch districts
+        const districtsResponse = await api.get('/all-district');
+        if (districtsResponse.data.status === 'success') {
+          const districtsData = districtsResponse.data.data.map(item => ({
+            id: item.id,
+            name: item.district_name,
+            nameHi: item.dist_name_hi,
+            code: item.district_name.substring(0, 3).toUpperCase(), // first 3 letters uppercase
+            status: 'active',
+            createdAt: new Date().toISOString().split('T')[0] // placeholder date
+          }));
+          setDistricts(districtsData);
+        }
 
-  const subjects = [
-    { id: '1', name: 'Corruption', nameHi: 'भ्रष्टाचार', status: 'active', createdAt: '2023-01-01' },
-    { id: '2', name: 'Misuse of Power', nameHi: 'शक्ति का दुरुपयोग', status: 'active', createdAt: '2023-01-01' },
-    { id: '3', name: 'Delay in Work', nameHi: 'कार्य में देरी', status: 'active', createdAt: '2023-01-01' },
-    { id: '4', name: 'Wrong Information', nameHi: 'गलत जानकारी', status: 'active', createdAt: '2023-01-01' },
-    { id: '5', name: 'Procedural Issues', nameHi: 'प्रक्रियागत समस्याएं', status: 'active', createdAt: '2023-01-01' },
-  ];
+        // Fetch departments
+        const departmentsResponse = await api.get('/department');
+        if (departmentsResponse.data.status === 'success') {
+          const departmentsData = departmentsResponse.data.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            nameHi: item.name_hindi,
+            status: item.status === '1' ? 'active' : 'inactive',
+            createdAt: new Date(item.created_at).toISOString().split('T')[0]
+          }));
+          setDepartments(departmentsData);
+        }
 
-  const designations = [
-    { id: '1', name: 'Collector', nameHi: 'कलेक्टर', status: 'active', createdAt: '2023-01-01' },
-    { id: '2', name: 'SDM', nameHi: 'एसडीएम', status: 'active', createdAt: '2023-01-01' },
-    { id: '3', name: 'Tehsildar', nameHi: 'तहसीलदार', status: 'active', createdAt: '2023-01-01' },
-    { id: '4', name: 'BDO', nameHi: 'बीडीओ', status: 'active', createdAt: '2023-01-01' },
-    { id: '5', name: 'Executive Engineer', nameHi: 'कार्यपालन अभियंता', status: 'active', createdAt: '2023-01-01' },
-  ];
+        // Fetch subjects
+        const subjectsResponse = await api.get('/subjects');
+        if (subjectsResponse.data.status === 'success') {
+          const subjectsData = subjectsResponse.data.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            nameHi: item.name_h,
+            status: item.status === '1' ? 'active' : 'inactive',
+            createdAt: new Date(item.created_at).toISOString().split('T')[0]
+          }));
+          setSubjects(subjectsData);
+        }
 
-  const complaintTypes = [
-    { id: '1', name: 'Allegation', nameHi: 'आरोप', description: 'Corruption allegations', status: 'active', createdAt: '2023-01-01' },
-    { id: '2', name: 'Grievance', nameHi: 'शिकायत', description: 'General grievances', status: 'active', createdAt: '2023-01-01' },
-  ];
+        // Fetch designations
+        const designationsResponse = await api.get('/designation');
+        if (designationsResponse.data.status === 'success') {
+          const designationsData = designationsResponse.data.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            nameHi: item.name_h,
+            status: item.status === '1' ? 'active' : 'inactive',
+            createdAt: new Date(item.created_at).toISOString().split('T')[0]
+          }));
+          setDesignations(designationsData);
+        }
 
-  const rejectionReasons = [
-    { id: '1', name: 'Insufficient Evidence', nameHi: 'अपर्याप्त साक्ष्य', status: 'active', createdAt: '2023-01-01' },
-    { id: '2', name: 'Outside Jurisdiction', nameHi: 'क्षेत्राधिकार से बाहर', status: 'active', createdAt: '2023-01-01' },
-    { id: '3', name: 'Anonymous Complaint', nameHi: 'गुमनाम शिकायत', status: 'active', createdAt: '2023-01-01' },
-    { id: '4', name: 'Duplicate Complaint', nameHi: 'डुप्लिकेट शिकायत', status: 'active', createdAt: '2023-01-01' },
-  ];
+        // Fetch complaint types
+        const complaintTypesResponse = await api.get('/complainstype');
+        if (complaintTypesResponse.data.status === 'success') {
+          const complaintTypesData = complaintTypesResponse.data.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            nameHi: item.name_h,
+            description: item.description,
+            status: item.status === '1' ? 'active' : 'inactive',
+            createdAt: new Date(item.created_at).toISOString().split('T')[0]
+          }));
+          setComplaintTypes(complaintTypesData);
+        }
+
+        // Fetch rejection reasons
+        const rejectionReasonsResponse = await api.get('/rejections');
+        if (rejectionReasonsResponse.data.status === 'success') {
+          const rejectionReasonsData = rejectionReasonsResponse.data.data.map(item => ({
+            id: item.id,
+            name: item.name,
+            nameHi: item.name_h,
+            description: item.description,
+            status: item.status === '1' ? 'active' : 'inactive',
+            createdAt: new Date(item.created_at).toISOString().split('T')[0]
+          }));
+          setRejectionReasons(rejectionReasonsData);
+        }
+
+      } catch (error) {
+        console.error('Error fetching master data:', error);
+      }
+    };
+
+    fetchMasterData();
+  }, []);
 
   const masterDataTabs = [
-    { id: 'districts', label: 'Districts', labelHi: 'जिले', icon: FaMapMarkerAlt, data: districts },
-    { id: 'departments', label: 'Departments', labelHi: 'विभाग', icon: FaBuilding, data: departments },
-    { id: 'subjects', label: 'Subjects', labelHi: 'विषय', icon: FaFileAlt, data: subjects },
-    { id: 'designations', label: 'Designations', labelHi: 'पदनाम', icon: FaUsers, data: designations },
-    { id: 'complaint-types', label: 'Complaint Types', labelHi: 'शिकायत प्रकार', icon: FaFileAlt, data: complaintTypes },
-    { id: 'rejection-reasons', label: 'Rejection Reasons', labelHi: 'अस्वीकृति कारण', icon: FaFileAlt, data: rejectionReasons },
+    { id: 'districts', label: 'Districts', labelHi: 'जिले', icon: FaMapMarkerAlt, data: districts, iconColor: 'text-red-600' },
+    { id: 'departments', label: 'Departments', labelHi: 'विभाग', icon: FaBuilding, data: departments, iconColor: 'text-blue-600' },
+    { id: 'subjects', label: 'Subjects', labelHi: 'विषय', icon: FaFileAlt, data: subjects, iconColor: 'text-green-600' },
+    { id: 'designations', label: 'Designations', labelHi: 'पदनाम', icon: FaUsers, data: designations, iconColor: 'text-purple-600' },
+    { id: 'complaint-types', label: 'Complaint Types', labelHi: 'शिकायत प्रकार', icon: FaFileAlt, data: complaintTypes, iconColor: 'text-orange-600' },
+    { id: 'rejection-reasons', label: 'Rejection Reasons', labelHi: 'अस्वीकृति कारण', icon: FaFileAlt, data: rejectionReasons, iconColor: 'text-pink-600' },
   ];
 
   const MasterDataTable = ({ data, title }) => (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="px-4 sm:px-6 py-3 border-b flex items-center justify-between">
         <div className="flex items-center gap-2 text-lg font-semibold">
-          <FaDatabase className="w-5 h-5" />
+          <FaDatabase className="w-5 h-5 text-indigo-600" />
           {title}
         </div>
         <button
@@ -115,7 +185,7 @@ const MasterData = () => {
                 )}
                 <td className="py-2 sm:py-3 px-2 sm:px-3">
                   <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-medium ${
+                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                       item.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                     }`}
                   >
@@ -126,10 +196,10 @@ const MasterData = () => {
                 <td className="py-2 sm:py-3 px-2 sm:px-3">
                   <div className="flex gap-2">
                     <button className="px-2 py-1 border rounded text-xs hover:bg-gray-50">
-                      <FaEdit className="w-3 h-3" />
+                      <FaEdit className="w-3 h-3 text-blue-600" />
                     </button>
                     <button className="px-2 py-1 border rounded text-xs hover:bg-gray-50">
-                      <FaTrash className="w-3 h-3" />
+                      <FaTrash className="w-3 h-3 text-red-600" />
                     </button>
                   </div>
                 </td>
@@ -143,7 +213,7 @@ const MasterData = () => {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
-            <div className="px-4 py-3 border-b text-lg font-semibold">Add New {title}</div>
+            <div className="px-4 py-3 border-b text-lg font-semibold">Add New {activeTab}</div>
             <div className="p-4 space-y-3">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name (English)</label>
@@ -192,7 +262,7 @@ const MasterData = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Master Data / मास्टर डेटा</h1>
           <button className="inline-flex items-center gap-2 px-3 py-2 border rounded-md text-sm hover:bg-gray-50">
-            <FaDatabase className="w-4 h-4" />
+            <FaDatabase className="w-4 h-4 text-slate-600" />
             Backup Data
           </button>
         </div>
@@ -212,7 +282,7 @@ const MasterData = () => {
                       activeTab === tab.id ? "bg-white text-gray-900 shadow-sm" : ""
                     }`}
                   >
-                    <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Icon className={`w-3 h-3 sm:w-4 sm:h-4 ${tab.iconColor}`} />
                     <span className="hidden md:inline text-xs lg:text-sm">{tab.label}</span>
                   </button>
                 );
