@@ -55,7 +55,7 @@ class CommonController extends Controller
 
     
 
-       public function addDistrict(Request $request)S
+       public function addDistrict(Request $request)
     {
         // dd($request->all());
         $validation = Validator::make($request->all(), [
@@ -82,7 +82,7 @@ class CommonController extends Controller
         $district->district_name = $request->district_name;
         $district->dist_name_hi= $request->dist_name_hi;
         $district->district_code= $request->district_code;
-        $district->status = 1;
+        
     
         $district->save(); // ✅ Insert into DB
 
@@ -123,7 +123,7 @@ class CommonController extends Controller
          if(!$district){
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid district ID.'
+                'message' => 'Invalid district ID.',
             ], 400);
 
         }
@@ -131,7 +131,6 @@ class CommonController extends Controller
         $district->district_name = $request->district_name;
         $district->dist_name_hi= $request->dist_name_hi;
         $district->district_code= $request->district_code;
-        $district->status = 1;
         $district->save(); // ✅ Insert into DB
 
         return response()->json([

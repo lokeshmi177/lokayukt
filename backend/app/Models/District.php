@@ -8,7 +8,7 @@ class District extends Model
 {
     protected $table = 'district_master';
 
-    protected $primaryKey = 'district_code'; 
+    // protected $primaryKey = 'district_code'; 
 
     public $timestamps = false; 
 
