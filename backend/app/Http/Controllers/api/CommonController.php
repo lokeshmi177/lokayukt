@@ -55,19 +55,19 @@ class CommonController extends Controller
 
     
 
-       public function addDistrct(Request $request)
+       public function addDistrict(Request $request)S
     {
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'district_name' => 'required|string|max:150',
-            'dist_name_hi' => 'string|max:150',
-            'district_code' => 'string|max:150',
+            'dist_name_hi' => 'required|string|max:150',
+            'district_code' => 'required|string|max:150',
          
           
         ], [
             'district_name.required' => 'District Name is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+            'dist_name_hi.required' => 'Distric Name in Hindi is required.',
+            'district_code.required' => 'District code is required.',
            
         ]);
 
@@ -92,19 +92,20 @@ class CommonController extends Controller
             'data' => $district
         ], 201);
     }
-     public function editDistrct(Request $request,$id)
+     public function editDistrict(Request $request,$id)
     {
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'district_name' => 'required|string|max:150',
-            'dist_name_hi' => 'string|max:150',
-            'district_code' => 'string|max:150',
+            'dist_name_hi' => 'required|string|max:150',
+            'district_code' => 'required|string|max:150',
          
           
         ], [
-            'district_name.required' => 'District Name is required.',
-            // 'name_hindi.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+           'district_name.required' => 'District Name is required.',
+            'dist_name_hi.required' => 'Distric Name in Hindi is required.',
+            'district_code.required' => 'District code is required.',
+           
            
         ]);
 
@@ -122,7 +123,7 @@ class CommonController extends Controller
          if(!$district){
             return response()->json([
                 'status' => false,
-                'message' => 'Invalid department ID.'
+                'message' => 'Invalid district ID.'
             ], 400);
 
         }
@@ -144,13 +145,12 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_hindi' => 'string|max:150',
+            'name_hindi' => 'required|string|max:150',
          
           
         ], [
             'name.required' => 'Name is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+            'name_h.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -179,13 +179,12 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
          
           
         ], [
-            'name.required' => 'Name is required.',
-            // 'name_hindi.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+             'name.required' => 'Name is required.',
+            'name_h.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -224,16 +223,14 @@ class CommonController extends Controller
 
      public function addDesignation(Request $request)
     {
-        // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
          
           
         ], [
             'name.required' => 'Name is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+            'name_h.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -262,13 +259,12 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
          
           
         ], [
-            'name.required' => 'Name is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+             'name.required' => 'Name is required.',
+            'name_h.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -306,16 +302,15 @@ class CommonController extends Controller
 
         public function addSubject(Request $request)
     {
-        // dd($request->all());
+
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
          
           
         ], [
             'name.required' => 'Name is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+            'name_h.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -344,13 +339,12 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
          
           
         ], [
             'name.required' => 'Name is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
+            'name_h.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -391,15 +385,14 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
             'description' => 'required|string|max:500',
          
           
         ], [
             'name.required' => 'Name is required.',
+            'name_h.required' => 'Name in Hindi is required.',
             'name.description' => 'Description is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
            
         ]);
 
@@ -429,15 +422,14 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
             'description' => 'required|string|max:500',
          
           
         ], [
-            'name.required' => 'Name is required.',
+             'name.required' => 'Name is required.',
+            'name_h.required' => 'Name in Hindi is required.',
             'discription.required' => 'Discription is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
            
         ]);
 
@@ -479,15 +471,14 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
             'description' => 'required|string|max:500',
          
           
         ], [
             'name.required' => 'Name is required.',
+            'name_h.required' => 'Name in Hindi is required.',
             'name.description' => 'Description is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
            
         ]);
 
@@ -514,18 +505,16 @@ class CommonController extends Controller
     }
      public function editRejection(Request $request,$id)
     {
-        // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'string|max:150',
+            'name_h' => 'required|string|max:150',
             'description' => 'required|string|max:500',
          
           
         ], [
             'name.required' => 'Name is required.',
+            'name_h.required' => 'Name in Hindi is required.',
             'discription.required' => 'Discription is required.',
-            // 'name_h.required' => 'Name is required.',
-            // 'status.digits' => 'Status must be a digit.',
            
         ]);
 
@@ -561,4 +550,5 @@ class CommonController extends Controller
             'data' => $rejectionReason
         ], 200);
     }
+
 }
