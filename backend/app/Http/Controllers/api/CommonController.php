@@ -17,7 +17,7 @@ class CommonController extends Controller
 {
     public function fetch_district(){
 
-        $district=District::get();
+        $district=District::orderBy('district_name', 'asc')->get();
         // dd($district->toArray());
         return ApiResponse::generateResponse('success','District fetch successfully',$district);
     }

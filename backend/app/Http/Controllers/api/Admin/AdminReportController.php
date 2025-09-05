@@ -174,7 +174,45 @@ class AdminReportController extends Controller
            ]);
     }
 
-    
+    //  public function allComplainsPending(){
+       
+    //        $query = DB::table('complaints')
+    //        ->where('status','In Progress');
+    //       $complainDetails = $query->count();
+    //     // dd($deadpersondetails);
+
+    //       return response()->json([
+    //            'status' => true,
+    //            'message' => 'Records Fetch successfully',
+    //            'data' => $complainDetails,
+    //        ]);
+    // }
+
+    //  public function allComplainsApproved(){
+    //            $query = DB::table('complaints')
+    //        ->where('status','Disposed - Accepted');
+    //       $complainDetails = $query->count();
+    //     // dd($deadpersondetails);
+
+    //       return response()->json([
+    //            'status' => true,
+    //            'message' => 'Records Fetch successfully',
+    //            'data' => $complainDetails,
+    //        ]);
+    // }
+
+    //  public function allComplainsRejected(){
+    //           $query = DB::table('complaints')
+    //        ->where('status','Rejected');
+    //       $complainDetails = $query->count();
+    //     // dd($deadpersondetails);
+
+    //       return response()->json([
+    //            'status' => true,
+    //            'message' => 'Records Fetch successfully',
+    //            'data' => $complainDetails,
+    //        ]);
+    // }
 
     public function complainDistrictWise()
     {
