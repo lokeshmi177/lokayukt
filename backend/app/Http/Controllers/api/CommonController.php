@@ -61,7 +61,7 @@ class CommonController extends Controller
         $validation = Validator::make($request->all(), [
             'district_name' => 'required|string|max:150',
             'dist_name_hi' => 'required|string|max:150',
-            'district_code' => 'required|string|max:150',
+            'district_code' => 'required',
          
           
         ], [
@@ -98,7 +98,7 @@ class CommonController extends Controller
         $validation = Validator::make($request->all(), [
             'district_name' => 'required|string|max:150',
             'dist_name_hi' => 'required|string|max:150',
-            'district_code' => 'required|string|max:150',
+            'district_code' => 'required',
          
           
         ], [
@@ -139,7 +139,27 @@ class CommonController extends Controller
             'data' => $district
         ], 200);
     }
-       public function addDepartment(Request $request)
+
+    public function removeDistrict(Request $request,$id)
+     {
+        $id = $request->id;
+        $district = District::find($id);
+        if (!$district) {
+            return response()->json([
+                'status' => false,
+                'message' => 'District not found.'
+            ], 404);
+        }
+        if($district->delete()){
+
+    return response()->json([
+                'status' => true,
+                'message' => 'District deleted successfully.'
+            ], 200);
+        }
+    }
+
+    public function addDepartment(Request $request)
     {
         // dd($request->all());
         $validation = Validator::make($request->all(), [
@@ -149,7 +169,7 @@ class CommonController extends Controller
           
         ], [
             'name.required' => 'Name is required.',
-            'name_h.required' => 'Name in Hindi is required.',
+            'name_hindi.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -178,12 +198,12 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'required|string|max:150',
+            'name_hindi' => 'required|string|max:150',
          
           
         ], [
              'name.required' => 'Name is required.',
-            'name_h.required' => 'Name in Hindi is required.',
+            'name_hindi.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -219,6 +239,24 @@ class CommonController extends Controller
         ], 200);
     }
 
+      public function removeDepartment(Request $request,$id)
+      {
+        $id = $request->id;
+        $department = Department::find($id);
+        if (!$department) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Department not found.'
+            ], 404);
+        }
+        if($department->delete()){
+
+            return response()->json([
+                        'status' => true,
+                        'message' => 'Department deleted successfully.'
+                    ], 200);
+        }
+    }
 
      public function addDesignation(Request $request)
     {
@@ -299,7 +337,27 @@ class CommonController extends Controller
         ], 200);
     }
 
-        public function addSubject(Request $request)
+    
+    public function removeDesignation(Request $request,$id)
+    {
+        $id = $request->id;
+        $designation = Designation::find($id);
+        if (!$designation) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Designation not found.'
+            ], 404);
+        }
+        if($designation->delete()){
+
+    return response()->json([
+                'status' => true,
+                'message' => 'Designation deleted successfully.'
+            ], 200);
+        }
+    }
+
+     public function addSubject(Request $request)
     {
 
         $validation = Validator::make($request->all(), [
@@ -377,6 +435,25 @@ class CommonController extends Controller
             'message' => 'Subject update successfully.',
             'data' => $subject
         ], 200);
+    }
+
+        public function removeSubject(Request $request,$id)
+         {
+        $id = $request->id;
+        $subject = Subjects::find($id);
+        if (!$subject) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Subject not found.'
+            ], 404);
+        }
+        if($subject->delete()){
+
+    return response()->json([
+                'status' => true,
+                'message' => 'Subject deleted successfully.'
+            ], 200);
+        }
     }
 
         public function addComplainType(Request $request)
@@ -465,6 +542,25 @@ class CommonController extends Controller
         ], 200);
     }
 
+    public function removeComplainType(Request $request,$id)
+     {
+        $id = $request->id;
+        $complainType = ComplainType::find($id);
+        if (!$complainType) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ComplainType not found.'
+            ], 404);
+        }
+        if($complainType->delete()){
+
+    return response()->json([
+                'status' => true,
+                'message' => 'ComplainType deleted successfully.'
+            ], 200);
+        }
+    }
+
          public function addRejection(Request $request)
     {
         // dd($request->all());
@@ -548,6 +644,25 @@ class CommonController extends Controller
             'message' => 'Rejection Reason update successfully.',
             'data' => $rejectionReason
         ], 200);
+    }
+
+    public function removeRejection(Request $request,$id)
+     {
+        $id = $request->id;
+        $rejection = RejectionReasons::find($id);
+        if (!$rejection) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Rejection not found.'
+            ], 404);
+        }
+        if($rejection->delete()){
+
+    return response()->json([
+                'status' => true,
+                'message' => 'Rejection deleted successfully.'
+            ], 200);
+        }
     }
 
 }
