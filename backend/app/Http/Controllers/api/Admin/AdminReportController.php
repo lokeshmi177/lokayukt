@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
@@ -29,7 +30,7 @@ class AdminReportController extends Controller
         // $subject = request()->query('subject') ?? null;
         // $designation = request()->query('designation') ?? null;
         $roleid = request()->query('des') ?? 'all';
-        $status = request()->query('status') ?? 'all';
+        $status = request()->query('status') ?? '';
        
         $districtData = DB::table('district_master')->orderBy('district_name')->get();
         // $departments = DB::table('departments')
@@ -127,9 +128,10 @@ class AdminReportController extends Controller
         //     $records->where('complaints.approved_rejected_by_sdm', 1);
         //     $records->where('complaints.approved_rejected_by_adm', $status);
         // }
-        // dd($records->get());
-        // $records = $records->get();
-        $records = $records->paginate(50);
+        // dd($records->toSql());
+        $records = $records->get();
+        // return json_encode($records->toSql());
+        // $records = $records->paginate(50);
         // $roles = Role::whereNotIn('id', [5, 6])->get();
         // dd($roles);
         // dd($districtData);
@@ -148,4 +150,88 @@ class AdminReportController extends Controller
         }
       
     }
+
+       public function allComplains(){
+
+           $query = DB::table('complaints');
+          $complainDetails = $query->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+     public function allComplainsPending(){
+       
+           $query = DB::table('complaints')
+           ->where('status','In Progress');
+          $complainDetails = $query->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+     public function allComplainsApproved(){
+               $query = DB::table('complaints')
+           ->where('status','Disposed - Accepted');
+          $complainDetails = $query->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+     public function allComplainsRejected(){
+              $query = DB::table('complaints')
+           ->where('status','Rejected');
+          $complainDetails = $query->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+    public function complainDistrictWise()
+    {
+       
+        $complainCounts = Complaint::select('district_master.district_name', DB::raw('count(*) as complain_count'))
+            ->join('district_master', 'complaints.district_id', '=', 'district_master.district_code')
+            ->groupBy('district_master.district_code', 'district_master.district_name')
+             
+            ->pluck('complain_count', 'district_master.district_name');
+       return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainCounts,
+           ]);
+    }
+
+      public function complainDepartmentWise()
+    {
+       
+        $complainCounts = Complaint::select('departments.name', DB::raw('count(*) as complain_count'))
+            ->join('departments', 'complaints.department_id', '=', 'departments.id')
+            ->groupBy('departments.id', 'departments.name')
+             
+            ->pluck('complain_count', 'departments.name');
+       return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainCounts,
+           ]);
+    }
+
 }

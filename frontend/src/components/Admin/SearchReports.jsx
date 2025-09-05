@@ -3,8 +3,6 @@ import React, { useState, useEffect } from "react";
 import {
   FaSearch,
   FaDownload,
-  FaFilter,
-  FaCalendarAlt,
   FaFileAlt,
   FaChartBar,
   FaSpinner,
@@ -12,6 +10,8 @@ import {
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+import Pagination from '../Pagination';
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -33,6 +33,10 @@ const SearchReports = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  
+  // Add pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Helper function to ensure array
   const ensureArray = (data) => Array.isArray(data) ? data : [];
@@ -41,41 +45,25 @@ const SearchReports = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        console.log("🚀 Starting to fetch initial data...");
-        
         // Fetch districts
-        console.log("📍 Fetching districts...");
         const districtsResponse = await api.get("/all-district");
-        console.log("📍 Districts API Response:", districtsResponse.data);
         
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
-          console.log("✅ Districts loaded:", districtsArray.length, "districts");
         }
 
         // Fetch ALL complaint reports
-        console.log("📋 Fetching complaint reports...");
         const reportsResponse = await api.get("/complain-report");
-        console.log("📋 Complaints API Response:", reportsResponse.data);
         
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
           setSearchResults(dataArray);
-          console.log("✅ Complaints loaded:", dataArray.length, "records");
-          console.log("📊 Sample complaint record:", dataArray[0]);
-          toast.success(`${dataArray.length} complaints loaded successfully`);
-        } else {
-          setSearchResults([]);
-          console.log("⚠️ No complaint data available");
-          toast.info("No data available");
         }
       } catch (error) {
-        console.error("❌ Error fetching initial data:", error);
-        console.error("❌ Error details:", error.response?.data || error.message);
-        toast.error("Error loading data");
         setSearchResults([]);
         setDistricts([]);
+        toast.error("Error loading data");
       }
     };
 
@@ -86,25 +74,19 @@ const SearchReports = () => {
   const handleSearch = async () => {
     setIsSearching(true);
     try {
-      console.log("🔄 Refreshing complaint data...");
       const response = await api.get("/complain-report");
-      console.log("🔄 Refresh API Response:", response.data);
       
       if (response.data.status === true) {
         const dataArray = ensureArray(response.data.data);
         setSearchResults(dataArray);
-        console.log("✅ Data refreshed:", dataArray.length, "records");
-        toast.success(`${dataArray.length} results refreshed`);
+        setCurrentPage(1);
       } else {
         setSearchResults([]);
-        console.log("⚠️ No results found in refresh");
-        toast.info("No results found");
+        toast.warning("No data found");
       }
     } catch (error) {
-      console.error("❌ Search error:", error);
-      console.error("❌ Search error details:", error.response?.data || error.message);
-      toast.error("Error fetching complaint reports");
       setSearchResults([]);
+      toast.error("Error fetching data");
     } finally {
       setIsSearching(false);
     }
@@ -121,10 +103,13 @@ const SearchReports = () => {
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  // Real-time filtering
+  // ✅ CORRECTED FILTERING LOGIC - Fixed district matching
   const filteredResults = ensureArray(searchResults).filter((result) => {
+    // Search filter
     const matchesSearch = 
       searchTerm === "" ||
+      (result.complain_no && 
+        result.complain_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (result.application_no && 
         result.application_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (result.name && 
@@ -136,26 +121,32 @@ const SearchReports = () => {
       (result.district_name && 
         result.district_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesDistrict =
-      selectedDistrict === "all" ||
-      result.district_id?.toString() === selectedDistrict;
+    // ✅ FIXED: District filtering - Properly scoped variable
+    let matchesDistrict = true;
+    if (selectedDistrict !== "all") {
+      const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
+      if (selectedDistrictObj) {
+        matchesDistrict = result.district_id.toString() === selectedDistrictObj.district_code;
+      } else {
+        matchesDistrict = false;
+      }
+    }
 
-    const matchesStatus =
-      selectedStatus === "all" || result.status === selectedStatus;
+    // Status filter
+    const matchesStatus = selectedStatus === "all" || result.status === selectedStatus;
 
     return matchesSearch && matchesDistrict && matchesStatus;
   });
 
-  // Debug filtered results
+  // Reset current page when filters change
   useEffect(() => {
-    console.log("🔍 Current filters:", {
-      searchTerm,
-      selectedDistrict,
-      selectedStatus,
-      totalRecords: ensureArray(searchResults).length,
-      filteredCount: filteredResults.length
-    });
-  }, [searchTerm, selectedDistrict, selectedStatus, searchResults, filteredResults.length]);
+    setCurrentPage(1);
+  }, [searchTerm, selectedDistrict, selectedStatus]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredResults.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedResults = filteredResults.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // Report stats calculation
   const reportStats = {
@@ -170,6 +161,17 @@ const SearchReports = () => {
         r.status === "Under Investigation" ||
         r.status === "Pending"
     ).length,
+  };
+
+  // ✅ Helper function to get selected district info for display
+  const getSelectedDistrictInfo = () => {
+    if (selectedDistrict === "all") {
+      return "All Districts";
+    }
+    const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
+    return selectedDistrictObj ? 
+      `${selectedDistrictObj.district_name} (Code: ${selectedDistrictObj.district_code})` : 
+      "Unknown District";
   };
 
   return (
@@ -256,33 +258,27 @@ const SearchReports = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="p-3 sm:p-6 overflow-hidden">
+            <div className=" overflow-hidden">
               {/* Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
                     {/* Search Criteria */}
-                    <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div className="bg-white p-3 sm:p-4   shadow-sm">
                       <div className="flex items-center gap-2 mb-3">
                         <FaSearch className="w-4 h-4 text-blue-600" />
                         <h3 className="text-sm sm:text-base font-semibold text-gray-900">
-                          Search & Filter ({ensureArray(searchResults).length} records loaded)
+                          Search & Filter
                         </h3>
                       </div>
 
                       <div className="space-y-3">
                         {/* Search Term */}
                         <div className="w-full">
-                          <label
-                            htmlFor="search-term"
-                            className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-                          >
-                            Search Term (Real-time filtering)
-                          </label>
                           <input
                             id="search-term"
                             type="text"
-                            placeholder="Type to filter: Application No., Name, Officer, Department, District..."
+                            placeholder="Search by Application No., Name, Officer, Department, District..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-2.5 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -292,12 +288,6 @@ const SearchReports = () => {
                         {/* Filters */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
-                            <label
-                              htmlFor="district"
-                              className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-                            >
-                              Filter by District
-                            </label>
                             <select
                               id="district"
                               value={selectedDistrict}
@@ -306,7 +296,7 @@ const SearchReports = () => {
                             >
                               <option value="all">All Districts ({ensureArray(districts).length} total)</option>
                               {ensureArray(districts).map((district) => (
-                                <option key={district.id} value={district.id}>
+                                <option key={district.id} value={district.id.toString()}>
                                   {district.district_name} - {district.dist_name_hi}
                                 </option>
                               ))}
@@ -314,12 +304,6 @@ const SearchReports = () => {
                           </div>
 
                           <div>
-                            <label
-                              htmlFor="status"
-                              className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-                            >
-                              Filter by Status
-                            </label>
                             <select
                               id="status"
                               value={selectedStatus}
@@ -337,9 +321,6 @@ const SearchReports = () => {
                           </div>
 
                           <div className="sm:col-span-1">
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                              Refresh Data
-                            </label>
                             <button
                               onClick={handleSearch}
                               disabled={isSearching}
@@ -363,13 +344,15 @@ const SearchReports = () => {
                             </button>
                           </div>
                         </div>
+
+                        {/* Filter Status Display */}
+                      
                       </div>
                     </div>
 
                     {/* Search Results */}
-                    <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    <div className="bg-white p-3 sm:p-4  border-gray-200 shadow-sm overflow-hidden">
                       <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3">
-                        Filtered Results: {filteredResults.length} of {ensureArray(searchResults).length} total records
                       </h3>
 
                       {/* Table wrapper */}
@@ -384,9 +367,6 @@ const SearchReports = () => {
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complainant
                                 </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden md:table-cell">
-                                  Respondent
-                                </th>
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
                                   Department
                                 </th>
@@ -399,8 +379,8 @@ const SearchReports = () => {
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Status
                                 </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden sm:table-cell">
-                                  Entry Date
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Entry Data
                                 </th>
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Actions
@@ -408,23 +388,25 @@ const SearchReports = () => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
-                              {filteredResults.length > 0 ? (
-                                filteredResults.map((result, index) => (
+                              {paginatedResults.length > 0 ? (
+                                paginatedResults.map((result, index) => (
                                   <tr key={result.id || index} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
-                                      {result.application_no || "N/A"}
+                                      {result.complain_no || result.application_no || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.name || "N/A"}
-                                    </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden md:table-cell">
-                                      {result.officer_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
                                       {result.department_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      {result.district_name || "N/A"}
+                                      <span 
+                                        className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" 
+                                        title={`District Code: ${result.district_id}`}
+                                      >
+                                        {result.district_name || "N/A"}
+                                      </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <span
@@ -446,8 +428,14 @@ const SearchReports = () => {
                                         {result.status || "N/A"}
                                       </span>
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-600 hidden sm:table-cell">
-                                      {result.created_at || "N/A"}
+                                    <td className="py-2 px-2 sm:px-3">
+                                      <span
+                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${getStatusColor(
+                                          result.status
+                                        )}`}
+                                      >
+                                        {result.created_at || "N/A"}
+                                      </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <button className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors">
@@ -459,9 +447,9 @@ const SearchReports = () => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="9" className="py-8 text-center text-gray-500">
+                                  <td colSpan="7" className="py-8 text-center text-gray-500">
                                     {searchTerm || selectedDistrict !== "all" || selectedStatus !== "all"
-                                      ? "No results match your filter criteria."
+                                      ? "No results match your filter criteria. Try adjusting your filters."
                                       : "No data available. Click Refresh to load data."}
                                   </td>
                                 </tr>
@@ -470,6 +458,20 @@ const SearchReports = () => {
                           </table>
                         </div>
                       </div>
+
+                      {/* Pagination */}
+                      {totalPages > 1 && (
+                        <div className="mt-4">
+                          <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                            totalItems={filteredResults.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            showInfo={true}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -478,7 +480,7 @@ const SearchReports = () => {
               {/* General Reports Tab */}
               {activeTab === "general" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                  <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 overflow-hidden">
+                  <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6   overflow-hidden">
                     {/* KPI cards */}
                     <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
@@ -524,7 +526,7 @@ const SearchReports = () => {
                         <div className="space-y-3">
                           {ensureArray(districts).slice(0, 10).map((district) => {
                             const count = ensureArray(searchResults).filter(
-                              (r) => r.district_id === district.id
+                              (r) => r.district_id.toString() === district.district_code
                             ).length;
                             return (
                               <div key={district.id} className="flex justify-between items-center">
