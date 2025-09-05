@@ -1,7 +1,7 @@
 // components/Layout.js
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
+import Sidebar from "./Sidebar"
 import Header from './Header';
 
 const Layout = () => {
@@ -49,7 +49,7 @@ const Layout = () => {
         isCollapsed={isCollapsed}
       />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
+        <Sidebar
           isMobileMenuOpen={isMobileMenuOpen} 
           toggleMobileMenu={toggleMobileMenu} 
           isCollapsed={isCollapsed}
