@@ -153,9 +153,19 @@ class AdminReportController extends Controller
 
        public function allComplains(){
 
-           $query = DB::table('complaints');
-          $complainDetails = $query->get();
+        //    $query = DB::table('complaints');
+        //   $complainDetails = $query->count();
         // dd($deadpersondetails);
+
+       $complainDetails =  DB::table('complaints as cm')
+                ->select(
+                    DB::raw('COUNT(cm.id) as total_complaints'),
+                    DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
+                    DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending"),
+                      DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected")
+                )->first();
+            
+           
 
           return response()->json([
                'status' => true,
@@ -164,45 +174,7 @@ class AdminReportController extends Controller
            ]);
     }
 
-     public function allComplainsPending(){
-       
-           $query = DB::table('complaints')
-           ->where('status','In Progress');
-          $complainDetails = $query->get();
-        // dd($deadpersondetails);
-
-          return response()->json([
-               'status' => true,
-               'message' => 'Records Fetch successfully',
-               'data' => $complainDetails,
-           ]);
-    }
-
-     public function allComplainsApproved(){
-               $query = DB::table('complaints')
-           ->where('status','Disposed - Accepted');
-          $complainDetails = $query->get();
-        // dd($deadpersondetails);
-
-          return response()->json([
-               'status' => true,
-               'message' => 'Records Fetch successfully',
-               'data' => $complainDetails,
-           ]);
-    }
-
-     public function allComplainsRejected(){
-              $query = DB::table('complaints')
-           ->where('status','Rejected');
-          $complainDetails = $query->get();
-        // dd($deadpersondetails);
-
-          return response()->json([
-               'status' => true,
-               'message' => 'Records Fetch successfully',
-               'data' => $complainDetails,
-           ]);
-    }
+    
 
     public function complainDistrictWise()
     {
@@ -232,6 +204,47 @@ class AdminReportController extends Controller
                'message' => 'Records Fetch successfully',
                'data' => $complainCounts,
            ]);
+    }
+
+   
+       public function getMontlyTrends(){
+        // $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        // for ($j = 1; $j <= 12; $j++) {      
+        // $months[] = date('M', mktime(0, 0, 0, $j, 10));
+        // }
+         $complaintData = DB::table('complaints as cm')
+    ->select(
+    
+        DB::raw('MONTH(created_at) as month, COUNT(*) as count'),
+        DB::raw('COUNT(cm.id) as total_complaints'),
+        DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
+        DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending")
+    )
+  
+    ->groupBy('month')
+    // ->having('total_applications', '>', 0)
+    ->orderBy('cm.name')
+    ->limit(10)
+    ->get();
+    $complaintData = $complaintData->map(function ($item) {
+        if($item->total_complaints){
+   return [
+                'month' => date('F', mktime(0, 0, 0, $item->month, 10)),
+                'year' => now()->year,
+                // 'total_complaints' => $item->total_complaints,
+                'approved' => $item->total_approved,
+                'pending' => $item->total_pending,
+            ];
+        }
+         
+        })->toArray();
+
+           return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' =>  $complaintData,
+        ]);
+
     }
 
 }

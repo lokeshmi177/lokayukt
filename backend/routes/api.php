@@ -78,12 +78,11 @@ Route::post('/delete-rejection/{id}',[CommonController::class,'removeRejection']
 
 Route::get('/complain-report',[AdminReportController::class,'complainReports']);
 Route::post('/all-complains',[AdminReportController::class,'allComplains']);
-Route::post('/pending-complains',[AdminReportController::class,'allComplainsPending']);
-Route::post('/approved-complains',[AdminReportController::class,'allComplainsApproved']);
-Route::post('/rejected-complains',[AdminReportController::class,'allComplainsRejected']);
+
 
 Route::get('/district-wise-complaint',[AdminReportController::class,'complainDistrictWise']);
 Route::get('/department-wise-complaint',[AdminReportController::class,'complainDepartmentWise']);
+Route::get('/montly-trends',[AdminReportController::class,'getMontlyTrends']);
 
 
 
