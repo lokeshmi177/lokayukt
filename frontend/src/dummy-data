@@ -1,5 +1,37 @@
-// 'lok_nirman','education','health','police'// departmenet
-// 'collector','ceo','engineer' //designation
-// 'class_1','class_2' // category
-// 'corruption','delay_in_work','misbehavior','rule_violation' // subject
-// 'allegation','grievance' // nature
+// // Admin components
+// import AdminLayout from "./admin/Layout";
+// import AdminDashboard from "./admin/Dashboard";
+// import AdminComplaints from "./admin/Complaints";
+
+// // Manager components
+// import ManagerLayout from "./manager/Layout";
+// import ManagerDashboard from "./manager/Dashboard";
+// import ManagerComplaints from "./manager/Complaints";
+
+// function App() {
+//   const roleId = localStorage.getItem("roleId");
+
+//   return (
+//     <Routes>
+//       {/* Login */}
+//       <Route path="/" element={<Login />} />
+//       <Route path="/login" element={<Login />} />
+
+//       {/* Admin routes */}
+//       {roleId === "1" && (
+//         <Route path="/" element={<AdminLayout />}>
+//           <Route path="dashboard" element={<AdminDashboard />} />
+//           <Route path="complaints" element={<AdminComplaints />} />
+//         </Route>
+//       )}
+
+//       {/* Manager routes */}
+//       {roleId === "2" && (
+//         <Route path="/" element={<ManagerLayout />}>
+//           <Route path="dashboard" element={<ManagerDashboard />} />
+//           <Route path="complaints" element={<ManagerComplaints />} />
+//         </Route>
+//       )}
+//     </Routes>
+//   );
+// }

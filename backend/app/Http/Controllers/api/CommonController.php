@@ -61,7 +61,7 @@ class CommonController extends Controller
         $validation = Validator::make($request->all(), [
             'district_name' => 'required|string|max:150',
             'dist_name_hi' => 'required|string|max:150',
-            'district_code' => 'required|string|max:150',
+            'district_code' => 'required',
          
           
         ], [
@@ -98,7 +98,7 @@ class CommonController extends Controller
         $validation = Validator::make($request->all(), [
             'district_name' => 'required|string|max:150',
             'dist_name_hi' => 'required|string|max:150',
-            'district_code' => 'required|string|max:150',
+            'district_code' => 'required',
          
           
         ], [
@@ -149,7 +149,7 @@ class CommonController extends Controller
           
         ], [
             'name.required' => 'Name is required.',
-            'name_h.required' => 'Name in Hindi is required.',
+            'name_hindi.required' => 'Name in Hindi is required.',
            
         ]);
 
@@ -178,12 +178,12 @@ class CommonController extends Controller
         // dd($request->all());
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:150',
-            'name_h' => 'required|string|max:150',
+            'name_hindi' => 'required|string|max:150',
          
           
         ], [
              'name.required' => 'Name is required.',
-            'name_h.required' => 'Name in Hindi is required.',
+            'name_hindi.required' => 'Name in Hindi is required.',
            
         ]);
 

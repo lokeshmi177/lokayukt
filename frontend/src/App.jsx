@@ -1,33 +1,51 @@
 // App.js
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Layout from './components/Layout';
-import Dashboard from './components/Dashboard';
-import Complaints from './components/Complaints';
-import ProgressRegister from './components/ProgressRegister';
-import SearchReports from './components/SearchReports';
-import UserManagement from './components/UserManagement';
-import MasterData from './components/MasterData';
-import Login from './components/Login';  // <-- login component import
-import AddUserManagement from './components/AddUserManagement';
+import AdminLayout from './components/Admin/Layout';
+import AdminDashboard from './components/Admin/Dashboard';
+import AdminComplaints from './components/Admin/Complaints';
+import AdminProgressRegister from './components/Admin/ProgressRegister';
+import AdminSearchReports from './components/Admin/SearchReports';
+import AdminUserManagement from './components/Admin/UserManagement';
+import AdminMasterData from './components/Admin/MasterData';
+import AdminAddUserManagement from './components/Admin/AddUserManagement';
+import Login from './components/Login';  // 
 
 function App() {
+    // const roleId = localStorage.getItem("roleId");
   return (
     <Routes>
       {/* Root / pe login page */}
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
 
-      {/* Layout ke andar wale routes */}
-      <Route path="/" element={<Layout />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="complaints" element={<Complaints />} />
-        <Route path="progress-register" element={<ProgressRegister />} />
-        <Route path="search-reports" element={<SearchReports />} />
-        <Route path="user-management" element={<UserManagement />} />
-        <Route path="user-management/add" element={<AddUserManagement />} />
-        <Route path="master-data" element={<MasterData />} />
+
+ {/* {roleId === "1" && (
+
+   )} */}
+      
+      {/* Admin */}
+      <Route path="/" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="complaints" element={<AdminComplaints />} />
+        <Route path="progress-register" element={<AdminProgressRegister />} />
+        <Route path="search-reports" element={<AdminSearchReports />} />
+        <Route path="user-management" element={<AdminUserManagement />} />
+        <Route path="user-management/add" element={<AdminAddUserManagement />} />
+        <Route path="master-data" element={<AdminMasterData />} />
       </Route>
+      
+
+       {/* Operator */}
+      {/* <Route path="/" element={<OperatorLayout />}>
+        <Route path="dashboard" element={<OperatorDashboard />} />
+        <Route path="complaints" element={<OperatorComplaints />} />
+        <Route path="progress-register" element={<OperatorProgressRegister />} />
+        <Route path="search-reports" element={<OperatorSearchReports />} />
+        <Route path="user-management" element={<OperatorUserManagement />} />
+        <Route path="user-management/add" element={<OperatorAddUserManagement />} />
+        <Route path="master-data" element={<OperatorMasterData />} />
+      </Route> */}
     </Routes>
   );
 }
