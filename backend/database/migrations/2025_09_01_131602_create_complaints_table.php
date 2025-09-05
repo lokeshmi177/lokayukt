@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('mobile', 15);
             $table->string('address');
-            $table->foreignId('district_id')->constrained('district_master')->onDelete('cascade');
+            $table->foreignId('district_id');
             $table->string('email')->unique();
             $table->decimal('amount', 10, 2)->nullable();
             $table->string('challan_no')->nullable();

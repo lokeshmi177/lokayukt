@@ -4,115 +4,148 @@ namespace App\Http\Controllers\api\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Auth;
-use DB;
+use Illuminate\Support\Facades\DB;
 use App\Models\Role;
+use Illuminate\Support\Facades\Auth;
 
 class AdminReportController extends Controller
 {
-    //   public function complainReports()
-    // {
-    //     $user_id = Auth::id();
-    //     if (empty($user_id)) {
-    //         return redirect()->route('login')->with('error', 'Unauthorised Request.');
-    //     }
-    //     $role_id = 'all';
-    //     // $districtId = $district_id = auth()->user()->district_id ? auth()->user()->district_id : '';
-    //     //dd($roleid);
-    //     $districtId = request()->query('district') ?? null;
-    //     $tehsilId = request()->query('tehsil');
-    //     $blockId = request()->query('block');
-    //     $roleid = request()->query('des') ?? 'all';
-    //     $status = request()->query('type') ?? 'all';
-    //     $districtData = DB::table('district_master')->orderBy('dist_name')->get();
-    //     $tahsils = DB::table('tehsil_master')
-    //         ->select('tehsil_code', 'tehsil_name')
-    //         ->orderBy('tehsil_name')
-    //         ->get();
-    //     $blocks = DB::table('block_master')
-    //         ->select('block_code', 'block_name')
-    //         ->orderBy('block_name')
-    //         ->get();
-    //     $records = DB::table('housing_details')
-    //         ->leftJoin('district_master as dd', DB::raw("housing_details.district_id COLLATE utf8mb4_unicode_ci"), '=', DB::raw("dd.district_code COLLATE utf8mb4_unicode_ci"))
-    //         ->leftJoin('tehsil_master as td', DB::raw("housing_details.tahsil_id COLLATE utf8mb4_unicode_ci"), '=', DB::raw("td.tehsil_code COLLATE utf8mb4_unicode_ci"))
-    //         ->leftJoin('block_master as bd', 'housing_details.block_id', '=', 'bd.id')
-    //         ->leftJoin('m_tbl_relieftype as rf', 'housing_details.relief_type', '=', 'rf.id')
-    //          ->leftJoin('disastertype', 'housing_details.cause_of_death', '=', 'disastertype.Id')
-    //         ->select(
-    //             // 'housing_details.*',
-    //             'housing_details.name as housing_details_name',
-    //             'housing_details.application_no',
-    //             'housing_details.application_status',
-    //             'housing_details.id',
-    //             'housing_details.name',
-    //             'housing_details.address',
-    //             'housing_details.cause_of_death',
-    //             'housing_details.disaster_date',
-    //             'housing_details.approved_rejected_by_ri',
-    //             'housing_details.approved_rejected_by_naibtahsildar',
-    //             'housing_details.approved_rejected_by_tahsildar',
-    //             'housing_details.approved_rejected_by_sdm',
-    //             'housing_details.approved_rejected_by_adm',
-    //             'dd.dist_name as housing_details_district',
-    //             'td.tehsil_name as housing_details_tehsil',
-    //             'bd.block_name as housing_details_block',
-    //             'rf.ReliefSubType as relief_type',
-    //             'rf.damage_type as damage',
-    //             'rf.house_type as house',
-    //             'rf.PermissibleAmount as amount',
-    //             'disastertype.DisasterType as cause',
-    //             'disastertype.DisasterType_H as cause_h',
-    //         );
-    //     if (!empty($districtId)) {
-    //         $records->where('housing_details.district_id', $districtId);
-    //     }
-    //     if ($tehsilId) {
-    //         $records->where('housing_details.tahsil_id', $tehsilId);
-    //     }
-    //     if ($blockId) {
-    //         $records->where('housing_details.block_id', $blockId);
-    //     }
-    //     if (!empty($roleid) && $roleid == '7') {
-    //         $records->where('housing_details.approved_rejected_by_ri', $status);
-    //         $records->where('housing_details.approved_rejected_by_naibtahsildar', 0);
-    //         $records->where('housing_details.approved_rejected_by_tahsildar', 0);
-    //         $records->where('housing_details.approved_rejected_by_sdm', 0);
-    //         $records->where('housing_details.approved_rejected_by_adm', 0);
-    //     }
-    //     if (!empty($roleid) && $roleid == '8') {
-    //         $records->where('housing_details.approved_rejected_by_ri', 1);
-    //         $records->where('housing_details.approved_rejected_by_naibtahsildar', $status);
-    //         $records->where('housing_details.approved_rejected_by_tahsildar', 0);
-    //         $records->where('housing_details.approved_rejected_by_sdm', 0);
-    //         $records->where('housing_details.approved_rejected_by_adm', 0);
-    //     }
-    //     if (!empty($roleid) && $roleid == '9') {
-    //         $records->where('housing_details.approved_rejected_by_ri', 1);
-    //         $records->where('housing_details.approved_rejected_by_naibtahsildar', 1);
-    //         $records->where('housing_details.approved_rejected_by_tahsildar', $status);
-    //         $records->where('housing_details.approved_rejected_by_sdm', 0);
-    //         $records->where('housing_details.approved_rejected_by_adm', 0);
-    //     }
-    //     if (!empty($roleid) && $roleid == '10') {
-    //         $records->where('housing_details.approved_rejected_by_ri', 1);
-    //         $records->where('housing_details.approved_rejected_by_naibtahsildar', 1);
-    //         $records->where('housing_details.approved_rejected_by_tahsildar', 1);
-    //         $records->where('housing_details.approved_rejected_by_sdm', $status);
-    //         $records->where('housing_details.approved_rejected_by_adm', 0);
-    //     }
-    //     if (!empty($roleid) && $roleid == '11') {
-    //         $records->where('housing_details.approved_rejected_by_ri', 1);
-    //         $records->where('housing_details.approved_rejected_by_naibtahsildar', 1);
-    //         $records->where('housing_details.approved_rejected_by_tahsildar', 1);
-    //         $records->where('housing_details.approved_rejected_by_sdm', 1);
-    //         $records->where('housing_details.approved_rejected_by_adm', $status);
-    //     }
-    //     // dd($records->get());
-    //     $records = $records->paginate(50);
-    //     $roles = Role::whereNotIn('id', [5, 6])->get();
-    //     // dd($roles);
-    //     // dd($districtData);
-    //     return view('admin.reports.admin_pendency_report', compact('districtId', 'status', 'roleid', 'records', 'districtData', 'blockId', 'tehsilId', 'districtId', 'roles', 'tahsils', 'blocks'));
-    // }
+      public function complainReports()
+    {
+        // $user_id = Auth::id();
+        // if (empty($user_id)) {
+        //    return response()->json([
+        //         'status' => false,
+        //         'errors' => 'User id not found'
+        //     ], 422);
+        // }
+        $role_id = 'all';
+        // $districtId = $district_id = auth()->user()->district_id ? auth()->user()->district_id : '';
+        //dd($roleid);
+        $districtId = request()->query('district') ?? null;
+        $search = request()->query('search') ?? null;
+        // $complaintype = request()->query('complaintype') ?? null;
+        // $department = request()->query('department') ?? null;
+        // $subject = request()->query('subject') ?? null;
+        // $designation = request()->query('designation') ?? null;
+        $roleid = request()->query('des') ?? 'all';
+        $status = request()->query('status') ?? 'all';
+       
+        $districtData = DB::table('district_master')->orderBy('district_name')->get();
+        // $departments = DB::table('departments')
+        //     ->select('name', 'name_hi')
+        //     ->orderBy('name')
+        //     ->get();
+        // $designations = DB::table('designations')
+        //    ->select('name', 'name_hi')
+        //     ->orderBy('name')
+        //     ->get();
+        // $complaintypes = DB::table('complaintype')
+        //      ->select('name', 'name_hi')
+        //     ->orderBy('name')
+        //     ->get();
+        // $subjects = DB::table('subjects')
+        //      ->select('name', 'name_hi')
+        //     ->orderBy('name')
+        //     ->get();
+        $records = DB::table('complaints')
+            ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+            ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
+            ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
+            ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
+            ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+            
+            ->select(
+                'complaints.*',
+                'dd.district_name as district_name',
+                'dp.name as department_name',
+                'ds.name as designation_name',
+                'ct.name as complaintype_name',
+                'sub.name as subject_name',
+            );
+        if (!empty($districtId)) {
+            $records->where('complaints.district_id', $districtId);
+        }
+
+   
+        if (!empty($status)) {
+      
+            $records->where('complaints.status', $status);
+        }
+        
+        if (!empty($search)) {
+            $records->where(function ($q) use ($search) {
+                $q->where('complaints.application_no', 'like', "%{$search}%")
+                ->orWhere('complaints.name', 'like', "%{$search}%")
+                ->orWhere('complaints.mobile', 'like', "%{$search}%");
+            });
+        }
+        // if ($departments) {
+        //     $records->where('complaints.department_id', $department);
+        // }
+        // if ($designations) {
+        //     $records->where('complaints.designation_id', $designation);
+        // }
+        // if ($complaintypes) {
+        //     $records->where('complaints.complaintype_id', $complaintype);
+        // }
+        // if ($subjects) {
+        //     $records->where('complaints.subject_id', $subject);
+        // }
+        // if (!empty($roleid) && $roleid == '7') {
+        //     $records->where('complaints.approved_rejected_by_ri', $status);
+        //     $records->where('complaints.approved_rejected_by_naibtahsildar', 0);
+        //     $records->where('complaints.approved_rejected_by_tahsildar', 0);
+        //     $records->where('complaints.approved_rejected_by_sdm', 0);
+        //     $records->where('complaints.approved_rejected_by_adm', 0);
+        // }
+        // if (!empty($roleid) && $roleid == '8') {
+        //     $records->where('complaints.approved_rejected_by_ri', 1);
+        //     $records->where('complaints.approved_rejected_by_naibtahsildar', $status);
+        //     $records->where('complaints.approved_rejected_by_tahsildar', 0);
+        //     $records->where('complaints.approved_rejected_by_sdm', 0);
+        //     $records->where('complaints.approved_rejected_by_adm', 0);
+        // }
+        // if (!empty($roleid) && $roleid == '9') {
+        //     $records->where('complaints.approved_rejected_by_ri', 1);
+        //     $records->where('complaints.approved_rejected_by_naibtahsildar', 1);
+        //     $records->where('complaints.approved_rejected_by_tahsildar', $status);
+        //     $records->where('complaints.approved_rejected_by_sdm', 0);
+        //     $records->where('complaints.approved_rejected_by_adm', 0);
+        // }
+        // if (!empty($roleid) && $roleid == '10') {
+        //     $records->where('complaints.approved_rejected_by_ri', 1);
+        //     $records->where('complaints.approved_rejected_by_naibtahsildar', 1);
+        //     $records->where('complaints.approved_rejected_by_tahsildar', 1);
+        //     $records->where('complaints.approved_rejected_by_sdm', $status);
+        //     $records->where('complaints.approved_rejected_by_adm', 0);
+        // }
+        // if (!empty($roleid) && $roleid == '11') {
+        //     $records->where('complaints.approved_rejected_by_ri', 1);
+        //     $records->where('complaints.approved_rejected_by_naibtahsildar', 1);
+        //     $records->where('complaints.approved_rejected_by_tahsildar', 1);
+        //     $records->where('complaints.approved_rejected_by_sdm', 1);
+        //     $records->where('complaints.approved_rejected_by_adm', $status);
+        // }
+        // dd($records->get());
+        // $records = $records->get();
+        $records = $records->paginate(50);
+        // $roles = Role::whereNotIn('id', [5, 6])->get();
+        // dd($roles);
+        // dd($districtData);
+        if($records){
+            
+            return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $records,
+           ]);
+        }else{
+            return response()->json([
+               'status' => false,
+               'message' => 'No Records Found',
+           ]);
+        }
+      
+    }
 }

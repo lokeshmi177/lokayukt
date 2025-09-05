@@ -32,40 +32,77 @@ const SearchReports = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Fetch districts on component mount
+  // Helper function to ensure array
+  const ensureArray = (data) => Array.isArray(data) ? data : [];
+
+  // Fetch initial data when component mounts
   useEffect(() => {
-    const fetchDistricts = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await api.get("/all-district");
-        if (response.data.status === "success") {
-          setDistricts(response.data.data);
+        console.log("🚀 Starting to fetch initial data...");
+        
+        // Fetch districts
+        console.log("📍 Fetching districts...");
+        const districtsResponse = await api.get("/all-district");
+        console.log("📍 Districts API Response:", districtsResponse.data);
+        
+        if (districtsResponse.data.status === "success") {
+          const districtsArray = ensureArray(districtsResponse.data.data);
+          setDistricts(districtsArray);
+          console.log("✅ Districts loaded:", districtsArray.length, "districts");
+        }
+
+        // Fetch ALL complaint reports
+        console.log("📋 Fetching complaint reports...");
+        const reportsResponse = await api.get("/complain-report");
+        console.log("📋 Complaints API Response:", reportsResponse.data);
+        
+        if (reportsResponse.data.status === true) {
+          const dataArray = ensureArray(reportsResponse.data.data);
+          setSearchResults(dataArray);
+          console.log("✅ Complaints loaded:", dataArray.length, "records");
+          console.log("📊 Sample complaint record:", dataArray[0]);
+          toast.success(`${dataArray.length} complaints loaded successfully`);
+        } else {
+          setSearchResults([]);
+          console.log("⚠️ No complaint data available");
+          toast.info("No data available");
         }
       } catch (error) {
-        console.error("Error fetching districts:", error);
-        toast.error("Error fetching districts");
+        console.error("❌ Error fetching initial data:", error);
+        console.error("❌ Error details:", error.response?.data || error.message);
+        toast.error("Error loading data");
+        setSearchResults([]);
+        setDistricts([]);
       }
     };
 
-    fetchDistricts();
+    fetchInitialData();
   }, []);
 
-  // Handle search
+  // Handle refresh data
   const handleSearch = async () => {
     setIsSearching(true);
     try {
+      console.log("🔄 Refreshing complaint data...");
       const response = await api.get("/complain-report");
+      console.log("🔄 Refresh API Response:", response.data);
+      
       if (response.data.status === true) {
-        setSearchResults(response.data.data);
-        toast.success(`Found ${response.data.data.length} results`);
+        const dataArray = ensureArray(response.data.data);
+        setSearchResults(dataArray);
+        console.log("✅ Data refreshed:", dataArray.length, "records");
+        toast.success(`${dataArray.length} results refreshed`);
       } else {
         setSearchResults([]);
+        console.log("⚠️ No results found in refresh");
         toast.info("No results found");
       }
     } catch (error) {
-      console.error("Search error:", error);
+      console.error("❌ Search error:", error);
+      console.error("❌ Search error details:", error.response?.data || error.message);
       toast.error("Error fetching complaint reports");
       setSearchResults([]);
     } finally {
@@ -84,33 +121,50 @@ const SearchReports = () => {
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  const filteredResults = searchResults.filter((result) => {
-    const matchesSearch =
+  // Real-time filtering
+  const filteredResults = ensureArray(searchResults).filter((result) => {
+    const matchesSearch = 
       searchTerm === "" ||
-      (result.application_no &&
-        result.application_no
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())) ||
-      result.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (result.officer_name &&
-        result.officer_name.toLowerCase().includes(searchTerm.toLowerCase()));
+      (result.application_no && 
+        result.application_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.name && 
+        result.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.officer_name && 
+        result.officer_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.department_name && 
+        result.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.district_name && 
+        result.district_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesDistrict =
       selectedDistrict === "all" ||
-      result.district_id.toString() === selectedDistrict;
+      result.district_id?.toString() === selectedDistrict;
+
     const matchesStatus =
       selectedStatus === "all" || result.status === selectedStatus;
 
     return matchesSearch && matchesDistrict && matchesStatus;
   });
 
+  // Debug filtered results
+  useEffect(() => {
+    console.log("🔍 Current filters:", {
+      searchTerm,
+      selectedDistrict,
+      selectedStatus,
+      totalRecords: ensureArray(searchResults).length,
+      filteredCount: filteredResults.length
+    });
+  }, [searchTerm, selectedDistrict, selectedStatus, searchResults, filteredResults.length]);
+
+  // Report stats calculation
   const reportStats = {
-    total: searchResults.length,
-    disposed: searchResults.filter(
+    total: ensureArray(searchResults).length,
+    disposed: ensureArray(searchResults).filter(
       (r) => r.status === "Disposed - Accepted" || r.status === "Resolved"
     ).length,
-    rejected: searchResults.filter((r) => r.status === "Rejected").length,
-    inProgress: searchResults.filter(
+    rejected: ensureArray(searchResults).filter((r) => r.status === "Rejected").length,
+    inProgress: ensureArray(searchResults).filter(
       (r) =>
         r.status === "In Progress" ||
         r.status === "Under Investigation" ||
@@ -142,7 +196,7 @@ const SearchReports = () => {
               Search & Reports / खोज और रिपोर्ट
             </h1>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              Advanced search and detailed reports
+              Advanced search and detailed reports ({ensureArray(searchResults).length} total records loaded)
             </p>
           </div>
           <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors flex-shrink-0">
@@ -152,9 +206,9 @@ const SearchReports = () => {
           </button>
         </div>
 
-        {/* Tabs Component with Dashboard-like styling */}
+        {/* Tabs Component */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-          {/* Tab Navigation with Dashboard styling */}
+          {/* Tab Navigation */}
           <div className="space-y-6">
             <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
               <div className="grid grid-cols-1 sm:flex w-full gap-1">
@@ -203,16 +257,16 @@ const SearchReports = () => {
 
             {/* Tab Content */}
             <div className="p-3 sm:p-6 overflow-hidden">
-              {/* Advanced Search Tab - Fixed Layout */}
+              {/* Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
-                    {/* Search Criteria - Compact */}
+                    {/* Search Criteria */}
                     <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm">
                       <div className="flex items-center gap-2 mb-3">
                         <FaSearch className="w-4 h-4 text-blue-600" />
                         <h3 className="text-sm sm:text-base font-semibold text-gray-900">
-                          Search Criteria
+                          Search & Filter ({ensureArray(searchResults).length} records loaded)
                         </h3>
                       </div>
 
@@ -223,40 +277,37 @@ const SearchReports = () => {
                             htmlFor="search-term"
                             className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
                           >
-                            Search Term
+                            Search Term (Real-time filtering)
                           </label>
                           <input
                             id="search-term"
                             type="text"
-                            placeholder="Application No., Name, etc."
+                            placeholder="Type to filter: Application No., Name, Officer, Department, District..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-2.5 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           />
                         </div>
 
-                        {/* Filters - Compact grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 cursor-pointer">
+                        {/* Filters */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
                             <label
                               htmlFor="district"
                               className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
                             >
-                              District
+                              Filter by District
                             </label>
                             <select
                               id="district"
                               value={selectedDistrict}
-                              onChange={(e) =>
-                                setSelectedDistrict(e.target.value)
-                              }
+                              onChange={(e) => setSelectedDistrict(e.target.value)}
                               className="w-full px-2.5 py-2 text-xs sm:text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                             >
-                              <option value="all">All Districts</option>
-                              {districts.map((district) => (
+                              <option value="all">All Districts ({ensureArray(districts).length} total)</option>
+                              {ensureArray(districts).map((district) => (
                                 <option key={district.id} value={district.id}>
-                                  {district.district_name} -{" "}
-                                  {district.dist_name_hi}
+                                  {district.district_name} - {district.dist_name_hi}
                                 </option>
                               ))}
                             </select>
@@ -267,32 +318,27 @@ const SearchReports = () => {
                               htmlFor="status"
                               className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
                             >
-                              Status
+                              Filter by Status
                             </label>
                             <select
                               id="status"
                               value={selectedStatus}
-                              onChange={(e) =>
-                                setSelectedStatus(e.target.value)
-                              }
+                              onChange={(e) => setSelectedStatus(e.target.value)}
                               className="w-full px-2.5 py-2 text-xs sm:text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                             >
                               <option value="all">All Status</option>
                               <option value="In Progress">In Progress</option>
-                              <option value="Disposed - Accepted">
-                                Disposed - Accepted
-                              </option>
+                              <option value="Disposed - Accepted">Disposed - Accepted</option>
+                              <option value="Resolved">Resolved</option>
                               <option value="Rejected">Rejected</option>
-                              <option value="Under Investigation">
-                                Under Investigation
-                              </option>
+                              <option value="Under Investigation">Under Investigation</option>
                               <option value="Pending">Pending</option>
                             </select>
                           </div>
 
                           <div className="sm:col-span-1">
                             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                              &nbsp;
+                              Refresh Data
                             </label>
                             <button
                               onClick={handleSearch}
@@ -306,12 +352,12 @@ const SearchReports = () => {
                               {isSearching ? (
                                 <>
                                   <FaSpinner className="w-3 h-3 animate-spin" />
-                                  <span>Searching...</span>
+                                  <span>Refreshing...</span>
                                 </>
                               ) : (
                                 <>
                                   <FaSearch className="w-3 h-3" />
-                                  <span>Search</span>
+                                  <span>Refresh</span>
                                 </>
                               )}
                             </button>
@@ -320,13 +366,13 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* Search Results - Compact */}
+                    {/* Search Results */}
                     <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                       <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3">
-                        Search Results ({filteredResults.length} found)
+                        Filtered Results: {filteredResults.length} of {ensureArray(searchResults).length} total records
                       </h3>
 
-                      {/* Table wrapper to prevent page-level scroll */}
+                      {/* Table wrapper */}
                       <div className="w-full overflow-hidden rounded-md border border-gray-200">
                         <div className="overflow-x-auto">
                           <table className="min-w-full text-[11px] sm:text-xs">
@@ -363,16 +409,13 @@ const SearchReports = () => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
                               {filteredResults.length > 0 ? (
-                                filteredResults.map((result) => (
-                                  <tr
-                                    key={result.id}
-                                    className="hover:bg-gray-50"
-                                  >
+                                filteredResults.map((result, index) => (
+                                  <tr key={result.id || index} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
                                       {result.application_no || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      {result.name}
+                                      {result.name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700 hidden md:table-cell">
                                       {result.officer_name || "N/A"}
@@ -381,13 +424,12 @@ const SearchReports = () => {
                                       {result.department_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      {result.district_name}
+                                      {result.district_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <span
                                         className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${
-                                          result.complaintype_name ===
-                                          "Allegation"
+                                          result.complaintype_name === "Allegation"
                                             ? "bg-red-100 text-red-800"
                                             : "bg-gray-100 text-gray-800"
                                         }`}
@@ -401,31 +443,26 @@ const SearchReports = () => {
                                           result.status
                                         )}`}
                                       >
-                                        {result.status}
+                                        {result.status || "N/A"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-600 hidden sm:table-cell">
-                                      {result.created_at}
+                                      {result.created_at || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <button className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors">
                                         <FaFileAlt className="w-3 h-3" />
-                                        <span className="hidden sm:inline">
-                                          View
-                                        </span>
+                                        <span className="hidden sm:inline">View</span>
                                       </button>
                                     </td>
                                   </tr>
                                 ))
                               ) : (
                                 <tr>
-                                  <td
-                                    colSpan="9"
-                                    className="py-8 text-center text-gray-500"
-                                  >
-                                    {isSearching
-                                      ? "Searching..."
-                                      : "No data available."}
+                                  <td colSpan="9" className="py-8 text-center text-gray-500">
+                                    {searchTerm || selectedDistrict !== "all" || selectedStatus !== "all"
+                                      ? "No results match your filter criteria."
+                                      : "No data available. Click Refresh to load data."}
                                   </td>
                                 </tr>
                               )}
@@ -484,16 +521,13 @@ const SearchReports = () => {
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
                           District-wise Report
                         </h3>
-                        <div className="space-y-3 cursor-pointer">
-                          {districts.slice(0, 10).map((district) => {
-                            const count = searchResults.filter(
+                        <div className="space-y-3">
+                          {ensureArray(districts).slice(0, 10).map((district) => {
+                            const count = ensureArray(searchResults).filter(
                               (r) => r.district_id === district.id
                             ).length;
                             return (
-                              <div
-                                key={district.id}
-                                className="flex justify-between items-center"
-                              >
+                              <div key={district.id} className="flex justify-between items-center">
                                 <span className="truncate text-sm sm:text-base text-gray-700">
                                   {district.district_name}
                                 </span>
@@ -511,23 +545,14 @@ const SearchReports = () => {
                           Department-wise Report
                         </h3>
                         <div className="space-y-3">
-                          {[
-                            ...new Set(
-                              searchResults
-                                .map((r) => r.department_name)
-                                .filter(Boolean)
-                            ),
-                          ]
+                          {[...new Set(ensureArray(searchResults).map((r) => r.department_name).filter(Boolean))]
                             .slice(0, 10)
                             .map((dept) => {
-                              const count = searchResults.filter(
+                              const count = ensureArray(searchResults).filter(
                                 (r) => r.department_name === dept
                               ).length;
                               return (
-                                <div
-                                  key={dept}
-                                  className="flex justify-between items-center"
-                                >
+                                <div key={dept} className="flex justify-between items-center">
                                   <span className="truncate text-xs sm:text-sm text-gray-700">
                                     {dept}
                                   </span>
@@ -557,49 +582,26 @@ const SearchReports = () => {
                       </div>
                       <div className="space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                          <span className="text-sm sm:text-base text-gray-700">
-                            In Progress
-                          </span>
+                          <span className="text-sm sm:text-base text-gray-700">In Progress</span>
                           <div className="flex gap-2 flex-wrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                              {
-                                searchResults.filter(
-                                  (r) => r.status === "In Progress"
-                                ).length
-                              }{" "}
-                              Cases
+                              {ensureArray(searchResults).filter((r) => r.status === "In Progress").length} Cases
                             </span>
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                          <span className="text-sm sm:text-base text-gray-700">
-                            Resolved
-                          </span>
+                          <span className="text-sm sm:text-base text-gray-700">Resolved</span>
                           <div className="flex gap-2 flex-wrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              {
-                                searchResults.filter(
-                                  (r) =>
-                                    r.status === "Disposed - Accepted" ||
-                                    r.status === "Resolved"
-                                ).length
-                              }{" "}
-                              Cases
+                              {ensureArray(searchResults).filter((r) => r.status === "Disposed - Accepted" || r.status === "Resolved").length} Cases
                             </span>
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                          <span className="text-sm sm:text-base text-gray-700">
-                            Rejected
-                          </span>
+                          <span className="text-sm sm:text-base text-gray-700">Rejected</span>
                           <div className="flex gap-2 flex-wrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              {
-                                searchResults.filter(
-                                  (r) => r.status === "Rejected"
-                                ).length
-                              }{" "}
-                              Cases
+                              {ensureArray(searchResults).filter((r) => r.status === "Rejected").length} Cases
                             </span>
                           </div>
                         </div>
@@ -612,36 +614,20 @@ const SearchReports = () => {
                       </h3>
                       <div className="space-y-4">
                         <div className="flex justify-between">
-                          <span className="text-sm sm:text-base text-gray-700">
-                            Allegations
-                          </span>
+                          <span className="text-sm sm:text-base text-gray-700">Allegations</span>
                           <span className="font-medium text-gray-900">
-                            {
-                              searchResults.filter(
-                                (r) => r.complaintype_name === "Allegation"
-                              ).length
-                            }
+                            {ensureArray(searchResults).filter((r) => r.complaintype_name === "Allegation").length}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm sm:text-base text-gray-700">
-                            Grievances
-                          </span>
+                          <span className="text-sm sm:text-base text-gray-700">Grievances</span>
                           <span className="font-medium text-gray-900">
-                            {
-                              searchResults.filter(
-                                (r) => r.complaintype_name !== "Allegation"
-                              ).length
-                            }
+                            {ensureArray(searchResults).filter((r) => r.complaintype_name !== "Allegation").length}
                           </span>
                         </div>
                         <div className="flex justify-between border-t pt-2">
-                          <span className="font-medium text-gray-900">
-                            Total Cases
-                          </span>
-                          <span className="font-bold text-gray-900">
-                            {searchResults.length}
-                          </span>
+                          <span className="font-medium text-gray-900">Total Cases</span>
+                          <span className="font-bold text-gray-900">{ensureArray(searchResults).length}</span>
                         </div>
                       </div>
                     </div>
@@ -660,42 +646,21 @@ const SearchReports = () => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="text-center p-4 border rounded-lg">
                           <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                            {Math.round(
-                              (reportStats.disposed /
-                                Math.max(reportStats.total, 1)) *
-                                100
-                            )}
-                            %
+                            {Math.round((reportStats.disposed / Math.max(reportStats.total, 1)) * 100)}%
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500">
-                            Resolved Cases
-                          </div>
+                          <div className="text-xs sm:text-sm text-gray-500">Resolved Cases</div>
                         </div>
                         <div className="text-center p-4 border rounded-lg">
                           <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                            {Math.round(
-                              (reportStats.inProgress /
-                                Math.max(reportStats.total, 1)) *
-                                100
-                            )}
-                            %
+                            {Math.round((reportStats.inProgress / Math.max(reportStats.total, 1)) * 100)}%
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500">
-                            In Progress
-                          </div>
+                          <div className="text-xs sm:text-sm text-gray-500">In Progress</div>
                         </div>
                         <div className="text-center p-4 border rounded-lg">
                           <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                            {Math.round(
-                              (reportStats.rejected /
-                                Math.max(reportStats.total, 1)) *
-                                100
-                            )}
-                            %
+                            {Math.round((reportStats.rejected / Math.max(reportStats.total, 1)) * 100)}%
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500">
-                            Rejected Cases
-                          </div>
+                          <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
                         </div>
                       </div>
                     </div>

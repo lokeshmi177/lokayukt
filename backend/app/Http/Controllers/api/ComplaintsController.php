@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Complaint;
+use App\Models\ComplainType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,12 +21,12 @@ class ComplaintsController extends Controller
             'email' => 'required|email|unique:complaints,email',
             'dob' => 'nullable|date',
             'fee_exempted' => 'required|boolean',
-            'department' => 'required|in:lok_nirman,education,health,police',
+            'department' => 'required',
             'officer_name' => 'required|string|max:255',
-            'designation' => 'required|in:collector,ceo,engineer',
-            'category' => 'required|in:class_1,class_2',
-            'subject' => 'required|in:corruption,delay_in_work,misbehavior,rule_violation',
-            'nature' => 'required|in:allegation,grievance',
+            'designation' => 'required',
+            'category' => 'required',
+            'subject' => 'required',
+            'nature' => 'required',
             'description' => 'required|string',
         ], [
             'name.required' => 'Name is required.',
@@ -55,8 +56,10 @@ class ComplaintsController extends Controller
             ], 422);
         }
 
+     
         $complaint = new Complaint();
         $complaint->name = $request->name;
+        $complaint->complain_no = $complaintNo ?? null;
         $complaint->mobile = $request->mobile;
         $complaint->address = $request->address;
         $complaint->district_id = $request->district_id;
@@ -65,14 +68,26 @@ class ComplaintsController extends Controller
         $complaint->challan_no = $request->challan_no;
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted;
-        $complaint->department = $request->department;
+        $complaint->department_id = $request->department;
         $complaint->officer_name = $request->officer_name;
-        $complaint->designation = $request->designation;
+        $complaint->designation_id = $request->designation;
         $complaint->category = $request->category;
-        $complaint->subject = $request->subject;
-        $complaint->nature = $request->nature;
+        $complaint->subject_id = $request->subject;
+        $complaint->complaintype_id = $request->nature;
         $complaint->description = $request->description;
         $complaint->save(); // ✅ Insert into DB
+
+           // MP2024ALG001
+        $year = date('Y');
+        if($request->nature){
+         $com_type = ComplainType::find($request->nature);
+         $str = strtoupper(substr($com_type->name, 0, 3));
+
+        }
+   
+        $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
+        $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
+       
 
         return response()->json([
             'status' => true,
