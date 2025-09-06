@@ -304,8 +304,10 @@ class AdminReportController extends Controller
     ->select(
     
         'complaintype.name',
-         DB::raw('count(*) as complain_count'),
-         DB::raw('count(cm.id) as total_count'),
+        //  DB::raw('count(*) as complain_count'),
+        //  DB::raw('count(cm.id) as total_count'),
+          DB::raw('ROUND(AVG(DATEDIFF(NOW(), cm.created_at)), 1) as avg_days')
+         
         // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
         // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending")
     )
