@@ -78,10 +78,9 @@ Route::post('/delete-rejection/{id}',[CommonController::class,'removeRejection']
 
 Route::get('/complain-report',[AdminReportController::class,'complainReports']);
 Route::get('/all-complains',[AdminReportController::class,'allComplains']);
-<<<<<<< HEAD
+
 Route::get('/detail-by-complaintype',[AdminReportController::class,'complainComplaintypeWise']);
-=======
->>>>>>> 78cbaecd4bc1e31b54207c77acd9ffcf6fc90742
+
 
 
 Route::get('/district-wise-complaint',[AdminReportController::class,'complainDistrictWise']);
