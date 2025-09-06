@@ -65,7 +65,7 @@ class UserManagement extends Controller
         }
 
 
-        $baseUserName = \Str::slug($request->name);
+        $baseUserName = Str::slug($request->name);
         $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
         $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
 

@@ -13,7 +13,7 @@ Route::middleware('auth:sanctum')->group(function(){
 
     Route::post('/logout', [LoginController::class, 'logout']);
 
-//    ->
+
     Route::prefix('admin')->group(function () {
         
         Route::get('/all-district',[CommonController::class,'fetch_district']);
@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function(){
 
         //USER-MANAGEMENT
 
-        Route::post('/user-management',[UserManagement::class,'user_management']);
+        Route::post('/add-user',[UserManagement::class,'user_management']);
         Route::get('/users',[UserManagement::class,'index']);
 
         /**
