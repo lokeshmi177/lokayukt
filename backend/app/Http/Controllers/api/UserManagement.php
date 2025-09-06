@@ -81,7 +81,7 @@ class UserManagement extends Controller
             'password1'    => $request->password,
             'password'     => bcrypt('password123'),
         ]);
-        dd($user);
+        // dd($user);
 
         return response()->json([
             'status' => true,

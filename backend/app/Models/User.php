@@ -63,10 +63,10 @@ class User extends Authenticatable
 // }
 
 
-    public function tehsil()
-{
-    return $this->belongsTo(Tehsil::class, 'tehsil_id', 'tehsil_code');
-}
+//     public function tehsil()
+// {
+//     return $this->belongsTo(Tehsil::class, 'tehsil_id', 'tehsil_code');
+// }
     
 
     //   public function designation()

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\AuthMiddleware;
+// use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        
+        // $middleware->append(App\Http\Middleware\AuthMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

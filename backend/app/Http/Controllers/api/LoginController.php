@@ -6,10 +6,12 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+
 
 class LoginController extends Controller
 {
@@ -27,8 +29,8 @@ public function login(Request $request)
             throw new ValidationException($validator);
         }
 
-        $user = User::where('user_name', $request->user_name)->first();
-
+        $user = User::with(['role:id,name'])->where('user_name', $request->user_name)->first();
+  
         // Password check
         if (!Hash::check($request->password, $user->password)) {
             return ApiResponse::generateResponse('error', 'Wrong password.', null, 401);
@@ -44,6 +46,7 @@ public function login(Request $request)
             'access_token' => $token,
             'token_type'   => 'Bearer',
             'user'         => $user,
+            // 'role' => $user->role->name ?? 'N/A',
         ]);
 
     } catch (ValidationException $e) {
@@ -57,6 +60,44 @@ public function login(Request $request)
         ], 500);
     }
 }
+
+
+
+//  public function login(Request $request)
+//     {
+//         $validator = Validator::make($request->all(), [
+//             'user_name' => 'required|exists:users,user_name',
+//             'password'  => 'required|string|min:6',
+//         ]);
+
+//         if ($validator->fails()) {
+//             return response()->json($validator->errors(), 422);
+//         }
+
+//         if (!Auth::attempt($request->only('user_name', 'password'))) {
+//             return response()->json(['error' => 'Invalid credentials'], 401);
+//         }
+
+//         // $user = Auth::user();
+//         $user = auth()->user();
+
+//         if ($user->status == 0) {
+//             return response()->json(['error' => 'You are blocked by admin.'], 403);
+//         }
+
+//         $token = $user->createToken('auth_token')->plainTextToken;
+
+//         return response()->json([
+//             'message' => 'Login Successful',
+//             'access_token' => $token,
+//             'token_type'   => 'Bearer',
+//             'user' => [
+//                 'id' => $user->id,
+//                 'user_name' => $user->user_name,
+//                 'role' => $user->role->name ?? 'N/A',
+//             ]
+//         ]);
+//     }
 
 
 public function forgotPasswordCheck(Request $request)
