@@ -81,6 +81,10 @@ Route::get('/all-complains',[AdminReportController::class,'allComplains']);
 
 Route::get('/detail-by-complaintype',[AdminReportController::class,'complainComplaintypeWise']);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 65581d6d4adc010e9649a40a43a3b8e3318a6069
 
 
 Route::get('/district-wise-complaint',[AdminReportController::class,'complainDistrictWise']);
