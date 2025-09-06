@@ -56,14 +56,14 @@ const SearchReports = () => {
     const fetchInitialData = async () => {
       try {
         // Existing API calls
-        const districtsResponse = await api.get("/all-district");
+        const districtsResponse = await api.get("/admin/all-district");
         
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
         }
 
-        const reportsResponse = await api.get("/complain-report");
+        const reportsResponse = await api.get("/admin/complain-report");
         
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
@@ -73,7 +73,7 @@ const SearchReports = () => {
         // ✅ EXISTING API CALLS
         // Fetch overall stats
         try {
-          const overallResponse = await api.get("/all-complains");
+          const overallResponse = await api.get("/admin/all-complains");
           if (overallResponse.data.status === true) {
             setOverallStats(overallResponse.data.data);
           }
@@ -83,7 +83,7 @@ const SearchReports = () => {
 
         // Fetch district-wise stats
         try {
-          const districtWiseResponse = await api.get("/district-wise-complaint");
+          const districtWiseResponse = await api.get("/admin/district-wise-complaint");
           if (districtWiseResponse.data.status === true) {
             setDistrictWiseStats(districtWiseResponse.data.data);
           }
@@ -93,7 +93,7 @@ const SearchReports = () => {
 
         // Fetch department-wise stats
         try {
-          const departmentWiseResponse = await api.get("/department-wise-complaint");
+          const departmentWiseResponse = await api.get("/admin/department-wise-complaint");
           if (departmentWiseResponse.data.status === true) {
             setDepartmentWiseStats(departmentWiseResponse.data.data);
           }
@@ -104,7 +104,7 @@ const SearchReports = () => {
         // ✅ NEW API CALLS
         // Fetch monthly trends
         try {
-          const monthlyTrendsResponse = await api.get("/montly-trends");
+          const monthlyTrendsResponse = await api.get("/admin/montly-trends");
           if (monthlyTrendsResponse.data.status === true) {
             setMonthlyTrends(monthlyTrendsResponse.data.data);
           }
@@ -114,7 +114,7 @@ const SearchReports = () => {
 
         // Fetch compliance report
         try {
-          const complianceReportResponse = await api.get("/compliance-report");
+          const complianceReportResponse = await api.get("/admin/compliance-report");
           if (complianceReportResponse.data.status === true) {
             setComplianceReport(complianceReportResponse.data.data);
           }
@@ -124,7 +124,7 @@ const SearchReports = () => {
 
         // ✅ NEW: Fetch average processing time by complaint type
         try {
-          const avgProcessingResponse = await api.get("/detail-by-complaintype");
+          const avgProcessingResponse = await api.get("/admin/detail-by-complaintype");
           if (avgProcessingResponse.data.status === true) {
             setAvgProcessingTimes(avgProcessingResponse.data.data);
           }
@@ -146,7 +146,7 @@ const SearchReports = () => {
   const handleSearch = async () => {
     setIsSearching(true);
     try {
-      const response = await api.get("/complain-report");
+      const response = await api.get("/admin/complain-report");
       
       if (response.data.status === true) {
         const dataArray = ensureArray(response.data.data);

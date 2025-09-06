@@ -190,7 +190,7 @@ const EditModal = ({
 
       switch (activeTab) {
         case 'districts':
-          endpoint = `/edit-district/${editingItem.id}`;
+          endpoint = `/admin/edit-district/${editingItem.id}`;
           requestData = {
             district_name: formData.name,
             dist_name_hi: formData.nameHi,
@@ -198,28 +198,28 @@ const EditModal = ({
           };
           break;
         case 'departments':
-          endpoint = `/edit-department/${editingItem.id}`;
+          endpoint = `/admin/edit-department/${editingItem.id}`;
           requestData = {
             name: formData.name,
             name_hindi: formData.nameHi
           };
           break;
         case 'subjects':
-          endpoint = `/edit-subject/${editingItem.id}`;
+          endpoint = `/admin/edit-subject/${editingItem.id}`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi
           };
           break;
         case 'designations':
-          endpoint = `/edit-designation/${editingItem.id}`;
+          endpoint = `/admin/edit-designation/${editingItem.id}`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi
           };
           break;
         case 'complaint-types':
-          endpoint = `/edit-complainstype/${editingItem.id}`;
+          endpoint = `/admin/edit-complainstype/${editingItem.id}`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi,
@@ -227,7 +227,7 @@ const EditModal = ({
           };
           break;
         case 'rejection-reasons':
-          endpoint = `/edit-rejection/${editingItem.id}`;
+          endpoint = `/admin/edit-rejection/${editingItem.id}`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi,
@@ -471,7 +471,7 @@ const AddModal = ({
 
       switch (activeTab) {
         case 'districts':
-          endpoint = `/add-district`;
+          endpoint = `/admin/add-district`;
           requestData = {
             district_name: formData.name,
             dist_name_hi: formData.nameHi,
@@ -479,28 +479,28 @@ const AddModal = ({
           };
           break;
         case 'departments':
-          endpoint = `/add-department`;
+          endpoint = `/admin/add-department`;
           requestData = {
             name: formData.name,
             name_hindi: formData.nameHi
           };
           break;
         case 'subjects':
-          endpoint = `/add-subject`;
+          endpoint = `/admin/add-subject`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi
           };
           break;
         case 'designations':
-          endpoint = `/add-designation`;
+          endpoint = `/admin/add-designation`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi
           };
           break;
         case 'complaint-types':
-          endpoint = `/add-complainstype`;
+          endpoint = `/admin/add-complainstype`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi,
@@ -508,7 +508,7 @@ const AddModal = ({
           };
           break;
         case 'rejection-reasons':
-          endpoint = `/add-rejection`;
+          endpoint = `/admin/add-rejection`;
           requestData = {
             name: formData.name,
             name_h: formData.nameHi,
@@ -690,7 +690,7 @@ const MasterData = () => {
     const fetchMasterData = async () => {
       try {
         // Fetch districts
-        const districtsResponse = await api.get('/all-district');
+        const districtsResponse = await api.get('/admin/all-district');
         if (districtsResponse.data.status === 'success') {
           const districtsData = districtsResponse.data.data.map(item => ({
             id: item.id,
@@ -704,7 +704,7 @@ const MasterData = () => {
         }
 
         // Fetch departments
-        const departmentsResponse = await api.get('/department');
+        const departmentsResponse = await api.get('/admin/department');
         if (departmentsResponse.data.status === 'success') {
           const departmentsData = departmentsResponse.data.data.map(item => ({
             id: item.id,
@@ -717,7 +717,7 @@ const MasterData = () => {
         }
 
         // Fetch subjects
-        const subjectsResponse = await api.get('/subjects');
+        const subjectsResponse = await api.get('/admin/subjects');
         if (subjectsResponse.data.status === 'success') {
           const subjectsData = subjectsResponse.data.data.map(item => ({
             id: item.id,
@@ -730,7 +730,7 @@ const MasterData = () => {
         }
 
         // Fetch designations
-        const designationsResponse = await api.get('/designation');
+        const designationsResponse = await api.get('/admin/designation');
         if (designationsResponse.data.status === 'success') {
           const designationsData = designationsResponse.data.data.map(item => ({
             id: item.id,
@@ -743,7 +743,7 @@ const MasterData = () => {
         }
 
         // Fetch complaint types
-        const complaintTypesResponse = await api.get('/complainstype');
+        const complaintTypesResponse = await api.get('/admin/complainstype');
         if (complaintTypesResponse.data.status === 'success') {
           const complaintTypesData = complaintTypesResponse.data.data.map(item => ({
             id: item.id,
@@ -757,7 +757,7 @@ const MasterData = () => {
         }
 
         // Fetch rejection reasons
-        const rejectionReasonsResponse = await api.get('/rejections');
+        const rejectionReasonsResponse = await api.get('/admin/rejections');
         if (rejectionReasonsResponse.data.status === 'success') {
           const rejectionReasonsData = rejectionReasonsResponse.data.data.map(item => ({
             id: item.id,
@@ -825,22 +825,22 @@ const MasterData = () => {
 
       switch (activeTab) {
         case 'districts':
-          endpoint = `/delete-district/${deletingItem.id}`;
+          endpoint = `/admin/delete-district/${deletingItem.id}`;
           break;
         case 'departments':
-          endpoint = `/delete-department/${deletingItem.id}`;
+          endpoint = `/admin/delete-department/${deletingItem.id}`;
           break;
         case 'subjects':
-          endpoint = `/delete-subject/${deletingItem.id}`;
+          endpoint = `/admin/delete-subject/${deletingItem.id}`;
           break;
         case 'designations':
-          endpoint = `/delete-designation/${deletingItem.id}`;
+          endpoint = `/admin/delete-designation/${deletingItem.id}`;
           break;
         case 'complaint-types':
-          endpoint = `/delete-complainstype/${deletingItem.id}`;
+          endpoint = `/admin/delete-complainstype/${deletingItem.id}`;
           break;
         case 'rejection-reasons':
-          endpoint = `/delete-rejection/${deletingItem.id}`;
+          endpoint = `/admin/delete-rejection/${deletingItem.id}`;
           break;
         default:
           toast.error('Invalid tab selected');

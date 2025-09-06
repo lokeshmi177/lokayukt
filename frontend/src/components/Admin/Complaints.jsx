@@ -59,31 +59,31 @@ department: '',
     const fetchAllData = async () => {
       try {
         // Fetch districts
-        const districtsResponse = await api.get(`/all-district`);
+        const districtsResponse = await api.get(`/admin/all-district`);
         if (districtsResponse.data.status === 'success') {
           setDistricts(districtsResponse.data.data);
         }
 
         // Fetch departments
-        const departmentsResponse = await api.get(`/department`);
+        const departmentsResponse = await api.get(`/admin/department`);
         if (departmentsResponse.data.status === 'success') {
           setDepartments(departmentsResponse.data.data);
         }
 
         // Fetch designations
-        const designationsResponse = await api.get(`/designation`);
+        const designationsResponse = await api.get(`/admin/designation`);
         if (designationsResponse.data.status === 'success') {
           setDesignations(designationsResponse.data.data);
         }
 
         // Fetch subjects
-        const subjectsResponse = await api.get(`/subjects`);
+        const subjectsResponse = await api.get(`/admin/subjects`);
         if (subjectsResponse.data.status === 'success') {
           setSubjects(subjectsResponse.data.data);
         }
 
         // Fetch complaint types
-        const complaintTypesResponse = await api.get(`/complainstype`);
+        const complaintTypesResponse = await api.get(`/admin/complainstype`);
         if (complaintTypesResponse.data.status === 'success') {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
@@ -126,7 +126,7 @@ department: '',
     setErrors({});
 
     try {
-      const response = await api.post('/complaints', formData);
+      const response = await api.post('/admin/complaints', formData);
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint registered successfully!');
         

@@ -286,12 +286,37 @@ const AddUserManagement = () => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Role</option>
-                  <option value="Admin">Admin</option>
-                  <option value="Secretary">Secretary</option>
-                  <option value="RO">RO</option>
-                  <option value="ARO">ARO</option>
-                  <option value="CIO">CIO</option>
-                  <option value="Section Officer">Section Officer</option>
+                  <option value="Admin">Adminstrator</option>
+                  <option value="Secretary">Operator</option>
+                  <option value="RO">Supervisor</option>
+                  <option value="ARO">Onrable Lokayukt</option>
+                  <option value="CIO">Onrable Lokayukt</option>
+                </select>
+                {errors.role && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.role}
+                  </p>
+                )}
+              </div>
+
+              {/* sub role */}
+              <div>
+                <label htmlFor="role" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Role *
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                >
+                  <option value="">Select Role</option>
+                  <option value="Admin">Administrator</option>
+                  <option value="Secretary">Operator</option>
+                  <option value="RO">Supervisor</option>
+                  <option value="ARO">Hon’ble LokAyukta</option>
+                  <option value="CIO">Hon’ble UpLokAyukta</option>
                 </select>
                 {errors.role && (
                   <p className="mt-1 text-sm text-red-600">

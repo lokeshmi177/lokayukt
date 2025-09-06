@@ -6,16 +6,6 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
-const token = localStorage.getItem("access_token");
-
-// Create axios instance with token if it exists
-const api = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
-  },
-});
 
 const Login = () => {
   const navigate = useNavigate();
@@ -48,15 +38,26 @@ const Login = () => {
     setGeneralError('');
 
     try {
-      const response = await api.post('/login', {
+      // ✅ Updated: Create axios instance without token for login request
+      const loginApi = axios.create({
+        baseURL: BASE_URL,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const response = await loginApi.post('/login', {
         user_name: formData.user_name,
         password: formData.password
       });
 
       if (response.data.status === 'success') {
-        // Store token in localStorage
+        // ✅ Store token and user data in localStorage
         localStorage.setItem('access_token', response.data.data.access_token);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        // localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        
+        // ✅ Store role name separately in localStorage
+        localStorage.setItem('role', response.data.data.user.role.name);
         
         // Show success toast
         toast.success('Login Successful!');
