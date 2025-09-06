@@ -32,6 +32,12 @@ const SearchReports = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
+  
+  // ✅ NEW STATES FOR NEW APIS
+  const [overallStats, setOverallStats] = useState(null);
+  const [districtWiseStats, setDistrictWiseStats] = useState(null);
+  const [departmentWiseStats, setDepartmentWiseStats] = useState(null);
+  
   const [isSearching, setIsSearching] = useState(false);
   
   // Add pagination states
@@ -45,7 +51,7 @@ const SearchReports = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // Fetch districts
+        // Existing API calls
         const districtsResponse = await api.get("/all-district");
         
         if (districtsResponse.data.status === "success") {
@@ -53,13 +59,44 @@ const SearchReports = () => {
           setDistricts(districtsArray);
         }
 
-        // Fetch ALL complaint reports
         const reportsResponse = await api.get("/complain-report");
         
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
           setSearchResults(dataArray);
         }
+
+        // ✅ NEW API CALLS
+        // Fetch overall stats
+        try {
+          const overallResponse = await api.get("/all-complains");
+          if (overallResponse.data.status === true) {
+            setOverallStats(overallResponse.data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching overall stats:", error);
+        }
+
+        // Fetch district-wise stats
+        try {
+          const districtWiseResponse = await api.get("/district-wise-complaint");
+          if (districtWiseResponse.data.status === true) {
+            setDistrictWiseStats(districtWiseResponse.data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching district-wise stats:", error);
+        }
+
+        // Fetch department-wise stats
+        try {
+          const departmentWiseResponse = await api.get("/department-wise-complaint");
+          if (departmentWiseResponse.data.status === true) {
+            setDepartmentWiseStats(departmentWiseResponse.data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching department-wise stats:", error);
+        }
+
       } catch (error) {
         setSearchResults([]);
         setDistricts([]);
@@ -148,30 +185,19 @@ const SearchReports = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedResults = filteredResults.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // Report stats calculation
+  // ✅ UPDATED Report stats calculation using new API data
   const reportStats = {
-    total: ensureArray(searchResults).length,
+    total: overallStats?.total_complaints || ensureArray(searchResults).length,
     disposed: ensureArray(searchResults).filter(
       (r) => r.status === "Disposed - Accepted" || r.status === "Resolved"
     ).length,
-    rejected: ensureArray(searchResults).filter((r) => r.status === "Rejected").length,
-    inProgress: ensureArray(searchResults).filter(
+    rejected: overallStats?.total_rejected || ensureArray(searchResults).filter((r) => r.status === "Rejected").length,
+    inProgress: overallStats?.total_pending || ensureArray(searchResults).filter(
       (r) =>
         r.status === "In Progress" ||
         r.status === "Under Investigation" ||
         r.status === "Pending"
     ).length,
-  };
-
-  // ✅ Helper function to get selected district info for display
-  const getSelectedDistrictInfo = () => {
-    if (selectedDistrict === "all") {
-      return "All Districts";
-    }
-    const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
-    return selectedDistrictObj ? 
-      `${selectedDistrictObj.district_name} (Code: ${selectedDistrictObj.district_code})` : 
-      "Unknown District";
   };
 
   return (
@@ -207,6 +233,8 @@ const SearchReports = () => {
             <span className="sm:hidden">Export</span>
           </button>
         </div>
+
+      
 
         {/* Tabs Component */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
@@ -258,13 +286,13 @@ const SearchReports = () => {
             </div>
 
             {/* Tab Content */}
-            <div className=" overflow-hidden">
+            <div className="overflow-hidden">
               {/* Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
                     {/* Search Criteria */}
-                    <div className="bg-white p-3 sm:p-4   shadow-sm">
+                    <div className="bg-white p-3 sm:p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-3">
                         <FaSearch className="w-4 h-4 text-blue-600" />
                         <h3 className="text-sm sm:text-base font-semibold text-gray-900">
@@ -344,17 +372,11 @@ const SearchReports = () => {
                             </button>
                           </div>
                         </div>
-
-                        {/* Filter Status Display */}
-                      
                       </div>
                     </div>
 
                     {/* Search Results */}
-                    <div className="bg-white p-3 sm:p-4  border-gray-200 shadow-sm overflow-hidden">
-                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3">
-                      </h3>
-
+                    <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       {/* Table wrapper */}
                       <div className="w-full overflow-hidden rounded-md border border-gray-200">
                         <div className="overflow-x-auto">
@@ -380,7 +402,7 @@ const SearchReports = () => {
                                   Status
                                 </th>
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Entry Data
+                                  Entry Date
                                 </th>
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Actions
@@ -429,11 +451,7 @@ const SearchReports = () => {
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span
-                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${getStatusColor(
-                                          result.status
-                                        )}`}
-                                      >
+                                      <span className="text-xs text-gray-600">
                                         {result.created_at || "N/A"}
                                       </span>
                                     </td>
@@ -447,7 +465,7 @@ const SearchReports = () => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="7" className="py-8 text-center text-gray-500">
+                                  <td colSpan="8" className="py-8 text-center text-gray-500">
                                     {searchTerm || selectedDistrict !== "all" || selectedStatus !== "all"
                                       ? "No results match your filter criteria. Try adjusting your filters."
                                       : "No data available. Click Refresh to load data."}
@@ -480,23 +498,23 @@ const SearchReports = () => {
               {/* General Reports Tab */}
               {activeTab === "general" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                  <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6   overflow-hidden">
-                    {/* KPI cards */}
+                  <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6 overflow-hidden">
+                    {/* KPI cards - Using new API data */}
                     <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
                         <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
                           Total Complaints
                         </h3>
                         <div className="text-lg sm:text-2xl font-bold text-gray-900">
-                          {reportStats.total}
+                          {overallStats?.total_complaints || reportStats.total}
                         </div>
                       </div>
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
                         <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Disposed
+                          Approved
                         </h3>
                         <div className="text-lg sm:text-2xl font-bold text-green-600">
-                          {reportStats.disposed}
+                          {overallStats?.total_approved || 0}
                         </div>
                       </div>
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
@@ -504,66 +522,68 @@ const SearchReports = () => {
                           Rejected
                         </h3>
                         <div className="text-lg sm:text-2xl font-bold text-red-600">
-                          {reportStats.rejected}
+                          {overallStats?.total_rejected || reportStats.rejected}
                         </div>
                       </div>
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
                         <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          In Progress
+                          Pending
                         </h3>
                         <div className="text-lg sm:text-2xl font-bold text-yellow-600">
-                          {reportStats.inProgress}
+                          {overallStats?.total_pending || reportStats.inProgress}
                         </div>
                       </div>
                     </div>
 
-                    {/* Reports grids */}
+                    {/* ✅ NEW REPORTS USING NEW API DATA */}
                     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                      {/* District-wise Report using new API */}
                       <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                          District-wise Report
+                           District-wise Report 
                         </h3>
-                        <div className="space-y-3">
-                          {ensureArray(districts).slice(0, 10).map((district) => {
-                            const count = ensureArray(searchResults).filter(
-                              (r) => r.district_id.toString() === district.district_code
-                            ).length;
-                            return (
-                              <div key={district.id} className="flex justify-between items-center">
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                          {districtWiseStats ? (
+                            Object.entries(districtWiseStats).map(([districtName, count]) => (
+                              <div key={districtName} className="flex justify-between items-center">
                                 <span className="truncate text-sm sm:text-base text-gray-700">
-                                  {district.district_name}
+                                  {districtName}
                                 </span>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
                                   {count}
                                 </span>
                               </div>
-                            );
-                          })}
+                            ))
+                          ) : (
+                            <div className="text-center text-gray-500 py-4">
+                              Loading district-wise data...
+                            </div>
+                          )}
                         </div>
                       </div>
 
+                      {/* Department-wise Report using new API */}
                       <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                          Department-wise Report
+                           Department-wise Report 
                         </h3>
-                        <div className="space-y-3">
-                          {[...new Set(ensureArray(searchResults).map((r) => r.department_name).filter(Boolean))]
-                            .slice(0, 10)
-                            .map((dept) => {
-                              const count = ensureArray(searchResults).filter(
-                                (r) => r.department_name === dept
-                              ).length;
-                              return (
-                                <div key={dept} className="flex justify-between items-center">
-                                  <span className="truncate text-xs sm:text-sm text-gray-700">
-                                    {dept}
-                                  </span>
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                    {count}
-                                  </span>
-                                </div>
-                              );
-                            })}
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                          {departmentWiseStats ? (
+                            Object.entries(departmentWiseStats).map(([departmentName, count]) => (
+                              <div key={departmentName} className="flex justify-between items-center">
+                                <span className="truncate text-sm sm:text-base text-gray-700">
+                                  {departmentName}
+                                </span>
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                  {count}
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center text-gray-500 py-4">
+                              Loading department-wise data...
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -584,18 +604,18 @@ const SearchReports = () => {
                       </div>
                       <div className="space-y-4">
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                          <span className="text-sm sm:text-base text-gray-700">In Progress</span>
+                          <span className="text-sm sm:text-base text-gray-700">Approved</span>
                           <div className="flex gap-2 flex-wrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                              {ensureArray(searchResults).filter((r) => r.status === "In Progress").length} Cases
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {overallStats?.total_approved || 0} Cases
                             </span>
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                          <span className="text-sm sm:text-base text-gray-700">Resolved</span>
+                          <span className="text-sm sm:text-base text-gray-700">Pending</span>
                           <div className="flex gap-2 flex-wrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              {ensureArray(searchResults).filter((r) => r.status === "Disposed - Accepted" || r.status === "Resolved").length} Cases
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              {overallStats?.total_pending || 0} Cases
                             </span>
                           </div>
                         </div>
@@ -603,7 +623,7 @@ const SearchReports = () => {
                           <span className="text-sm sm:text-base text-gray-700">Rejected</span>
                           <div className="flex gap-2 flex-wrap">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                              {ensureArray(searchResults).filter((r) => r.status === "Rejected").length} Cases
+                              {overallStats?.total_rejected || 0} Cases
                             </span>
                           </div>
                         </div>
@@ -612,24 +632,24 @@ const SearchReports = () => {
 
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                        Complaint Categories
+                         Live Statistics Summary
                       </h3>
                       <div className="space-y-4">
                         <div className="flex justify-between">
-                          <span className="text-sm sm:text-base text-gray-700">Allegations</span>
+                          <span className="text-sm sm:text-base text-gray-700">Total Districts with Complaints</span>
                           <span className="font-medium text-gray-900">
-                            {ensureArray(searchResults).filter((r) => r.complaintype_name === "Allegation").length}
+                            {districtWiseStats ? Object.keys(districtWiseStats).length : 0}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm sm:text-base text-gray-700">Grievances</span>
+                          <span className="text-sm sm:text-base text-gray-700">Total Departments Involved</span>
                           <span className="font-medium text-gray-900">
-                            {ensureArray(searchResults).filter((r) => r.complaintype_name !== "Allegation").length}
+                            {departmentWiseStats ? Object.keys(departmentWiseStats).length : 0}
                           </span>
                         </div>
                         <div className="flex justify-between border-t pt-2">
-                          <span className="font-medium text-gray-900">Total Cases</span>
-                          <span className="font-bold text-gray-900">{ensureArray(searchResults).length}</span>
+                          <span className="font-medium text-gray-900">Total Complaints (Live)</span>
+                          <span className="font-bold text-gray-900">{overallStats?.total_complaints || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -643,24 +663,24 @@ const SearchReports = () => {
                   <div className="space-y-4 sm:space-y-6 overflow-hidden">
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                        SLA Compliance Report
+                        📈 Compliance Report 
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="text-center p-4 border rounded-lg">
                           <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                            {Math.round((reportStats.disposed / Math.max(reportStats.total, 1)) * 100)}%
+                            {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_approved || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500">Resolved Cases</div>
+                          <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
                         </div>
                         <div className="text-center p-4 border rounded-lg">
                           <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                            {Math.round((reportStats.inProgress / Math.max(reportStats.total, 1)) * 100)}%
+                            {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_pending || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500">In Progress</div>
+                          <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
                         </div>
                         <div className="text-center p-4 border rounded-lg">
                           <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                            {Math.round((reportStats.rejected / Math.max(reportStats.total, 1)) * 100)}%
+                            {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_rejected || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
                           </div>
                           <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
                         </div>
