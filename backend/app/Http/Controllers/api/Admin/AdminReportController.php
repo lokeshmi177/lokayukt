@@ -220,7 +220,7 @@ class AdminReportController extends Controller
         $complainCounts = Complaint::select('district_master.district_name', DB::raw('count(*) as complain_count'))
             ->join('district_master', 'complaints.district_id', '=', 'district_master.district_code')
             ->groupBy('district_master.district_code', 'district_master.district_name')
-             
+            //  ->having('complain_count', '>', 0)
             ->pluck('complain_count', 'district_master.district_name');
        return response()->json([
                'status' => true,
@@ -285,4 +285,89 @@ class AdminReportController extends Controller
 
     }
 
+     public function complainComplaintypeWise()
+    {
+       
+    //     $complainCounts = Complaint::select('complaintype.name', DB::raw('count(*) as complain_count'))
+    //         ->join('complaintype', 'complaints.complaintype_id', '=', 'complaintype.id')
+    //         ->groupBy('complaintype.id', 'complaintype.name')
+             
+    //         ->pluck('complain_count', 'complaintype.name');
+    //    return response()->json([
+    //            'status' => true,
+    //            'message' => 'Records Fetch successfully',
+    //            'data' => $complainCounts,
+    //        ]);
+
+        $complaintData = DB::table('complaints as cm')
+         ->leftjoin('complaintype', 'cm.complaintype_id', '=', 'complaintype.id')
+    ->select(
+    
+        'complaintype.name',
+         DB::raw('count(*) as complain_count'),
+         DB::raw('count(cm.id) as total_count'),
+        // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
+        // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending")
+    )
+  
+    ->groupBy('complaintype.id', 'complaintype.name')
+    // ->having('total_applications', '>', 0)
+    // ->orderBy('cm.name')
+    ->limit(10)
+    ->get();
+//     $complaintData = $complaintData->map(function ($item) {
+//         if($item->total_complaints){
+//    return [
+//                 'month' => date('F', mktime(0, 0, 0, $item->month, 10)),
+//                 'year' => now()->year,
+//                 // 'total_complaints' => $item->total_complaints,
+//                 'approved' => $item->total_approved,
+//                 'pending' => $item->total_pending,
+//             ];
+//         }
+         
+//         })->toArray();   
+
+           return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' =>  $complaintData,
+        ]);
+    }
+
+    public function complianceReport(){
+         $complainDetails = DB::table('complaints as cm')
+    ->select(
+        DB::raw('COUNT(cm.id) as total_complaints'),
+
+        // Counts
+        // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
+        // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending"),
+        // DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected"),
+
+        // Percentages
+        DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as approved_percentage"),
+
+        DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as pending_percentage"),
+
+        DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as rejected_percentage")
+    )
+    ->first();
+    return response()->json([
+        'status' => true,
+        'message' => 'Records Fetch successfully',
+        'data' => $complainDetails,
+    ]);
+
+    }
+   
 }
