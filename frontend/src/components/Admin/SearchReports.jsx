@@ -10,7 +10,6 @@ import {
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import Pagination from '../Pagination';
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
@@ -41,6 +40,7 @@ const SearchReports = () => {
   // ✅ NEW API STATES
   const [monthlyTrends, setMonthlyTrends] = useState(null);
   const [complianceReport, setComplianceReport] = useState(null);
+  const [avgProcessingTimes, setAvgProcessingTimes] = useState(null); // ✅ NEW STATE FOR PROCESSING TIME API
   
   const [isSearching, setIsSearching] = useState(false);
   
@@ -107,7 +107,6 @@ const SearchReports = () => {
           const monthlyTrendsResponse = await api.get("/montly-trends");
           if (monthlyTrendsResponse.data.status === true) {
             setMonthlyTrends(monthlyTrendsResponse.data.data);
-            console.log(monthlyTrendsResponse.data)
           }
         } catch (error) {
           console.error("Error fetching monthly trends:", error);
@@ -121,6 +120,16 @@ const SearchReports = () => {
           }
         } catch (error) {
           console.error("Error fetching compliance report:", error);
+        }
+
+        // ✅ NEW: Fetch average processing time by complaint type
+        try {
+          const avgProcessingResponse = await api.get("/detail-by-complaintype");
+          if (avgProcessingResponse.data.status === true) {
+            setAvgProcessingTimes(avgProcessingResponse.data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching average processing times:", error);
         }
 
       } catch (error) {
@@ -224,6 +233,18 @@ const SearchReports = () => {
         r.status === "Under Investigation" ||
         r.status === "Pending"
     ).length,
+  };
+
+  // ✅ Calculate overall average from avgProcessingTimes data
+  const calculateOverallAverage = () => {
+    if (!avgProcessingTimes || !Array.isArray(avgProcessingTimes)) return "N/A";
+    
+    const validTimes = avgProcessingTimes.filter(item => item.avg_days !== null && !isNaN(parseFloat(item.avg_days)));
+    if (validTimes.length === 0) return "N/A";
+    
+    const totalDays = validTimes.reduce((sum, item) => sum + parseFloat(item.avg_days), 0);
+    const average = (totalDays / validTimes.length).toFixed(1);
+    return `${average}`;
   };
 
   return (
@@ -662,24 +683,47 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* Average Processing Time Section */}
+                    {/* ✅ UPDATED Average Processing Time Section with Dynamic API Data */}
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
                         Average Processing Time
                       </h3>
                       <div className="space-y-4">
-                        <div className="flex justify-between">
-                          <span className="text-sm sm:text-base text-gray-700">Allegations</span>
-                          <span className="font-medium text-gray-900">18.5 days</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm sm:text-base text-gray-700">Grievances</span>
-                          <span className="font-medium text-gray-900">12.3 days</span>
-                        </div>
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="font-medium text-gray-900">Overall Average</span>
-                          <span className="font-bold text-gray-900">15.4 days</span>
-                        </div>
+                        {avgProcessingTimes && avgProcessingTimes.length > 0 ? (
+                          <>
+                            {avgProcessingTimes.map((item, idx) => (
+                              <div key={idx} className="flex justify-between">
+                                <span className="text-sm sm:text-base text-gray-700">
+                                  {item.name}s
+                                </span>
+                                <span className="font-medium text-gray-900">
+                                  {item.avg_days !== null ? `${item.avg_days} days` : 'N/A'}
+                                </span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between border-t pt-2">
+                              <span className="font-medium text-gray-900">Overall Average</span>
+                              <span className="font-bold text-gray-900">
+                                {calculateOverallAverage()} days
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex justify-between">
+                              <span className="text-sm sm:text-base text-gray-700">Allegations</span>
+                              <span className="font-medium text-gray-900">18.5 days</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm sm:text-base text-gray-700">Grievances</span>
+                              <span className="font-medium text-gray-900">12.3 days</span>
+                            </div>
+                            <div className="flex justify-between border-t pt-2">
+                              <span className="font-medium text-gray-900">Overall Average</span>
+                              <span className="font-bold text-gray-900">15.4 days</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
