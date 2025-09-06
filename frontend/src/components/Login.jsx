@@ -51,22 +51,29 @@ const Login = () => {
         password: formData.password
       });
 
-      if (response.data.status === 'success') {
-        // ✅ Store token and user data in localStorage
-        localStorage.setItem('access_token', response.data.data.access_token);
-        // localStorage.setItem('user', JSON.stringify(response.data.data.user));
-        
-        // ✅ Store role name separately in localStorage
-        localStorage.setItem('role', response.data.data.user.role.name);
-        
-        // Show success toast
-        toast.success('Login Successful!');
-        
-        // Navigate to dashboard after a short delay
-        setTimeout(() => {
-          window.open("/dashboard", "_self");
-        }, 1500);
-      }
+     if (response.data.status === 'success') {
+  // Store data
+  localStorage.setItem('access_token', response.data.data.access_token);
+  localStorage.setItem('user', JSON.stringify(response.data.data.user));
+  localStorage.setItem('role', response.data.data.user.role.name);
+  
+  const userRole = response.data.data.user.role.name;
+  
+  // 
+  setTimeout(() => {
+    if (userRole === "admin") {
+      toast.success("Login Successful!");
+      window.open("/admin/dashboard", "_self");
+    } else if (userRole === "oprter") {
+      toast.success("Login Successful!");
+      window.open("/operator/dashboard", "_self");
+    } else {
+      toast.error(" Unauthorized role.");
+      window.open("/login", "_self");
+    }
+  }, 1500);
+}
+
     } catch (error) {
       if (error.response?.data?.status === 'error') {
         // Handle validation errors from backend (field-specific errors)

@@ -75,12 +75,14 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     setIsHindi(!isHindi);
   };
 
-  // Function to check if current route is active
+  // ✅ Simple isActive function for admin routes
   const isActive = (href) => {
-    if (href === '/dashboard' || href === '/') {
-      return location.pathname === '/dashboard' || location.pathname === '/';
+    const fullPath = `/admin${href}`;
+    
+    if (href === '/dashboard') {
+      return location.pathname === fullPath;
     }
-    return location.pathname.startsWith(href);
+    return location.pathname.startsWith(fullPath);
   };
 
   // Close mobile menu when clicking link
@@ -159,7 +161,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             )}
           </div>
           
-          {/* Admin Badge */}
+          {/* ✅ Admin Badge (Fixed) */}
           {(isMobile || !isCollapsed) && (
             <div className="mb-3 transition-all duration-300">
               <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -202,7 +204,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           )}
         </div>
 
-        {/* Navigation Menu */}
+        {/* ✅ Navigation Menu - Only Admin Routes */}
         <nav className={`flex-1 transition-all duration-300 overflow-y-auto ${
           (!isMobile && isCollapsed) ? 'py-4' : 'py-6'
         }`}>
@@ -210,10 +212,10 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Dashboard */}
             <li>
               <Link
-                to="/dashboard"
+                to="/admin/dashboard"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive('/')
+                  isActive('/dashboard')
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 } ${
@@ -231,7 +233,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Complaints */}
             <li>
               <Link
-                to="/complaints"
+                to="/admin/complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/complaints')
@@ -252,10 +254,10 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Progress Register */}
             <li>
               <Link
-                to="/Progress-register"
+                to="/admin/progress-register"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive('/Progress-register')
+                  isActive('/progress-register')
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 } ${
@@ -273,7 +275,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Search & Reports */}
             <li>
               <Link
-                to="/search-reports"
+                to="/admin/search-reports"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/search-reports')
@@ -294,7 +296,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* User Management */}
             <li>
               <Link
-                to="/user-management"
+                to="/admin/user-management"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/user-management')
@@ -315,7 +317,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Master Data */}
             <li>
               <Link
-                to="/master-data"
+                to="/admin/master-data"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/master-data')
