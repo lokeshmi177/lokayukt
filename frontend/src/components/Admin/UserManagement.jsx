@@ -7,11 +7,15 @@ import {
   FaTrash,
   FaShieldAlt,
   FaEnvelope,
-  FaPhone
+  FaPhone,
+  FaSpinner,
+  FaExclamationTriangle
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Pagination from '../Pagination'; 
+import Pagination from '../Pagination';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -24,7 +28,74 @@ const api = axios.create({
   },
 });
 
-  
+// Delete Confirmation Modal Component
+const DeleteModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  userName, 
+  isDeleting 
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-2xl transform transition-all">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+              <FaExclamationTriangle className="w-5 h-5 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Confirm Delete</h3>
+              <p className="text-sm text-gray-500">This action cannot be undone</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="px-6 py-4">
+          <p className="text-gray-700">
+            Are you sure you want to delete user <span className="font-semibold text-gray-900">"{userName}"</span>? 
+            This will permanently remove all their data and access.
+          </p>
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isDeleting}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center gap-2 ${
+              isDeleting 
+                ? 'bg-red-400 cursor-not-allowed' 
+                : 'bg-red-600 hover:bg-red-700'
+            }`}
+          >
+            {isDeleting ? (
+              <>
+                <FaSpinner className="w-4 h-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <FaTrash className="w-4 h-4" />
+                Delete User
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,11 +103,14 @@ const UserManagement = () => {
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
   
-  // ✅ Pagination states
+  // Delete modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
-
-
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -52,7 +126,7 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  // ✅ Reset current page when filters change
+  // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedRole]);
@@ -91,6 +165,52 @@ const UserManagement = () => {
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
 
+  // Handle delete button click
+  const handleDelete = (user) => {
+    setDeletingUser(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!deletingUser) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      const response = await api.post(`/admin/delete-users/${deletingUser.id}`);
+      
+      if (response.data.status === true) {
+        toast.success(response.data.message || 'User deleted successfully');
+        
+        // Remove user from local state
+        setUsers(prevUsers => prevUsers.filter(user => user.id !== deletingUser.id));
+        
+        // Close modal and reset state
+        setIsDeleteModalOpen(false);
+        setDeletingUser(null);
+        
+        // If current page is empty after deletion, go to previous page
+        const remainingUsers = users.length - 1;
+        const maxPage = Math.ceil(remainingUsers / ITEMS_PER_PAGE);
+        if (currentPage > maxPage && maxPage > 0) {
+          setCurrentPage(maxPage);
+        }
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error(error.response?.data?.message || 'Error deleting user. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Handle delete cancel
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+    setDeletingUser(null);
+  };
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       searchTerm === '' ||
@@ -104,7 +224,7 @@ const UserManagement = () => {
     return matchesSearch && matchesRole;
   });
 
-  // ✅ Pagination calculations
+  // Pagination calculations
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -114,10 +234,24 @@ const UserManagement = () => {
   };
 
   const uniqueRoles = [...new Set(users.map(user => user.role?.label || user.role?.name).filter(Boolean))];
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
+      
       <div className="p-4 space-y-4">
         {/* Compact Header */}
         <div className="flex items-center justify-between">
@@ -274,12 +408,18 @@ const UserManagement = () => {
                                 {/* Actions */}
                                 <td className="py-2 px-4">
                                   <div className="flex gap-1">
-                                    <button onClick={()=>{
-                                      navigate("edit");
-                                    }} className="p-1 text-blue-600 hover:bg-blue-100 rounded">
+                                    <button 
+                                      onClick={() => navigate(`edit/${user.id}`)}
+                                      className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                                      title="Edit User"
+                                    >
                                       <FaEdit className="w-3 h-3" />
                                     </button>
-                                    <button className="p-1 text-red-600 hover:bg-red-100 rounded">
+                                    <button 
+                                      onClick={() => handleDelete(user)}
+                                      className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                      title="Delete User"
+                                    >
                                       <FaTrash className="w-3 h-3" />
                                     </button>
                                   </div>
@@ -291,7 +431,7 @@ const UserManagement = () => {
                       </table>
                     </div>
 
-                    {/* ✅ Pagination Component */}
+                    {/* Pagination Component */}
                     {totalPages > 1 && (
                       <div className="mt-4">
                         <Pagination
@@ -354,6 +494,15 @@ const UserManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        userName={deletingUser?.name}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 };

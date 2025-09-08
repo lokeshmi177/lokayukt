@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/users',[UserManagement::class,'index']);
         Route::get('/edit-users/{id}',[UserManagement::class,'editUser']);
         Route::post('/update-users/{id}',[UserManagement::class,'updateUser']);
-        Route::post('/delete-users{id}',[UserManagement::class,'deleteUser']);
+        Route::post('/delete-users/{id}',[UserManagement::class,'deleteUser']);
 
         /**
          * District

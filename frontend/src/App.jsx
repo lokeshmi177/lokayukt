@@ -41,7 +41,7 @@ function App() {
           <Route path="search-reports" element={<AdminSearchReports />} />
           <Route path="user-management" element={<AdminUserManagement />} />
           <Route path="user-management/add" element={<AdminAddUserManagement />} />
-             <Route path="user-management/edit" element={<AdminEditUserManagment />} />
+          <Route path="user-management/edit/:id" element={<AdminEditUserManagment />} />
           <Route path="master-data" element={<AdminMasterData />} />
         </Route>
       )}
