@@ -655,20 +655,20 @@ const SearchReports = () => {
                                 </span>
                               </div>
                               <div className="space-y-2">
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                  <span className="text-sm text-gray-600">15 Received</span>
+                                {/* <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                                  <span className="text-sm text-gray-600">{trend.pending} Received</span>
                                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     {trend.approved} Disposed
                                   </span>
-                                </div>
+                                </div> */}
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                  <span className="text-sm text-gray-600">December 2023</span>
+                                  <span className="text-sm text-gray-600">{trend.month} {trend.year}</span>
                                   <div className="flex gap-2 flex-wrap">
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                      23 Received
+                                      {trend.pending} Received
                                     </span>
                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                      18 Disposed
+                                      {trend.approved} Disposed
                                     </span>
                                   </div>
                                 </div>

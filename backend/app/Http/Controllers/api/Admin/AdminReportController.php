@@ -174,45 +174,58 @@ class AdminReportController extends Controller
            ]);
     }
 
-    //  public function allComplainsPending(){
+         public function allComplainsDashboard(){
        
-    //        $query = DB::table('complaints')
-    //        ->where('status','In Progress');
-    //       $complainDetails = $query->count();
-    //     // dd($deadpersondetails);
+           $query = DB::table('complaints');
+          $complainDetails = $query->count();
+        // dd($deadpersondetails);
 
-    //       return response()->json([
-    //            'status' => true,
-    //            'message' => 'Records Fetch successfully',
-    //            'data' => $complainDetails,
-    //        ]);
-    // }
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 
-    //  public function allComplainsApproved(){
-    //            $query = DB::table('complaints')
-    //        ->where('status','Disposed - Accepted');
-    //       $complainDetails = $query->count();
-    //     // dd($deadpersondetails);
+     public function allComplainsDashboardPending(){
+       
+           $query = DB::table('complaints')
+           ->where('status','In Progress');
+          $complainDetails = $query->count();
+        // dd($deadpersondetails);
 
-    //       return response()->json([
-    //            'status' => true,
-    //            'message' => 'Records Fetch successfully',
-    //            'data' => $complainDetails,
-    //        ]);
-    // }
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 
-    //  public function allComplainsRejected(){
-    //           $query = DB::table('complaints')
-    //        ->where('status','Rejected');
-    //       $complainDetails = $query->count();
-    //     // dd($deadpersondetails);
+     public function allComplainsDashboardApproved(){
+               $query = DB::table('complaints')
+           ->where('status','Disposed - Accepted');
+          $complainDetails = $query->count();
+        // dd($deadpersondetails);
 
-    //       return response()->json([
-    //            'status' => true,
-    //            'message' => 'Records Fetch successfully',
-    //            'data' => $complainDetails,
-    //        ]);
-    // }
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+     public function allComplainsDashboardRejected(){
+              $query = DB::table('complaints')
+           ->where('status','Rejected');
+          $complainDetails = $query->count();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 
     public function complainDistrictWise()
     {

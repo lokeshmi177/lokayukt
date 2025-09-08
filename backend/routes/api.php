@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\Admin\AdminDashboardController;
 use App\Http\Controllers\api\Admin\AdminReportController;
 use App\Http\Controllers\api\CommonController;
 use App\Http\Controllers\api\ComplaintsController;
@@ -19,6 +20,10 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/all-district',[CommonController::class,'fetch_district']);
 
         Route::post('/complaints',[ComplaintsController::class,'complaint_register']);
+        Route::post('/all-complaints',[ComplaintsController::class,'allComplainsDashboard']);
+        Route::post('/all-pending-complaints',[ComplaintsController::class,'allComplainsDashboardPending']);
+        Route::post('/all-approved-complaints',[ComplaintsController::class,'allComplainsDashboardApproved']);
+        Route::post('/all-rejected-complaints',[ComplaintsController::class,'allComplainsDashboardRejected']);
 
         Route::get('/check-duplicate',[ComplaintsController::class,'checkDuplicate']);
 
@@ -28,6 +33,9 @@ Route::middleware('auth:sanctum')->group(function(){
 
         Route::post('/add-user',[UserManagement::class,'user_management']);
         Route::get('/users',[UserManagement::class,'index']);
+        Route::get('/edit-users/{id}',[UserManagement::class,'editUser']);
+        Route::post('/update-users/{id}',[UserManagement::class,'updateUser']);
+        Route::post('/delete-users{id}',[UserManagement::class,'deleteUser']);
 
         /**
          * District
@@ -92,6 +100,9 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/montly-trends',[AdminReportController::class,'getMontlyTrends']);
         Route::get('/compliance-report',[AdminReportController::class,'complianceReport']);
 
+        // Daishboard
+        Route::get('/dashboard',[AdminDashboardController::class,'index']);
+        Route::get('/montly-complaint',[AdminDashboardController::class,'getDistrictGraph']);
     });
 
 });

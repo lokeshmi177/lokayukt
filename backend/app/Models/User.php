@@ -25,7 +25,7 @@ class User extends Authenticatable
      */
     
     protected $fillable = [
-        'name', 'email', 'district_id','tehsil_id', 'designation_id',
+        'name', 'email', 'district_id','designation_id','department_id',
         'role_id','password1','password','otp','number','user_name','deleted_at',
     ];
 
@@ -57,10 +57,10 @@ class User extends Authenticatable
 //         return $this->belongsTo(District::class);
 //     }
 
-//     public function department()
-// {
-//     return $this->belongsTo(Department::class, 'department_id', 'id');
-// }
+    public function department()
+{
+    return $this->belongsTo(Department::class, 'department_id', 'id');
+}
 
 
 //     public function tehsil()
@@ -71,7 +71,7 @@ class User extends Authenticatable
 
     //   public function designation()
     // {
-    //     return $this->belongsTo(Designation::class);
+    //     return $this->belongsTo(Designation::class,'designation_id','id');
     // }
     
 // public function roles()

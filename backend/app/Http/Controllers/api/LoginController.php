@@ -30,7 +30,7 @@ public function login(Request $request)
         }
 
         $user = User::with(['role:id,name'])->where('user_name', $request->user_name)->first();
-  
+        // dd($user ,$request->password ,$user->password);
         // Password check
         if (!Hash::check($request->password, $user->password)) {
             return ApiResponse::generateResponse('error', 'Wrong password.', null, 401);
