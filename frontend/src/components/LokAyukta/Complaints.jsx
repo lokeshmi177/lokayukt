@@ -8,10 +8,7 @@ import {
   FaSave, 
   FaPaperPlane,
   FaRupeeSign,
-  FaSpinner,
-  FaUpload,
-  FaCheck,
-  FaTimes
+  FaSpinner
 } from 'react-icons/fa';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -39,8 +36,7 @@ const Complaints = () => {
     fee_exempted: true,                     
     amount: '',
     challan_no: '',
-    subject: '',
-    file: null,
+department: '',
     dob: '',
     icer_name: '',
     designation: '',
@@ -58,42 +54,36 @@ const Complaints = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ File upload progress states
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [uploadError, setUploadError] = useState('');
-
   // Fetch all required data on component mount
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         // Fetch districts
-        const districtsResponse = await api.get(`/admin/all-district`);
+        const districtsResponse = await api.get(`/all-district`);
         if (districtsResponse.data.status === 'success') {
           setDistricts(districtsResponse.data.data);
         }
 
         // Fetch departments
-        const departmentsResponse = await api.get(`/admin/department`);
+        const departmentsResponse = await api.get(`/department`);
         if (departmentsResponse.data.status === 'success') {
           setDepartments(departmentsResponse.data.data);
         }
 
         // Fetch designations
-        const designationsResponse = await api.get(`/admin/designation`);
+        const designationsResponse = await api.get(`/designation`);
         if (designationsResponse.data.status === 'success') {
           setDesignations(designationsResponse.data.data);
         }
 
         // Fetch subjects
-        const subjectsResponse = await api.get(`/admin/subjects`);
+        const subjectsResponse = await api.get(`/subjects`);
         if (subjectsResponse.data.status === 'success') {
           setSubjects(subjectsResponse.data.data);
         }
 
         // Fetch complaint types
-        const complaintTypesResponse = await api.get(`/admin/complainstype`);
+        const complaintTypesResponse = await api.get(`/complainstype`);
         if (complaintTypesResponse.data.status === 'success') {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
@@ -130,121 +120,13 @@ const Complaints = () => {
     }
   };
 
-  // ✅ Enhanced file upload with progress
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    
-    if (!file) return;
-
-    // Validate file type (only PDF allowed)
-    if (file.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size should not exceed 5MB');
-      return;
-    }
-
-    // Reset upload states
-    setUploadProgress(0);
-    setIsUploading(true);
-    setUploadSuccess(false);
-    setUploadError('');
-
-    // Create FormData for file upload
-    const fileFormData = new FormData();
-    fileFormData.append('file', file);
-
-    // ✅ Upload file with progress tracking
-    const uploadFile = async () => {
-      try {
-        const response = await axios.post(`${BASE_URL}/admin/upload-file`, fileFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          },
-        });
-
-        // Success
-        setUploadSuccess(true);
-        setFormData(prev => ({
-          ...prev,
-          file: response.data.file || file
-        }));
-        // toast.success('File uploaded successfully!');
-        
-      } catch (error) {
-        setUploadError('Failed to upload file');
-        // toast.error('Failed to upload file');
-        console.error('Upload error:', error);
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
-    // ✅ Alternative: Simulate upload progress (if no API endpoint yet)
-    const simulateUpload = () => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 15; // Random increment
-        if (progress >= 100) {
-          progress = 100;
-          setUploadProgress(100);
-          setIsUploading(false);
-          setUploadSuccess(true);
-          setFormData(prev => ({
-            ...prev,
-            file: file
-          }));
-          // toast.success('File uploaded successfully!');
-          clearInterval(interval);
-        } else {
-          setUploadProgress(Math.round(progress));
-        }
-      }, 200);
-    };
-
-    // ✅ Choose one: Real upload or simulation
-    // uploadFile(); // For real API
-    simulateUpload(); // For simulation
-
-    // Clear error when user selects file
-    if (errors.file) {
-      setErrors(prev => ({
-        ...prev,
-        file: ''
-      }));
-    }
-  };
-
-  // ✅ Remove uploaded file
-  const handleRemoveFile = () => {
-    setFormData(prev => ({
-      ...prev,
-      file: null
-    }));
-    setUploadProgress(0);
-    setIsUploading(false);
-    setUploadSuccess(false);
-    setUploadError('');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      const response = await api.post('/admin/complaints', formData);
+      const response = await api.post('/complaints', formData);
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint registered successfully!');
         
@@ -258,8 +140,6 @@ const Complaints = () => {
           fee_exempted: true,
           amount: '',
           challan_no: '',
-          subject: '',
-          file: null,
           dob: '',
           department: '',
           officer_name: '',
@@ -269,12 +149,6 @@ const Complaints = () => {
           nature: '',
           description: ''
         });
-
-        // Reset file upload states
-        setUploadProgress(0);
-        setIsUploading(false);
-        setUploadSuccess(false);
-        setUploadError('');
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
@@ -551,7 +425,8 @@ const Complaints = () => {
                   )}
                 </div>
 
-                  {!formData.fee_exempted && (
+                {/* Date of Birth - show only if NOT exempted */}
+                {!formData.fee_exempted && (
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                       Date of Birth / जन्म तिथि
@@ -568,117 +443,6 @@ const Complaints = () => {
                     )}
                   </div>
                 )}
-
-                {/* ✅ NEW: Subject Field */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Subject / विषय *
-                  </label>
-                  <input
-                    type="text"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Enter subject"
-                  />
-                  {errors.subject && (
-                    <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
-                  )}
-                </div>
-
-                {/* ✅ NEW: File Upload with Progress */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Choose File / फ़ाइल चुनें *
-                  </label>
-                  
-                  {/* File Upload Area */}
-                  {!formData.file ? (
-                    <div className="flex items-center space-x-2">
-                      <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
-                        <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                        <span className="text-sm text-gray-700">Choose PDF file</span>
-                        <input
-                          type="file"
-                          accept=".pdf .jpeg, .jpg, .png"
-                          onChange={handleFileChange}
-                          className="hidden"
-                        /> 
-                      </label>
-                    </div>
-                  ) : (
-                    // File Selected Area
-                    <div className="border border-gray-300 rounded-md p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          <FaFileAlt className="w-4 h-4 text-red-600" />
-                          <span className="text-sm font-medium text-gray-700">
-                            {formData.file.name}
-                          </span>
-                          {uploadSuccess && (
-                            <FaCheck className="w-4 h-4 text-green-600" />
-                          )}
-                          {uploadError && (
-                            <FaTimes className="w-4 h-4 text-red-600" />
-                          )}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveFile}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                          disabled={isUploading}
-                        >
-                          <FaTimes className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* ✅ Progress Bar */}
-                      {(isUploading || uploadProgress > 0) && (
-                        <div className="mb-2">
-                          <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                            <span>Uploading...</span>
-                            <span>{uploadProgress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                              style={{ width: `${uploadProgress}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Upload Status */}
-                      {uploadSuccess && (
-                        <p className="text-xs text-green-600 flex items-center">
-                          <FaCheck className="w-3 h-3 mr-1" />
-                          Upload completed successfully
-                        </p>
-                      )}
-                      
-                      {uploadError && (
-                        <p className="text-xs text-red-600 flex items-center">
-                          <FaTimes className="w-3 h-3 mr-1" />
-                          {uploadError}
-                        </p>
-                      )}
-
-                      {/* File Size */}
-                      <p className="text-xs text-gray-500 mt-1">
-                        Size: {(formData.file.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
-                    </div>
-                  )}
-
-                  <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
-                  {errors.file && (
-                    <p className="mt-1 text-sm text-red-600">{errors.file}</p>
-                  )}
-                </div>
-
-                {/* Date of Birth - show only if NOT exempted */}
-              
               </div>
             </div>
           </div>
