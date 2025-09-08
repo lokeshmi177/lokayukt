@@ -10,15 +10,16 @@ import AdminSearchReports from './components/Admin/SearchReports';
 import AdminUserManagement from './components/Admin/UserManagement';
 import AdminMasterData from './components/Admin/MasterData';
 import AdminAddUserManagement from './components/Admin/AddUserManagement';
+import AdminEditUserManagment from './components/Admin/EditUserManagment';
 
-// import OperatorLayout from './components/Operator/Layout';
-// import OperatorDashboard from './components/Operator/Dashboard';
-// import OperatorComplaints from './components/Operator/Complaints';
-// import OperatorProgressRegister from './components/Operator/ProgressRegister';
-// import OperatorSearchReports from './components/Operator/SearchReports';
-// import OperatorUserManagement from './components/Operator/UserManagement';
-// import OperatorMasterData from './components/Operator/MasterData';
-// import OperatorAddUserManagement from './components/Operator/AddUserManagement';
+import OperatorLayout from './components/Operator/Layout';
+import OperatorDashboard from './components/Operator/Dashboard';
+import OperatorComplaints from './components/Operator/Complaints';
+import OperatorProgressRegister from './components/Operator/ProgressRegister';
+import OperatorSearchReports from './components/Operator/SearchReports';
+import OperatorUserManagement from './components/Operator/UserManagement';
+import OperatorMasterData from './components/Operator/MasterData';
+import OperatorAddUserManagement from './components/Operator/AddUserManagement';
 
 import Login from './components/Login';
 
@@ -40,12 +41,13 @@ function App() {
           <Route path="search-reports" element={<AdminSearchReports />} />
           <Route path="user-management" element={<AdminUserManagement />} />
           <Route path="user-management/add" element={<AdminAddUserManagement />} />
+             <Route path="user-management/edit" element={<AdminEditUserManagment />} />
           <Route path="master-data" element={<AdminMasterData />} />
         </Route>
       )}
 
       {/* ✅ Operator Routes - /operator/... */}
-      {/* {role === 'oprter' && (
+      {role === 'oprter' && (
         <Route path="/operator" element={<OperatorLayout />}>
           <Route path="dashboard" element={<OperatorDashboard />} />
           <Route path="complaints" element={<OperatorComplaints />} />
@@ -55,10 +57,10 @@ function App() {
           <Route path="user-management/add" element={<OperatorAddUserManagement />} />
           <Route path="master-data" element={<OperatorMasterData />} />
         </Route>
-      )} */}
+      )}
 
       {/* Default redirect */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
     </Routes>
   );
 }
