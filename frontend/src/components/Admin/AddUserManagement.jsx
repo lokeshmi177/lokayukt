@@ -33,8 +33,8 @@ const AddUserManagement = () => {
     { id: 1, name: 'Administrator' },
     { id: 2, name: 'Operator' },
     { id: 3, name: 'Supervisor' },
-    { id: 4, name: 'Onrable Lokayukta' },
-    { id: 5, name: 'Onrable up-Lokayukta' }
+    { id: 4, name: "hon'ble Lokayukta" },
+    { id: 5, name: "hon'ble up-Lokayukta" }
   ];
 
   // Sub Role options added

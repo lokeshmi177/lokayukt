@@ -5,7 +5,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
+
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ const Login = () => {
     user_name: '',
     password: ''
   });
+
 
   const handleInputChange = (e) => {
     setFormData({
@@ -31,11 +34,13 @@ const Login = () => {
     setGeneralError('');
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setGeneralError('');
+
 
     try {
       // ✅ Updated: Create axios instance without token for login request
@@ -46,33 +51,50 @@ const Login = () => {
         },
       });
 
+
       const response = await loginApi.post('/login', {
         user_name: formData.user_name,
         password: formData.password
       });
 
-     if (response.data.status === 'success') {
-  // Store data
-  localStorage.setItem('access_token', response.data.data.access_token);
-  localStorage.setItem('user', JSON.stringify(response.data.data.user));
-  localStorage.setItem('role', response.data.data.user.role.name);
-  
-  const userRole = response.data.data.user.role.name;
-  
-  // 
-  setTimeout(() => {
-    if (userRole === "admin") {
-      toast.success("Login Successful!");
-      window.open("/admin/dashboard", "_self");
-    } else if (userRole === "oprter") {
-      toast.success("Login Successful!");
-      window.open("/operator/dashboard", "_self");
-    } else {
-      toast.error(" Unauthorized role.");
-      window.open("/login", "_self");
-    }
-  }, 1500);
-}
+      // Transform the API response to match the expected structure
+      const transformedResponse = {
+        data: {
+          status: 'success',
+          data: {
+            access_token: response.data.access_token,
+            user: {
+              ...response.data.user,
+              role: {
+                name: response.data.user.role
+              }
+            }
+          }
+        }
+      };
+
+      if (transformedResponse.data.status === 'success') {
+        // Store data
+        localStorage.setItem('access_token', transformedResponse.data.data.access_token);
+        localStorage.setItem('user', JSON.stringify(transformedResponse.data.data.user));
+        localStorage.setItem('role', transformedResponse.data.data.user.role.name);
+        
+        const userRole = transformedResponse.data.data.user.role.name;
+        
+        // 
+        setTimeout(() => {
+          if (userRole === "admin") {
+            toast.success("Login Successful!");
+            window.open("/admin/dashboard", "_self");
+          } else if (userRole === "oprter") {
+            toast.success("Login Successful!");
+            window.open("/operator/dashboard", "_self");
+          } else {
+            toast.error(" Unauthorized role.");
+            window.open("/login", "_self");
+          }
+        }, 1500);
+      }
 
     } catch (error) {
       if (error.response?.data?.status === 'error') {
@@ -92,6 +114,7 @@ const Login = () => {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -110,6 +133,7 @@ const Login = () => {
           </p>
         </div>
 
+
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           
@@ -125,7 +149,7 @@ const Login = () => {
                 name="user_name"
                 value={formData.user_name}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer ${
                   errors.user_name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter username"
@@ -139,6 +163,7 @@ const Login = () => {
             )}
           </div>
 
+
           {/* Password Field */}
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -151,7 +176,7 @@ const Login = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer ${
                   errors.password || generalError ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter password"
@@ -172,6 +197,7 @@ const Login = () => {
               </p>
             )}
           </div>
+
 
           {/* Login Button */}
           <button
@@ -198,7 +224,9 @@ const Login = () => {
             )}
           </button>
 
+
         </form>
+
 
         {/* Footer */}
         <div className="mt-8 text-center">
@@ -207,7 +235,9 @@ const Login = () => {
           </p>
         </div>
 
+
       </div>
+
 
       {/* ToastContainer for react-toastify */}
       <ToastContainer
@@ -225,5 +255,6 @@ const Login = () => {
     </div>
   );
 };
+
 
 export default Login;

@@ -34,8 +34,10 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
 
+
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
+
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -46,10 +48,12 @@ const api = axios.create({
   },
 });
 
+
 // Utility function for className merging
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
+
 
 // Card Components
 const Card = React.forwardRef(({ className, ...props }, ref) => (
@@ -64,6 +68,7 @@ const Card = React.forwardRef(({ className, ...props }, ref) => (
 ));
 Card.displayName = "Card";
 
+
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
@@ -72,6 +77,7 @@ const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   />
 ));
 CardHeader.displayName = "CardHeader";
+
 
 const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
   <h3
@@ -85,10 +91,12 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
 ));
 CardTitle.displayName = "CardTitle";
 
+
 const CardContent = React.forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
+
 
 // Badge Component
 const Badge = ({ children, variant = "default", className, ...props }) => {
@@ -102,6 +110,7 @@ const Badge = ({ children, variant = "default", className, ...props }) => {
         return 'bg-blue-100 text-blue-800 border-blue-200';
     }
   };
+
 
   return (
     <div
@@ -117,6 +126,7 @@ const Badge = ({ children, variant = "default", className, ...props }) => {
   );
 };
 
+
 // Button Component
 const Button = React.forwardRef(({ className, variant = "default", size = "default", ...props }, ref) => {
   const getVariantClasses = () => {
@@ -130,6 +140,7 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
     }
   };
 
+
   const getSizeClasses = () => {
     switch (size) {
       case 'sm':
@@ -141,10 +152,11 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
     }
   };
 
+
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex items-center justify-center rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
         getVariantClasses(),
         getSizeClasses(),
         className
@@ -156,6 +168,7 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
 });
 Button.displayName = "Button";
 
+
 // Tabs Components
 const Tabs = ({ value, onValueChange, children, defaultValue, className, ...props }) => {
   const [activeTab, setActiveTab] = useState(defaultValue || value);
@@ -165,6 +178,7 @@ const Tabs = ({ value, onValueChange, children, defaultValue, className, ...prop
     if (onValueChange) onValueChange(newValue);
   };
 
+
   return (
     <div className={cn("w-full", className)} {...props}>
       {React.Children.map(children, child =>
@@ -173,6 +187,7 @@ const Tabs = ({ value, onValueChange, children, defaultValue, className, ...prop
     </div>
   );
 };
+
 
 const TabsList = ({ children, className, activeTab, onTabChange, ...props }) => (
   <div
@@ -188,10 +203,11 @@ const TabsList = ({ children, className, activeTab, onTabChange, ...props }) => 
   </div>
 );
 
+
 const TabsTrigger = ({ value, children, activeTab, onTabChange, className, ...props }) => (
   <button
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
       activeTab === value ? "bg-white text-gray-900 shadow-sm" : "",
       className
     )}
@@ -201,6 +217,7 @@ const TabsTrigger = ({ value, children, activeTab, onTabChange, className, ...pr
     {children}
   </button>
 );
+
 
 const TabsContent = ({ value, children, activeTab, className, ...props }) => {
   if (activeTab !== value) return null;
@@ -217,6 +234,7 @@ const TabsContent = ({ value, children, activeTab, className, ...props }) => {
     </div>
   );
 };
+
 
 // StatsCard Component
 const StatsCard = ({ 
@@ -244,6 +262,7 @@ const StatsCard = ({
     }
   };
 
+
   const getIconColor = () => {
     switch (variant) {
       case 'primary': return 'text-blue-600';
@@ -255,8 +274,9 @@ const StatsCard = ({
     }
   };
 
+
   return (
-    <Card className={`p-6 hover:shadow-md transition-shadow ${getVariantClasses()}`}>
+    <Card className={`p-6 hover:shadow-md transition-shadow cursor-pointer ${getVariantClasses()}`}>
       <div className="flex items-start justify-between">
         <div className="space-y-2 flex-1">
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -289,11 +309,12 @@ const StatsCard = ({
   );
 };
 
+
 // Custom Tooltip Components
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+      <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg cursor-pointer">
         <p className="text-gray-900 font-medium">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
@@ -305,6 +326,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   }
   return null;
 };
+
 
 // Main Dashboard Component
 const Dashboard = ({ userRole = "Administrator" }) => {
@@ -321,6 +343,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
 
+
   // ✅ API Data Fetching Function
   const fetchDashboardData = async (monthParam) => {
     try {
@@ -329,6 +352,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
       if (dashResponse.data.status) {
         setDashboardData(dashResponse.data.dataDashboard);
       }
+
 
       // 2. Monthly Complaint API
       const monthlyResponse = await api.get('/admin/montly-complaint');
@@ -342,6 +366,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         }));
         setMonthlyData(monthlyTrends);
       }
+
 
       // 3. Status Distribution API
       const statusResponse = await api.get('/admin/status-distribution');
@@ -372,6 +397,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         setStatusData(statusDistribution);
       }
 
+
       // 4. Department-wise API
       const deptResponse = await api.get('/admin/department-wise-complaint');
       if (deptResponse.data.status) {
@@ -382,6 +408,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         }));
         setDepartmentData(deptData);
       }
+
 
       // 5. District-wise API
       const districtResponse = await api.get('/admin/district-wise-company-type');
@@ -396,15 +423,18 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         setDistrictData(districtFormatted);
       }
 
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
   };
 
+
   // ✅ Initial Data Fetch
   useEffect(() => {
     fetchDashboardData(currentMonth);
   }, [currentMonth]);
+
 
   // ✅ Handle Date Picker Change
   const handleDateChange = (date) => {
@@ -415,6 +445,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     fetchDashboardData(newMonth);
   };
 
+
   // ✅ Refresh to Current Month
   const handleRefresh = () => {
     const now = new Date();
@@ -423,6 +454,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     setCurrentMonth(currentMonthYear);
     fetchDashboardData(currentMonthYear);
   };
+
 
   // Sample data for charts with realistic values (keeping original for other tabs)
   const weeklyActivity = [
@@ -435,6 +467,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     { day: 'Sun', entries: 4, disposals: 3, investigations: 1 }
   ];
 
+
   const processingTimeData = [
     { stage: 'Entry to Verification', avg: 2.3, target: 3 },
     { stage: 'Verification to Forward', avg: 4.1, target: 5 },
@@ -443,6 +476,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     { stage: 'Investigation to Decision', avg: 18.7, target: 20 },
     { stage: 'Decision to Disposal', avg: 3.2, target: 5 }
   ];
+
 
   const workloadData = [
     { role: 'RO/ARO', pending: 23, completed: 156 },
@@ -453,6 +487,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     { role: 'LokAyukta', pending: 6, completed: 78 }
   ];
 
+
   const slaCompliance = [
     { metric: 'Entry SLA', value: 95, target: 90 },
     { metric: 'Verification SLA', value: 87, target: 85 },
@@ -460,8 +495,28 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     { metric: 'Disposal SLA', value: 82, target: 85 }
   ];
 
+
+  // Add CSS class for cursor pointer on chart elements
+  const chartStyles = `
+    .recharts-bar-rectangle,
+    .recharts-line-dot,
+    .recharts-line,
+    .recharts-area,
+    .recharts-pie-sector,
+    .recharts-legend-item {
+      cursor: pointer !important;
+    }
+    .recharts-tooltip-wrapper {
+      cursor: pointer !important;
+    }
+  `;
+
+
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+      {/* Add styles for chart cursor pointer */}
+      <style>{chartStyles}</style>
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard / डैशबोर्ड</h1>
@@ -480,6 +535,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
           </Button>
 
+
           {/* ✅ Date Picker Dropdown - NEW */}
           {showDatePicker && (
             <div className="absolute top-full right-0 mt-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
@@ -497,6 +553,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </div>
           )}
 
+
           {/* ✅ Refresh Button - UPDATED */}
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <FaChartLine className="h-4 w-4 mr-2" />
@@ -505,6 +562,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </div>
       </div>
 
+
       {/* Monthly Tab - UPDATED with selected date */}
       {showMonthlyTab && (
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -512,19 +570,19 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             Monthly Data - {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
+            <div className="text-center cursor-pointer">
               <div className="text-2xl font-bold text-blue-600">{dashboardData?.totalcomplains || 0}</div>
               <div className="text-sm text-gray-600">Total This Month</div>
             </div>
-            <div className="text-center">
+            <div className="text-center cursor-pointer">
               <div className="text-2xl font-bold text-green-600">{dashboardData?.approvedcomplains || 0}</div>
               <div className="text-sm text-gray-600">Approved</div>
             </div>
-            <div className="text-center">
+            <div className="text-center cursor-pointer">
               <div className="text-2xl font-bold text-red-600">{dashboardData?.rejectedcomplains || 0}</div>
               <div className="text-sm text-gray-600">Rejected</div>
             </div>
-            <div className="text-center">
+            <div className="text-center cursor-pointer">
               <div className="text-2xl font-bold text-yellow-600">{dashboardData?.pendingcomplains || 0}</div>
               <div className="text-sm text-gray-600">Pending</div>
             </div>
@@ -532,8 +590,10 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </div>
       )}
 
+
       {/* Key Performance Indicators - UPDATED with API data */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+
 
         {/* Total Complaints */}
         <div className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
@@ -550,6 +610,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-blue-700">All time</div>
         </div>
 
+
         {/* Today's Entry */}
         <div className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -564,6 +625,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
           <div className="text-sm text-indigo-700">New complaints</div>
         </div>
+
 
         {/* Approved */}
         <div className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
@@ -580,6 +642,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-green-700">Disposed cases</div>
         </div>
 
+
         {/* Rejected */}
         <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -595,6 +658,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-red-700">Rejected cases</div>
         </div>
 
+
         {/* Pending */}
         <div className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -608,6 +672,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
           <div className="text-sm text-yellow-700">In progress</div>
         </div>
+
 
         {/* Avg. Processing */}
         <div className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
@@ -624,7 +689,9 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-teal-700">Average time</div>
         </div>
 
+
       </div>
+
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
@@ -635,10 +702,11 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
         </TabsList>
 
+
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Monthly Trends Chart */}
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Monthly Complaint Trends</CardTitle>
               </CardHeader>
@@ -679,13 +747,11 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
+
             {/* Status Distribution Pie Chart */}
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Current Status Distribution</CardTitle>
-                 {/* <div className="text-[17px] font-semiboldold text-gray-500 -mt-2">
-      Total Complains: {dashboardData?.totalcomplains || 0}
-    </div> */}
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
@@ -711,9 +777,10 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </Card>
           </div>
 
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Department-wise Bar Chart */}
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Department-wise Complaints</CardTitle>
               </CardHeader>
@@ -730,8 +797,9 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
+
             {/* District-wise Stacked Bar Chart */}
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>District-wise Allegations vs Grievances</CardTitle>
               </CardHeader>
@@ -752,10 +820,11 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
         </TabsContent>
 
+
         <TabsContent value="trends" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Weekly Activity Area Chart */}
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Weekly Activity Trends</CardTitle>
               </CardHeader>
@@ -813,8 +882,9 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
+
             {/* Processing Time vs Target */}
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Processing Time vs Target (Days)</CardTitle>
               </CardHeader>
@@ -835,11 +905,12 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
         </TabsContent>
 
+
         <TabsContent value="performance" className="space-y-6">
           {/* SLA Compliance Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {slaCompliance.map((item, index) => (
-              <Card key={index}>
+              <Card key={index} className="cursor-pointer">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">{item.metric}</CardTitle>
                 </CardHeader>
@@ -855,7 +926,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                       Target: {item.target}%
                     </Badge>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2 cursor-pointer">
                     <div 
                       className={`h-2 rounded-full transition-all duration-300 ${item.value >= item.target ? 'bg-green-600' : 'bg-red-600'}`}
                       style={{ width: `${Math.min(item.value, 100)}%` }}
@@ -867,9 +938,10 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
         </TabsContent>
 
+
         <TabsContent value="workload" className="space-y-6">
           {/* Role-wise Workload */}
-          <Card>
+          <Card className="cursor-pointer">
             <CardHeader>
               <CardTitle>Role-wise Workload Distribution</CardTitle>
             </CardHeader>
@@ -889,9 +961,10 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </Card>
         </TabsContent>
 
+
         <TabsContent value="compliance" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FaBullseye className="h-5 w-5" />
@@ -906,7 +979,8 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
-            <Card>
+
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FaUsers className="h-5 w-5" />
@@ -921,7 +995,8 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
-            <Card>
+
+            <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FaBuilding className="h-5 w-5" />
@@ -941,5 +1016,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     </div>
   );
 };
+
 
 export default Dashboard;

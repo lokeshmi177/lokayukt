@@ -107,7 +107,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/dashboard/{date}',[AdminDashboardController::class,'index']);
         Route::get('/montly-complaint',[AdminDashboardController::class,'getDistrictGraph']);
         Route::get('/district-wise-company-type',[AdminDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
-<<<<<<< HEAD
+
         Route::get('/status-distribution',[AdminDashboardController::class,'gestatusDistribution']);
       
       
@@ -217,9 +217,9 @@ Route::middleware('auth:sanctum')->group(function(){
       
          // });
 
-=======
+
         Route::get('/status-distribution',action: [AdminDashboardController::class,'gestatusDistribution']);
->>>>>>> a757e8751c03b312a0ae416feed82a64bed5ad63
+
     });
 
 });
