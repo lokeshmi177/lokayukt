@@ -76,7 +76,7 @@ class AdminDashboardController extends Controller
                     // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
                     // ->where('cmp.status', 2)
                     // ->where('cmp.district_id', $user_district_code)
-                    ->where('status','Rejected')
+                    ->where('status','Under Investigation')
                        ->whereYear('created_at', $date->year)
                      ->whereMonth('created_at', $date->month)
                     ->orderByDesc('cmp.id');
@@ -89,7 +89,7 @@ class AdminDashboardController extends Controller
                     // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
                     // ->where('cmp.status', 2)
                     // ->where('cmp.district_id', $user_district_code)
-                    ->where('status','Under Investigation')
+                    ->where('status','Rejected')
                        ->whereYear('created_at', $date->year)
                   ->whereMonth('created_at', $date->month)
                     ->orderByDesc('cmp.id');
