@@ -104,7 +104,14 @@ class AdminDashboardController extends Controller
 
 
          
-        $dataDashboard = array($totalcomplains,$pendingcomplains,$approvedcomplains,$rejectedcomplains,$todaycomplains,$underinvestigationcomplains,$avgPendingDays);
+        $dataDashboard = array(
+           'totalcomplains'=> $totalcomplains,
+           'pendingcomplains'=> $pendingcomplains,
+          'approvedcomplains'=> $approvedcomplains,
+           'rejectedcomplains'=> $rejectedcomplains,
+           'todaycomplains'=> $todaycomplains,
+           'underinvestigationcomplains'=> $underinvestigationcomplains,
+          'avgPendingDays'=>  $avgPendingDays);
         
         
         // $totalhousing_benificiary_detail = DB::table('housing_benificiary_detail as hbd')

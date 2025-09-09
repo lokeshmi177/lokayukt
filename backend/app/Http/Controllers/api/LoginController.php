@@ -15,89 +15,89 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-public function login(Request $request)
-{
-    try {
-        $validator = Validator::make($request->all(), [
-            'user_name' => 'required|exists:users,user_name',
-            'password'  => 'required|string|min:6',
-        ], [
-            'user_name.exists' => 'This username is not registered.',
-        ]);
-
-        if ($validator->fails()) {
-            throw new ValidationException($validator);
-        }
-
-        $user = User::with(['role:id,name'])->where('user_name', $request->user_name)->first();
-        // dd($user ,$request->password ,$user->password);
-        // Password check
-        if (!Hash::check($request->password, $user->password)) {
-            return ApiResponse::generateResponse('error', 'Wrong password.', null, 401);
-        }
-
-        if ($user->status == 0) {
-            return ApiResponse::generateResponse('error', 'You are blocked by admin.', null, 403);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return ApiResponse::generateResponse('success', 'Login Successful.', [
-            'access_token' => $token,
-            'token_type'   => 'Bearer',
-            'user'         => $user,
-            // 'role' => $user->role->name ?? 'N/A',
-        ]);
-
-    } catch (ValidationException $e) {
-        $errors = collect($e->validator->errors()->toArray())
-            ->map(fn($messages) => $messages[0]);
-
-        return ApiResponse::generateResponse('error', 'Validation failed.', $errors, 422);
-    } catch (\Exception $e) {
-        return ApiResponse::generateResponse('error', 'Something went wrong during login.', [
-            'message' => $e->getMessage(),
-        ], 500);
-    }
-}
-
-
-
-//  public function login(Request $request)
-//     {
+// public function login(Request $request)
+// {
+//     try {
 //         $validator = Validator::make($request->all(), [
 //             'user_name' => 'required|exists:users,user_name',
 //             'password'  => 'required|string|min:6',
+//         ], [
+//             'user_name.exists' => 'This username is not registered.',
 //         ]);
 
 //         if ($validator->fails()) {
-//             return response()->json($validator->errors(), 422);
+//             throw new ValidationException($validator);
 //         }
 
-//         if (!Auth::attempt($request->only('user_name', 'password'))) {
-//             return response()->json(['error' => 'Invalid credentials'], 401);
+//         $user = User::with(['role:id,name'])->where('user_name', $request->user_name)->first();
+//         // dd($user ,$request->password ,$user->password);
+//         // Password check
+//         if (!Hash::check($request->password, $user->password)) {
+//             return ApiResponse::generateResponse('error', 'Wrong password.', null, 401);
 //         }
-
-//         // $user = Auth::user();
-//         $user = auth()->user();
 
 //         if ($user->status == 0) {
-//             return response()->json(['error' => 'You are blocked by admin.'], 403);
+//             return ApiResponse::generateResponse('error', 'You are blocked by admin.', null, 403);
 //         }
 
 //         $token = $user->createToken('auth_token')->plainTextToken;
 
-//         return response()->json([
-//             'message' => 'Login Successful',
+//         return ApiResponse::generateResponse('success', 'Login Successful.', [
 //             'access_token' => $token,
 //             'token_type'   => 'Bearer',
-//             'user' => [
-//                 'id' => $user->id,
-//                 'user_name' => $user->user_name,
-//                 'role' => $user->role->name ?? 'N/A',
-//             ]
+//             'user'         => $user,
+//             // 'role' => $user->role->name ?? 'N/A',
 //         ]);
+
+//     } catch (ValidationException $e) {
+//         $errors = collect($e->validator->errors()->toArray())
+//             ->map(fn($messages) => $messages[0]);
+
+//         return ApiResponse::generateResponse('error', 'Validation failed.', $errors, 422);
+//     } catch (\Exception $e) {
+//         return ApiResponse::generateResponse('error', 'Something went wrong during login.', [
+//             'message' => $e->getMessage(),
+//         ], 500);
 //     }
+// }
+
+
+
+ public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_name' => 'required|exists:users,user_name',
+            'password'  => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        if (!Auth::attempt($request->only('user_name', 'password'))) {
+            return response()->json(['error' => 'Invalid credentials'], 401);
+        }
+
+        // $user = Auth::user();
+        $user = $request->user();
+
+        if ($user->status == 0) {
+            return response()->json(['error' => 'You are blocked by admin.'], 403);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login Successful',
+            'access_token' => $token,
+            'token_type'   => 'Bearer',
+            'user' => [
+                'id' => $user->id,
+                'user_name' => $user->user_name,
+                'role' => $user->role->name ?? 'N/A',
+            ]
+        ]);
+    }
 
 
 public function forgotPasswordCheck(Request $request)
