@@ -5,15 +5,17 @@ namespace App\Http\Controllers\api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
-       public function index()
+       public function index(Request $request, $d)
     {
         //  $user_district_code = Auth::user()->district_id ?? null;
         // $addedBy = Auth::user()->id ?? null;
         $year = now()->year;
-
+        $date = Carbon::parse($d);
+        // dd($date);
         $query = DB::table('complaints as cmp')
             // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
             // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
@@ -21,6 +23,8 @@ class AdminDashboardController extends Controller
             // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
             // ->where('cmp.status', 2)
             // ->where('cmp.district_id', $user_district_code)
+            ->whereYear('created_at', $date->year)
+            ->whereMonth('created_at', $date->month)
             ->orderByDesc('cmp.id');
          $totalcomplains = $query->count();
 
@@ -46,6 +50,8 @@ class AdminDashboardController extends Controller
             // ->where('cmp.status', 2)
             // ->where('cmp.district_id', $user_district_code)
             ->where('status','In Progress')
+             ->whereYear('created_at', $date->year)
+            ->whereMonth('created_at', $date->month)
             ->groupBy(groups: 'cmp.status')
             ->orderByDesc('cmp.id');
          $pendingcomplains = $query1->get();
@@ -58,6 +64,8 @@ class AdminDashboardController extends Controller
             // ->where('cmp.status', 2)
             // ->where('cmp.district_id', $user_district_code)
             ->where('status','Disposed - Accepted')
+               ->whereYear('created_at', $date->year)
+            ->whereMonth('created_at', $date->month)
             ->orderByDesc('cmp.id');
          $approvedcomplains = $query2->count();
 
@@ -69,6 +77,8 @@ class AdminDashboardController extends Controller
                     // ->where('cmp.status', 2)
                     // ->where('cmp.district_id', $user_district_code)
                     ->where('status','Rejected')
+                       ->whereYear('created_at', $date->year)
+                     ->whereMonth('created_at', $date->month)
                     ->orderByDesc('cmp.id');
                 $underinvestigationcomplains = $query3->count();
 
@@ -80,11 +90,21 @@ class AdminDashboardController extends Controller
                     // ->where('cmp.status', 2)
                     // ->where('cmp.district_id', $user_district_code)
                     ->where('status','Under Investigation')
+                       ->whereYear('created_at', $date->year)
+                  ->whereMonth('created_at', $date->month)
                     ->orderByDesc('cmp.id');
                 $rejectedcomplains = $query4->count();
 
+                $avgPendingDays = DB::table('complaints as cmp')
+                    ->where('cmp.status', 'In Progress')
+                    ->whereYear('cmp.created_at', $date->year)
+                    ->whereMonth('cmp.created_at', $date->month)
+                    ->selectRaw('Round(AVG(DATEDIFF(NOW(), cmp.created_at)),1) as avg_days')
+                    ->value('avg_days');
+
+
          
-        $dataDashboard = array($totalcomplains,$pendingcomplains,$approvedcomplains,$rejectedcomplains,$todaycomplains,$underinvestigationcomplains);
+        $dataDashboard = array($totalcomplains,$pendingcomplains,$approvedcomplains,$rejectedcomplains,$todaycomplains,$underinvestigationcomplains,$avgPendingDays);
         
         
         // $totalhousing_benificiary_detail = DB::table('housing_benificiary_detail as hbd')
@@ -406,6 +426,50 @@ class AdminDashboardController extends Controller
          
         })->toArray();
     }
+
+      public function gestatusDistribution(){
+            $departmentdata = DB::table('complaints as hd')
+    // ->leftJoin('complaints as hd', 'hd.department_id', '=', 'dm.id')
+    ->select(
+        DB::raw('COUNT(hd.id) as total_complains'),
+        DB::raw("SUM(CASE WHEN hd.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved_complains"),//for pending average
+        DB::raw("SUM(CASE WHEN hd.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending_complains"),//for approved average
+        DB::raw("SUM(CASE WHEN hd.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected_complains"),//for rejected average
+        DB::raw("SUM(CASE WHEN hd.status = 'Under Investigation' THEN 1 ELSE 0 END) as total_investigation_complains"),//for rejected average
+        DB::raw("ROUND(SUM(CASE WHEN hd.status = 'In Progress' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as pending_percentage"),
+        DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as approved_percentage"),
+        DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Rejected' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as rejected_percentage"),
+        DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Under Investigation' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as investigation_percentage")
+ 
+      
+    )->first();
+    // ->groupBy('hd.status')
+    // ->having('total_complains', '>', 0)
+    // ->orderBy('hd.id')
+    // // ->limit(10)
+    // ->get();
+//     $departmentdata = $departmentdata->map(function ($item) {
+//         if($item->total_complains){
+//    return [
+              
+//                 'total_complains' => $item->total_complains,
+//                 'total_approved_complains' => $item->total_approved_complains,
+//                 'total_pending_complains' => $item->total_pending_complains,
+//                 'total_rejected_complains' => $item->total_rejected_complains,
+//                 'pending_percentage' => $item->pending_percentage,
+//                 'approved_percentage' => $item->approved_percentage,
+//                 'rejected_percentage' => $item->rejected_percentage,
+//                 // 'avg_days_pending' => $item->avg_days_pending,
+//             ];
+//         }
+         
+//         })->toArray();
+
+         return response()->json([
+            'data' =>$departmentdata,
+         
+        ]);
+    }
       public function getDistrictGraph(){
         //  $user_district_code = Auth::user()->district_id ?? null;
             $year = now()->year;
@@ -470,80 +534,79 @@ class AdminDashboardController extends Controller
 
     }
 
-//      public function getBlockGraph(){
-//          $user_district_code = Auth::user()->district_id ?? null;
-//          $user_tehsil_code = Auth::user()->tehsil_id ?? null;
-//          $user_block_code = Auth::user()->block_id ?? null;
+     public function getdistrictWiseCompanyTypeGraph(){
+        //  $user_district_code = Auth::user()->district_id ?? null;
+        //  $user_tehsil_code = Auth::user()->tehsil_id ?? null;
+        //  $user_block_code = Auth::user()->block_id ?? null;
 
-//     //     //  dd($user_district_code,$user_tehsil_code,$user_block_code);
-//     //         $blockdata = DB::table('block_master as bm')
-//     // ->leftJoin('complaints as hd', 'hd.block_id', '=', 'bm.block_code')
-//     // // ->leftJoin('district_master as dm', 'hd.district_id', '=', 'dm.dist_code')
-//     // // ->leftJoin('tehsil_master as tm', 'hd.tahsil_id', '=', 'dm.tehsil_code')
-//     // ->select(
-//     //     'bm.block_code as block_id',
-//     //     'bm.block_name',
-//     //     'hd.*',
-//     //     // DB::raw('COUNT(hd.id) as total_applications'),
-//     //     // DB::raw("SUM(CASE WHEN hd.application_status = 'approved' THEN 1 ELSE 0 END) as total_approved_applications")
-//     // )
-//     // ->groupBy('bm.block_code', 'bm.block_name')
-//     // // ->having('total_applications', '>', 0)
-//     // // ->orderBy('bm.block_name')
-//     // // ->limit(10)
-//     // ->get();
-// $blockdata = DB::table('block_master as bm')
-//     ->leftJoin('complaints as hd', 'hd.block_id', '=', 'bm.id') // use inner join to exclude empty blocks
-//     ->select(
-//         'bm.block_code as block_id',
-//         'bm.block_name',
-//         // DB::raw('COUNT(hd.id) as total_applications'),
-//         DB::raw("SUM(CASE WHEN hd.form_status = '2' THEN 1 ELSE 0 END) as total_applications"),
-//         DB::raw("SUM(CASE WHEN hd.application_status = 'pending' AND hd.form_status = '2' THEN 1 ELSE 0 END) as total_pending_applications"),
-//         DB::raw("SUM(CASE WHEN hd.application_status = 'approved' AND hd.form_status = '2' THEN 1 ELSE 0 END) as total_approved_applications")
-//     )
-//     ->groupBy('bm.block_code', 'bm.block_name')
-//     ->having('total_applications', '>', 0)
-//     ->limit(5)
-//     // ->where('block_id',$user_block_code)
-//     // ->orderBy('bm.block_name', 'asc')
-//     ->get();
-//     // $housingDetails = DB::table('complaints')
-//     // ->whereIn('block_id', $blockdata->pluck('block_id'))
-//     // ->get();
-//     // dd($blockdata);
-//     $blockdata = $blockdata->map(function ($item) {
-//         if($item->total_applications){
-//    return [
-//                 'block_id' => $item->block_id,
-//                 'block_name' => $item->block_name,
-//                 'total_applications' => $item->total_applications,
-//                 'total_pending_applications' => $item->total_pending_applications,
-//                 'total_approved_applications' => $item->total_approved_applications,
-//             ];
-//         }
+    //     //  dd($user_district_code,$user_tehsil_code,$user_block_code);
+            // $blockdata = DB::table('block_master as bm')
+    // ->leftJoin('complaints as hd', 'hd.block_id', '=', 'bm.block_code')
+    // // ->leftJoin('district_master as dm', 'hd.district_id', '=', 'dm.dist_code')
+    // // ->leftJoin('tehsil_master as tm', 'hd.tahsil_id', '=', 'dm.tehsil_code')
+    // ->select(
+    //     'bm.block_code as block_id',
+    //     'bm.block_name',
+    //     'hd.*',
+    //     // DB::raw('COUNT(hd.id) as total_applications'),
+    //     // DB::raw("SUM(CASE WHEN hd.application_status = 'approved' THEN 1 ELSE 0 END) as total_approved_applications")
+    // )
+    // ->groupBy('bm.block_code', 'bm.block_name')
+    // // ->having('total_applications', '>', 0)
+    // // ->orderBy('bm.block_name')
+    // // ->limit(10)
+    // ->get();
+$blockdata = DB::table('district_master as dm')
+    ->leftJoin('complaints as hd', 'hd.district_id', '=', 'dm.district_code') // use inner join to exclude empty blocks
+    ->select(
+        'dm.district_code as district_id',
+        'dm.district_name',
+        DB::raw("count(hd.id) as total_complains"),
+        DB::raw("SUM(CASE WHEN hd.complaintype_id = '1' THEN 1 ELSE 0 END) as allegations"),
+        DB::raw("SUM(CASE WHEN hd.complaintype_id = '2' THEN 1 ELSE 0 END) as grievances")
+    )
+    ->groupBy('dm.district_code', 'dm.district_name')
+    ->having('total_complains', '>', 0)
+    // ->limit(5)
+    // ->where('block_id',$user_dist_code)
+    // ->orderBy('bm.block_name', 'asc')
+    ->get();
+    // $housingDetails = DB::table('complaints')
+    // ->whereIn('block_id', $blockdata->pluck('block_id'))
+    // ->get();
+    // dd($blockdata);
+    $blockdata = $blockdata->map(function ($item) {
+        if($item->total_complains){
+   return [
+                'district_id' => $item->district_id,
+                'district_name' => $item->district_name,
+                'total_complains' => $item->total_complains,
+                'allegations' => $item->allegations,
+                'grievances' => $item->grievances,
+            ];
+        }
          
-//         })->toArray();
+        })->toArray();
 
-//         $blockNameData = [];
-//         $totalAppData = [];
-//         $approveAppData = [];
-//         $pendingAppData = [];
-//         for($i = 0 ;$i < count($blockdata); $i++){
-//                 $blockNameData[] = $blockdata[$i]['block_name'] ?? 0;
-//                 $totalAppData[] = $blockdata[$i]['total_applications'] ?? 0;
-//                 $approveAppData[] = $blockdata[$i]['total_approved_applications'] ?? 0;
-//                 $pendingAppData[] = $blockdata[$i]['total_pending_applications'] ?? 0;
-//         }
+        $blockNameData = [];
+        $totalAppData = [];
+        $approveAppData = [];
+        $pendingAppData = [];
+        for($i = 0 ;$i < count($blockdata); $i++){
+                $blockNameData[] = $blockdata[$i]['district_name'] ?? 0;
+                $totalAppData[] = $blockdata[$i]['total_complains'] ?? 0;
+                $approveAppData[] = $blockdata[$i]['allegations'] ?? 0;
+                $pendingAppData[] = $blockdata[$i]['grievances'] ?? 0;
+        }
 
-//         return response()->json([
-//             'block' => $blockNameData,
-//             'total' => $totalAppData,
-//             'approve' => $approveAppData,
-//             'pending' => $pendingAppData
-//         ]);
-//         // dd($approveAppData,$totalAppData,$distNameData,$pendingAppData);
+        return response()->json([
+            'district' => $blockNameData,
+            'total' => $totalAppData,
+            'allegations' => $approveAppData,
+            'grievances' => $pendingAppData
+        ]);
+        // dd($approveAppData,$totalAppData,$distNameData,$pendingAppData);
 
-//     }
+    }
 
 }

@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/users',[UserManagement::class,'index']);
         Route::get('/edit-users/{id}',[UserManagement::class,'editUser']);
         Route::post('/update-users/{id}',[UserManagement::class,'updateUser']);
-        Route::post('/delete-users{id}',[UserManagement::class,'deleteUser']);
+        Route::post('/delete-users/{id}',[UserManagement::class,'deleteUser']);
 
         /**
          * District
@@ -101,8 +101,10 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/compliance-report',[AdminReportController::class,'complianceReport']);
 
         // Daishboard
-        Route::get('/dashboard',[AdminDashboardController::class,'index']);
+        Route::get('/dashboard/{date}',[AdminDashboardController::class,'index']);
         Route::get('/montly-complaint',[AdminDashboardController::class,'getDistrictGraph']);
+        Route::get('/district-wise-company-type',[AdminDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
+        Route::get('/status-distribution',[AdminDashboardController::class,'gestatusDistribution']);
     });
 
 });

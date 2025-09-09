@@ -20,7 +20,7 @@ class UserManagement extends Controller
         ]);
     }
 
-public function user_management(Request $request)
+    public function user_management(Request $request)
     {
         // Validate input
         // dd($request->all());
@@ -160,10 +160,42 @@ public function user_management(Request $request)
 
         ]);
 
+        //  'name'         => $request->name,
+        //     'email'        => $request->email,
+        //     'number'       => $request->number,
+        //     'role_id'      => $request->role_id,
+        //     'district_id'  => $request->district_id,
+        //     'designation_id'  => $request->designation,
+        //     'department_id'   => $request->department,
+        //     'user_name'    => $userName,
+        //     // 'password1'    => $request->password,
+        //     'password'     => bcrypt($request->password),
+
+       
 
         $user = User::findorfail($id);
 
-        
+         if($user->isDirty($request->name)){
+              $baseUserName = str::slug($request->name);
+        $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
+        $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
+        }else{
+            $userName = $request->user_name;
+        }
+       
+
+        // dd($user);
+            $user->name          = $request->name;
+            $user->user_name     = $userName;
+            $user->email         = $request->email;
+            $user->role_id       = $request->role_id;
+            $user->sub_role_id   = $request->sub_role_id;
+            $user->number        = $request->number;
+            $user->district_id   = $request->district_id;
+            $user->status        = $request->status;
+            $user->department_id = $request->department;
+            $user->designation_id = $request->designation;
+            $user->save();
 
         if (!$user) {
             return response()->json([
