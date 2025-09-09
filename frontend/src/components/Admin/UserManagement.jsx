@@ -9,13 +9,16 @@ import {
   FaEnvelope,
   FaPhone,
   FaSpinner,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaDownload // ✅ Added FaDownload
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Pagination from '../Pagination';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx-js-style"; // ✅ Added for Excel export
+import { saveAs } from "file-saver"; // ✅ Added for file download
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -303,7 +306,7 @@ const UserManagement = () => {
               {/* Users Tab */}
               {activeTab === 'users' && (
                 <div className="space-y-4">
-                  {/* Compact Search and Filter */}
+                  {/* ✅ Updated Search and Filter with Export Button */}
                   <div className="bg-gray-50 p-3 rounded-md border">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base font-semibold text-gray-900">
@@ -326,6 +329,81 @@ const UserManagement = () => {
                             <option key={role} value={role}>{role}</option>
                           ))}
                         </select>
+
+                        {/* ✅ Export Button */}
+                        <button
+                          onClick={() => {
+                            try {
+                              if (filteredUsers.length === 0) {
+                                // toast.error("No users available to export");
+                                return;
+                              }
+
+                              // Prepare worksheet data
+                              const wsData = [
+                                ["Sr.No", "Name", "Username", "Email", "Role", "Status", "Last Login"],
+                                ...filteredUsers.map((user, idx) => [
+                                  idx + 1,
+                                  user.name || "NA",
+                                  user.user_name || "NA",
+                                  user.email || "NA",
+                                  user.role?.label || user.role?.name || "NA",
+                                  (user.status === '1' || user.status === 1) ? "Active" : "Inactive",
+                                  user.updated_at ? new Date(user.updated_at).toLocaleString('en-IN') : "NA"
+                                ])
+                              ];
+
+                              const wb = XLSX.utils.book_new();
+                              const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                              // Header styling
+                              const headerStyle = {
+                                font: { bold: true, color: { rgb: "000000" } },
+                                alignment: { horizontal: "center" },
+                                fill: { fgColor: { rgb: "D3D3D3" } }
+                              };
+
+                              const range = XLSX.utils.decode_range(ws['!ref']);
+                              for (let C = range.s.c; C <= range.e.c; ++C) {
+                                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+                                if (!ws[cellAddress]) ws[cellAddress] = {};
+                                ws[cellAddress].s = headerStyle;
+                              }
+
+                              ws['!cols'] = [
+                                { wch: 8 },   // Sr.No
+                                { wch: 20 },  // Name
+                                { wch: 20 },  // Username
+                                { wch: 30 },  // Email
+                                { wch: 20 },  // Role
+                                { wch: 12 },  // Status
+                                { wch: 22 },  // Last Login
+                              ];
+
+                              XLSX.utils.book_append_sheet(wb, ws, "Users Report");
+
+                              const excelBuffer = XLSX.write(wb, {
+                                bookType: 'xlsx',
+                                type: 'array',
+                                cellStyles: true
+                              });
+
+                              const data = new Blob([excelBuffer], {
+                                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                              });
+
+                              saveAs(data, `users_report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+                              // toast.success("Report exported successfully!");
+                            } catch (error) {
+                              // console.error("Export failed:", error);
+                              // toast.error("Failed to generate report");
+                            }
+                          }}
+                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+                        >
+                          <FaDownload className="text-base" />
+                          <span className="text-sm">Export</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -384,11 +462,12 @@ const UserManagement = () => {
                                 {/* Role */}
                                 <td className="py-2 px-4">
                                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role?.label || user.role?.name)}`}>
-                                    {displayValue(user.role?.label || user.role?.name)}
+                                    {displayValue( user.role?.name)}
+                                    {/* user.role?.label || */}
                                   </span>
-                                  {user.sub_role_id && (
+                                  {/* {user.sub_role_id && (
                                     <div className="text-xs text-gray-500 mt-1">Sub: {displayValue(user.sub_role_id)}</div>
-                                  )}
+                                  )} */}
                                 </td>
 
                                 {/* Status */}
