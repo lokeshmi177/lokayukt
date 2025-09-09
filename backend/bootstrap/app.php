@@ -1,6 +1,6 @@
 <?php
 
-// use App\Http\Middleware\AuthMiddleware;
+use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,7 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // $middleware->append(App\Http\Middleware\AuthMiddleware::class);
+    $middleware->alias([
+        'role'=> AuthMiddleware::class
+    ]);
+       
     })
+ 
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

@@ -54,7 +54,7 @@ class AdminDashboardController extends Controller
             ->whereMonth('created_at', $date->month)
             ->groupBy(groups: 'cmp.status')
             ->orderByDesc('cmp.id');
-         $pendingcomplains = $query1->get();
+         $pendingcomplains = $query1->count();
 
            $query2 = DB::table('complaints as cmp')
             // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')

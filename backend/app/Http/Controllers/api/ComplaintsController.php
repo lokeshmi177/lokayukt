@@ -28,6 +28,8 @@ class ComplaintsController extends Controller
             'subject' => 'required',
             'nature' => 'required',
             'description' => 'required|string',
+            'title' => 'required|string',
+            'file' =>  'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
             'name.required' => 'Name is required.',
             'mobile.required' => 'Mobile number is required.',
@@ -47,6 +49,8 @@ class ComplaintsController extends Controller
             'subject.required' => 'Subject is required.',
             'nature.required' => 'Nature of complaint is required.',
             'description.required' => 'Complaint description is required.',
+            'title.required' => 'Letter Subject is Required',
+            'file.required' => 'File is Required',
         ]);
 
         if ($validation->fails()) {
@@ -75,6 +79,12 @@ class ComplaintsController extends Controller
         $complaint->subject_id = $request->subject;
         $complaint->complaintype_id = $request->nature;
         $complaint->description = $request->description;
+        $complaint->title = $request->title;
+        
+        $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
+        $filePath = $request->file('file')->storeAs('letters', $file, 'public');
+        $complaint->file = $file;
+        
         $complaint->save(); // ✅ Insert into DB
 
            // MP2024ALG001

@@ -17,7 +17,8 @@ class AuthMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        dd($request->all(),$roles);
+        // dd($roles);
+        
     
         // if(!Auth::check()){
         //     return redirect('/admin/login')->with('error','Please login first');
@@ -25,38 +26,19 @@ class AuthMiddleware
 
         // return $next($request);
         
-        // if (!Auth::check()) {
-        //     return redirect('/admin/login');
-        // }
+        if (!Auth::check()) {
+            return redirect('/admin/login');
+        }
 
-        // $userRole = Auth::user()->role->name ?? null; // ✅ updated line
-        // if (!$userRole) {
-        //     abort(403, 'No role assigned to user.');
-        // }
+        $userRole = Auth::user()->role->name ?? null; // ✅ updated line
+        if (!$userRole) {
+            abort(403, 'No role assigned to user.');
+        }
 
-        // if (in_array($userRole, $roles)) {
-        //     return $next($request);
-        // }
-
-        // abort(403, 'Unauthorized access.');
-        //  if (!Auth::check()) {
-        //     // User not logged in → redirect for web, or 401 for API
-        //     // if ($request->expectsJson()) {
-        //     //     return response()->json(['message' => 'Unauthorized'], 401);
-        //     // }
-        //     return redirect('/login');
-        // }
-
-        // $userRole = User::where('',)->role->name ?? null; // ✅ updated line
-
-        // if (!$userRole) {
-        //     abort(403, 'No role assigned to user.');
-        // }
-
-        // if (in_array($userRole, $roles)) {
+        if (in_array($userRole, $roles)) {
             return $next($request);
-        // }
+        }
 
-        // abort(403, 'Unauthorized access.');
+        abort(403, 'Unauthorized access.');
     }
 }
