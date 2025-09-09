@@ -65,7 +65,10 @@ class LoginController extends Controller
 
  public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+
+             try {
+       
+  $validator = Validator::make($request->all(), [
             'user_name' => 'required|exists:users,user_name',
             'password'  => 'required|string|min:6',
         ]);
@@ -75,7 +78,7 @@ class LoginController extends Controller
         }
 
         if (!Auth::attempt($request->only('user_name', 'password'))) {
-            return response()->json(['error' => 'Invalid credentials'], 401);
+            return ApiResponse::generateResponse('error', 'Invalid credentials.', null, 401);
         }
 
         // $user = Auth::user();
@@ -87,16 +90,34 @@ class LoginController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login Successful',
+        // return response()->json([
+        //     'message' => 'Login Successful',
+        //     'access_token' => $token,
+        //     'token_type'   => 'Bearer',
+        //     'user' => [
+        //         'id' => $user->id,
+        //         'user_name' => $user->user_name,
+        //         'role' => $user->role->name ?? 'N/A',
+        //     ]
+        // ]);
+         return ApiResponse::generateResponse('success', 'Login Successful.', [
             'access_token' => $token,
             'token_type'   => 'Bearer',
-            'user' => [
-                'id' => $user->id,
-                'user_name' => $user->user_name,
-                'role' => $user->role->name ?? 'N/A',
-            ]
+            'user'         => $user,
+            // 'role' => $user->role->name ?? 'N/A',
         ]);
+
+    } catch (ValidationException $e) {
+        $errors = collect($e->validator->errors()->toArray())
+            ->map(fn($messages) => $messages[0]);
+
+        return ApiResponse::generateResponse('error', 'Validation failed.', $errors, 422);
+    } catch (\Exception $e) {
+        return ApiResponse::generateResponse('error', 'Something went wrong during login.', [
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+ 
     }
 
 
