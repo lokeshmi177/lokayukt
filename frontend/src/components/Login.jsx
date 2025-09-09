@@ -5,9 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
-
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
-
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,12 +17,12 @@ const Login = () => {
     password: ''
   });
 
-
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    // Clear errors when user starts typing
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
@@ -34,16 +32,13 @@ const Login = () => {
     setGeneralError('');
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setGeneralError('');
 
-
     try {
-      // ✅ Updated: Create axios instance without token for login request
       const loginApi = axios.create({
         baseURL: BASE_URL,
         headers: {
@@ -51,62 +46,99 @@ const Login = () => {
         },
       });
 
-
       const response = await loginApi.post('/login', {
         user_name: formData.user_name,
         password: formData.password
       });
 
-      // Transform the API response to match the expected structure
-      const transformedResponse = {
-        data: {
-          status: 'success',
-          data: {
-            access_token: response.data.access_token,
-            user: {
-              ...response.data.user,
-              role: {
-                name: response.data.user.role
-              }
-            }
-          }
-        }
-      };
-
-      if (transformedResponse.data.status === 'success') {
-        // Store data
-        localStorage.setItem('access_token', transformedResponse.data.data.access_token);
-        localStorage.setItem('user', JSON.stringify(transformedResponse.data.data.user));
-        localStorage.setItem('role', transformedResponse.data.data.user.role.name);
+      if (response.data.status === 'success') {
+        // Store authentication data in localStorage
+        localStorage.setItem('access_token', response.data.data.access_token);
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        localStorage.setItem('role', response.data.data.user.role.name);
         
-        const userRole = transformedResponse.data.data.user.role.name;
+        // Get user role from nested object
+        const userRole = response.data.data.user.role.name;
         
-        // 
+        // Show success toast first
+        toast.success("Login Successful!");
+        
+        // Navigate based on user role after showing toast
         setTimeout(() => {
           if (userRole === "admin") {
-            toast.success("Login Successful!");
             window.open("/admin/dashboard", "_self");
-          } else if (userRole === "oprter") {
-            toast.success("Login Successful!");
+            
+          } else if (userRole === "operator") {
             window.open("/operator/dashboard", "_self");
           } else {
-            toast.error(" Unauthorized role.");
-            window.open("/login", "_self");
+            toast.error("Unauthorized role.");
+            navigate("/login");
           }
         }, 1500);
       }
 
     } catch (error) {
-      if (error.response?.data?.status === 'error') {
-        // Handle validation errors from backend (field-specific errors)
-        if (error.response.data.data && typeof error.response.data.data === 'object') {
-          setErrors(error.response.data.data);
-        } else {
-          // Handle general error messages like "Wrong password" - show below password field
+      console.log("Full Error:", error);
+      console.log("Error Response:", error.response?.data);
+      
+      if (error.response?.data) {
+        // Direct error format check - your backend sends errors directly
+        if (error.response.data.user_name || error.response.data.password) {
+          // Direct format: { "user_name": ["message"], "password": ["message"] }
+          const formattedErrors = {};
+          
+          if (error.response.data.user_name) {
+            const userNameError = error.response.data.user_name;
+            formattedErrors.user_name = Array.isArray(userNameError) ? userNameError[0] : userNameError;
+          }
+          
+          if (error.response.data.password) {
+            const passwordError = error.response.data.password;
+            formattedErrors.password = Array.isArray(passwordError) ? passwordError[0] : passwordError;
+          }
+          
+          setErrors(formattedErrors);
+          console.log("Direct format errors set:", formattedErrors);
+        }
+        // Laravel validation format
+        else if (error.response.data.errors) {
+          const formattedErrors = {};
+          Object.keys(error.response.data.errors).forEach(key => {
+            const errorArray = error.response.data.errors[key];
+            formattedErrors[key] = Array.isArray(errorArray) ? errorArray[0] : errorArray;
+          });
+          setErrors(formattedErrors);
+          console.log("Laravel format errors set:", formattedErrors);
+        }
+        // Custom nested format
+        else if (error.response.data.data && typeof error.response.data.data === 'object') {
+          const formattedErrors = {};
+          Object.keys(error.response.data.data).forEach(key => {
+            const errorArray = error.response.data.data[key];
+            formattedErrors[key] = Array.isArray(errorArray) ? errorArray[0] : errorArray;
+          });
+          setErrors(formattedErrors);
+          console.log("Nested format errors set:", formattedErrors);
+        }
+        // General message error
+        else if (error.response.data.message) {
+          setGeneralError(error.response.data.message);
+          console.log("General error set:", error.response.data.message);
+        }
+        // Status-based error handling
+        else if (error.response.data.status === 'error') {
           setGeneralError(error.response.data.message || 'Login failed');
         }
-      } else {
-        // Handle network or other errors
+      }
+      // Handle different HTTP status codes
+      else if (error.response?.status === 401) {
+        setGeneralError('Invalid credentials');
+      }
+      else if (error.response?.status === 422) {
+        setGeneralError('Validation failed');
+      }
+      // Network or other errors
+      else {
         toast.error('Network error. Please check your connection and try again.');
       }
     } finally {
@@ -114,10 +146,8 @@ const Login = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <ToastContainer position="top-right" autoClose={3000} />
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         
         {/* Header with Logo */}
@@ -132,7 +162,6 @@ const Login = () => {
             लोकायुक्त शिकायत निवारण प्रबंधन प्रणाली
           </p>
         </div>
-
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -149,7 +178,7 @@ const Login = () => {
                 name="user_name"
                 value={formData.user_name}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer ${
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
                   errors.user_name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter username"
@@ -163,7 +192,6 @@ const Login = () => {
             )}
           </div>
 
-
           {/* Password Field */}
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -176,7 +204,7 @@ const Login = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer ${
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
                   errors.password || generalError ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter password"
@@ -197,7 +225,6 @@ const Login = () => {
               </p>
             )}
           </div>
-
 
           {/* Login Button */}
           <button
@@ -224,9 +251,7 @@ const Login = () => {
             )}
           </button>
 
-
         </form>
-
 
         {/* Footer */}
         <div className="mt-8 text-center">
@@ -235,9 +260,7 @@ const Login = () => {
           </p>
         </div>
 
-
       </div>
-
 
       {/* ToastContainer for react-toastify */}
       <ToastContainer
@@ -255,6 +278,5 @@ const Login = () => {
     </div>
   );
 };
-
 
 export default Login;
