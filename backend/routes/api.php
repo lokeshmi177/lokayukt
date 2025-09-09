@@ -99,12 +99,12 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/department-wise-complaint',[AdminReportController::class,'complainDepartmentWise']);
         Route::get('/montly-trends',[AdminReportController::class,'getMontlyTrends']);
         Route::get('/compliance-report',[AdminReportController::class,'complianceReport']);
-
+        
         // Daishboard
         Route::get('/dashboard/{date}',[AdminDashboardController::class,'index']);
         Route::get('/montly-complaint',[AdminDashboardController::class,'getDistrictGraph']);
         Route::get('/district-wise-company-type',[AdminDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
-        Route::get('/status-distribution',[AdminDashboardController::class,'gestatusDistribution']);
+        Route::get('/status-distribution',action: [AdminDashboardController::class,'gestatusDistribution']);
     });
 
 });

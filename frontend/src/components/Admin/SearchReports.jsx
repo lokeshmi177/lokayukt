@@ -11,6 +11,8 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Pagination from '../Pagination';
+import * as XLSX from "xlsx-js-style"; // ✅ Added for Excel export
+import { saveAs } from "file-saver"; // ✅ Added for file download
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -40,7 +42,7 @@ const SearchReports = () => {
   // ✅ NEW API STATES
   const [monthlyTrends, setMonthlyTrends] = useState(null);
   const [complianceReport, setComplianceReport] = useState(null);
-  const [avgProcessingTimes, setAvgProcessingTimes] = useState(null); // ✅ NEW STATE FOR PROCESSING TIME API
+  const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
   
   const [isSearching, setIsSearching] = useState(false);
   
@@ -272,11 +274,7 @@ const SearchReports = () => {
             </h1>
            
           </div>
-          <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors flex-shrink-0">
-            <FaDownload className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Export All</span>
-            <span className="sm:hidden">Export</span>
-          </button>
+         
         </div>
 
         {/* Tabs Component */}
@@ -356,9 +354,9 @@ const SearchReports = () => {
                           />
                         </div>
 
-                        {/* Filters */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          <div>
+                        {/* ✅ Updated Filters - Same Color Export Button */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="flex-1">
                             <select
                               id="district"
                               value={selectedDistrict}
@@ -374,7 +372,7 @@ const SearchReports = () => {
                             </select>
                           </div>
 
-                          <div>
+                          <div className="flex-1">
                             <select
                               id="status"
                               value={selectedStatus}
@@ -391,11 +389,12 @@ const SearchReports = () => {
                             </select>
                           </div>
 
-                          <div className="sm:col-span-1">
+                          {/* ✅ Buttons Side by Side with Same Blue Color */}
+                          <div className="flex gap-3 flex-shrink-0">
                             <button
                               onClick={handleSearch}
                               disabled={isSearching}
-                              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors text-xs sm:text-sm ${
+                              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors text-xs sm:text-sm ${
                                 isSearching
                                   ? "bg-gray-400 text-white cursor-not-allowed"
                                   : "bg-blue-600 text-white hover:bg-blue-700"
@@ -413,6 +412,77 @@ const SearchReports = () => {
                                 </>
                               )}
                             </button>
+
+                            {/* ✅ Export Button - Same Blue Color & Icon */}
+                            <button
+                              onClick={() => {
+                                try {
+                                  if (filteredResults.length === 0) {
+                                    toast.error("No data to export.");
+                                    return;
+                                  }
+
+                                  const wsData = [
+                                    ["Sr. No", "Complain No", "Application No", "Name", "Officer", "Department", "District", "Nature", "Status", "Entry Date"],
+                                    ...filteredResults.map((item, index) => [
+                                      index + 1,
+                                      item.complain_no || "NA",
+                                      item.application_no || "NA", 
+                                      item.name || "NA",
+                                      item.officer_name || "NA",
+                                      item.department_name || "NA",
+                                      item.district_name || "NA",
+                                      item.complaintype_name || "NA",
+                                      item.status || "NA",
+                                      item.created_at || "NA"
+                                    ])
+                                  ];
+
+                                  const wb = XLSX.utils.book_new();
+                                  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                                  // Header styling
+                                  const headerStyle = {
+                                    font: { bold: true, color: { rgb: "000000" } },
+                                    alignment: { horizontal: "center" },
+                                    fill: { fgColor: { rgb: "D3D3D3" } }
+                                  };
+
+                                  const range = XLSX.utils.decode_range(ws['!ref']);
+                                  for (let C = range.s.c; C <= range.e.c; ++C) {
+                                    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+                                    if (!ws[cellAddress]) ws[cellAddress] = {};
+                                    ws[cellAddress].s = headerStyle;
+                                  }
+
+                                  ws['!cols'] = [
+                                    {wch: 8}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}
+                                  ];
+
+                                  XLSX.utils.book_append_sheet(wb, ws, "Search Reports");
+
+                                  const excelBuffer = XLSX.write(wb, {
+                                    bookType: 'xlsx',
+                                    type: 'array',
+                                    cellStyles: true
+                                  });
+
+                                  const data = new Blob([excelBuffer], {
+                                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                                  });
+
+                                  saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
+                                  toast.success("Export successful!");
+                                } catch(e) {
+                                  console.error("Export failed:", e);
+                                  toast.error("Failed to export data.");
+                                }
+                              }}
+                              className="flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs sm:text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                            >
+                              <FaDownload className="w-3 h-3" />
+                              <span>Export</span>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -427,7 +497,7 @@ const SearchReports = () => {
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Application No.
+                                  Complaints No.
                                 </th>
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complainant
@@ -655,12 +725,6 @@ const SearchReports = () => {
                                 </span>
                               </div>
                               <div className="space-y-2">
-                                {/* <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                  <span className="text-sm text-gray-600">{trend.pending} Received</span>
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    {trend.approved} Disposed
-                                  </span>
-                                </div> */}
                                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                                   <span className="text-sm text-gray-600">{trend.month} {trend.year}</span>
                                   <div className="flex gap-2 flex-wrap">

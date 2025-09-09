@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FaFileAlt, 
   FaClock, 
   FaCheckCircle, 
   FaTimesCircle, 
   FaExclamationTriangle, 
-  FaArrowUp, // Changed from FaTrendingUp
+  FaArrowUp,
   FaUsers,
   FaBuilding,
   FaMapMarkerAlt,
@@ -30,6 +30,21 @@ import {
   Tooltip,
   Legend
 } from 'recharts';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import axios from 'axios';
+
+const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
+const token = localStorage.getItem("access_token");
+
+// Create axios instance with token if it exists
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  },
+});
 
 // Utility function for className merging
 const cn = (...classes) => {
@@ -293,39 +308,131 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 // Main Dashboard Component
 const Dashboard = ({ userRole = "Administrator" }) => {
-  // Sample data for charts with realistic values
-  const monthlyTrends = [
-    { month: 'Jan', received: 72, disposed: 61, rejected: 9 },
-    { month: 'Feb', received: 65, disposed: 58, rejected: 11 },
-    { month: 'Mar', received: 78, disposed: 66, rejected: 14 },
-    { month: 'Apr', received: 81, disposed: 69, rejected: 12 },
-    { month: 'May', received: 73, disposed: 63, rejected: 10 },
-    { month: 'Jun', received: 86, disposed: 74, rejected: 13 },
-    { month: 'Jul', received: 92, disposed: 78, rejected: 15 }
-  ];
+  // ✅ API State Management + Date Picker State
+  const [dashboardData, setDashboardData] = useState(null);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [statusData, setStatusData] = useState([]);
+  const [departmentData, setDepartmentData] = useState([]);
+  const [districtData, setDistrictData] = useState([]);
+  const [showMonthlyTab, setShowMonthlyTab] = useState(false);
+  
+  // ✅ NEW: Date Picker State
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
 
-  const departmentData = [
-    { department: 'Revenue', complaints: 156, percentage: 32 },
-    { department: 'PWD', complaints: 124, percentage: 25 },
-    { department: 'Social Welfare', complaints: 98, percentage: 20 },
-    { department: 'Education', complaints: 67, percentage: 14 },
-    { department: 'Others', complaints: 45, percentage: 9 }
-  ];
+  // ✅ API Data Fetching Function
+  const fetchDashboardData = async (monthParam) => {
+    try {
+      // 1. Dashboard Stats API
+      const dashResponse = await api.get(`/admin/dashboard/${monthParam}`);
+      if (dashResponse.data.status) {
+        setDashboardData(dashResponse.data.dataDashboard);
+      }
 
-  const districtData = [
-    { district: 'Bhopal', total: 89, allegation: 54, grievance: 35 },
-    { district: 'Indore', total: 76, allegation: 42, grievance: 34 },
-    { district: 'Gwalior', total: 65, allegation: 38, grievance: 27 },
-    { district: 'Ujjain', total: 52, allegation: 31, grievance: 21 },
-    { district: 'Jabalpur', total: 48, allegation: 28, grievance: 20 }
-  ];
+      // 2. Monthly Complaint API
+      const monthlyResponse = await api.get('/admin/montly-complaint');
+      if (monthlyResponse.data) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyTrends = months.map((month, index) => ({
+          month,
+          received: monthlyResponse.data.total[index] || 0,
+          disposed: monthlyResponse.data.approved[index] || 0,
+          rejected: monthlyResponse.data.rejected[index] || 0
+        }));
+        setMonthlyData(monthlyTrends);
+      }
 
-  const statusDistribution = [
-    { name: 'In Progress', value: 145, color: '#f59e0b' },
-    { name: 'Under Investigation', value: 89, color: '#3b82f6' },
-    { name: 'Disposed - Accepted', value: 67, color: '#10b981' },
-    { name: 'Disposed - Rejected', value: 34, color: '#ef4444' },
-    { name: 'Awaiting Response', value: 23, color: '#8b5cf6' }
+      // 3. Status Distribution API
+      const statusResponse = await api.get('/admin/status-distribution');
+      if (statusResponse.data && statusResponse.data.data) {
+        const statusInfo = statusResponse.data.data;
+        const statusDistribution = [
+          { 
+            name: 'Pending', 
+            value: Math.round((parseFloat(statusInfo.pending_percentage) / 100) * statusInfo.total_complains),
+            color: '#f59e0b' 
+          },
+          { 
+            name: 'Approved', 
+            value: Math.round((parseFloat(statusInfo.approved_percentage) / 100) * statusInfo.total_complains),
+            color: '#10b981' 
+          },
+          { 
+            name: 'Rejected', 
+            value: Math.round((parseFloat(statusInfo.rejected_percentage) / 100) * statusInfo.total_complains),
+            color: '#ef4444' 
+          },
+          { 
+            name: 'Investigation', 
+            value: Math.round((parseFloat(statusInfo.investigation_percentage) / 100) * statusInfo.total_complains),
+            color: '#3b82f6' 
+          }
+        ];
+        setStatusData(statusDistribution);
+      }
+
+      // 4. Department-wise API
+      const deptResponse = await api.get('/admin/department-wise-complaint');
+      if (deptResponse.data.status) {
+        const deptData = Object.entries(deptResponse.data.data).map(([department, complaints]) => ({
+          department,
+          complaints,
+          percentage: Math.round((complaints / Object.values(deptResponse.data.data).reduce((a, b) => a + b, 0)) * 100)
+        }));
+        setDepartmentData(deptData);
+      }
+
+      // 5. District-wise API
+      const districtResponse = await api.get('/admin/district-wise-company-type');
+      if (districtResponse.data) {
+        const { district, total, allegations, grievances } = districtResponse.data;
+        const districtFormatted = district.map((districtName, index) => ({
+          district: districtName,
+          total: total[index] || 0,
+          allegation: parseInt(allegations[index]) || 0,
+          grievance: parseInt(grievances[index]) || 0
+        }));
+        setDistrictData(districtFormatted);
+      }
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
+  // ✅ Initial Data Fetch
+  useEffect(() => {
+    fetchDashboardData(currentMonth);
+  }, [currentMonth]);
+
+  // ✅ Handle Date Picker Change
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    setShowDatePicker(false);
+    const newMonth = date.toISOString().slice(0, 7); // YYYY-MM format
+    setCurrentMonth(newMonth);
+    fetchDashboardData(newMonth);
+  };
+
+  // ✅ Refresh to Current Month
+  const handleRefresh = () => {
+    const now = new Date();
+    setSelectedDate(now);
+    const currentMonthYear = now.toISOString().slice(0, 7);
+    setCurrentMonth(currentMonthYear);
+    fetchDashboardData(currentMonthYear);
+  };
+
+  // Sample data for charts with realistic values (keeping original for other tabs)
+  const weeklyActivity = [
+    { day: 'Mon', entries: 12, disposals: 8, investigations: 3 },
+    { day: 'Tue', entries: 15, disposals: 11, investigations: 5 },
+    { day: 'Wed', entries: 18, disposals: 14, investigations: 4 },
+    { day: 'Thu', entries: 14, disposals: 16, investigations: 6 },
+    { day: 'Fri', entries: 16, disposals: 12, investigations: 7 },
+    { day: 'Sat', entries: 8, disposals: 6, investigations: 2 },
+    { day: 'Sun', entries: 4, disposals: 3, investigations: 1 }
   ];
 
   const processingTimeData = [
@@ -346,16 +453,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     { role: 'LokAyukta', pending: 6, completed: 78 }
   ];
 
-  const weeklyActivity = [
-    { day: 'Mon', entries: 12, disposals: 8, investigations: 3 },
-    { day: 'Tue', entries: 15, disposals: 11, investigations: 5 },
-    { day: 'Wed', entries: 18, disposals: 14, investigations: 4 },
-    { day: 'Thu', entries: 14, disposals: 16, investigations: 6 },
-    { day: 'Fri', entries: 16, disposals: 12, investigations: 7 },
-    { day: 'Sat', entries: 8, disposals: 6, investigations: 2 },
-    { day: 'Sun', entries: 4, disposals: 3, investigations: 1 }
-  ];
-
   const slaCompliance = [
     { metric: 'Entry SLA', value: 95, target: 90 },
     { metric: 'Verification SLA', value: 87, target: 85 },
@@ -372,101 +469,162 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             Welcome back, {userRole} • Last updated: {new Date().toLocaleString()}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <div className="flex gap-2 relative">
+          {/* ✅ Month-Year Picker Button - UPDATED */}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowDatePicker(!showDatePicker)}
+          >
             <FaCalendarAlt className="h-4 w-4 mr-2" />
-            This Month
+            {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
           </Button>
-          <Button variant="outline" size="sm">
+
+          {/* ✅ Date Picker Dropdown - NEW */}
+          {showDatePicker && (
+            <div className="absolute top-full right-0 mt-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
+              <DatePicker
+                selected={selectedDate}
+                onChange={handleDateChange}
+                dateFormat="MM/yyyy"
+                showMonthYearPicker
+                showFullMonthYearPicker
+                minDate={new Date('2022-01-01')}
+                maxDate={new Date('2025-12-31')}
+                inline
+                className="border-0"
+              />
+            </div>
+          )}
+
+          {/* ✅ Refresh Button - UPDATED */}
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
             <FaChartLine className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Key Performance Indicators */}
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+      {/* Monthly Tab - UPDATED with selected date */}
+      {showMonthlyTab && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4">
+            Monthly Data - {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{dashboardData?.totalcomplains || 0}</div>
+              <div className="text-sm text-gray-600">Total This Month</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{dashboardData?.approvedcomplains || 0}</div>
+              <div className="text-sm text-gray-600">Approved</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{dashboardData?.rejectedcomplains || 0}</div>
+              <div className="text-sm text-gray-600">Rejected</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{dashboardData?.pendingcomplains || 0}</div>
+              <div className="text-sm text-gray-600">Pending</div>
+            </div>
+          </div>
+        </div>
+      )}
 
-  {/* Total Complaints */}
-  <div className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-    <div className="flex justify-between items-start">
-      <div className="flex items-center space-x-2">
-        <FaFileAlt className="text-2xl text-blue-600" />
-        <h3 className="text-sm font-medium text-blue-800">Total Complaints</h3>
+      {/* Key Performance Indicators - UPDATED with API data */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+
+        {/* Total Complaints */}
+        <div className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-2">
+              <FaFileAlt className="text-2xl text-blue-600" />
+              <h3 className="text-sm font-medium text-blue-800">Total Complaints</h3>
+            </div>
+            <div className="text-green-600 text-sm font-semibold">↑</div>
+          </div>
+          <div className="mt-4 text-3xl font-extrabold text-blue-900">
+            {dashboardData?.totalcomplains || 0}
+          </div>
+          <div className="text-sm text-blue-700">All time</div>
+        </div>
+
+        {/* Today's Entry */}
+        <div className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-2">
+              <FaClock className="text-2xl text-indigo-600" />
+              <h3 className="text-sm font-medium text-indigo-800">Today's Entry</h3>
+            </div>
+            <div className="text-green-600 text-sm font-semibold">↑</div>
+          </div>
+          <div className="mt-4 text-3xl font-extrabold text-indigo-900">
+            {dashboardData?.todaycomplains || 0}
+          </div>
+          <div className="text-sm text-indigo-700">New complaints</div>
+        </div>
+
+        {/* Approved */}
+        <div className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-2">
+              <FaCheckCircle className="text-2xl text-green-600" />
+              <h3 className="text-sm font-medium text-green-800">Approved</h3>
+            </div>
+            <div className="text-green-600 text-sm font-semibold">↑</div>
+          </div>
+          <div className="mt-4 text-3xl font-extrabold text-green-900">
+            {dashboardData?.approvedcomplains || 0}
+          </div>
+          <div className="text-sm text-green-700">Disposed cases</div>
+        </div>
+
+        {/* Rejected */}
+        <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-2">
+              <FaTimesCircle className="text-2xl text-red-600" />
+              <h3 className="text-sm font-medium text-red-800">Rejected</h3>
+            </div>
+            <div className="text-red-600 text-sm font-semibold">↓</div>
+          </div>
+          <div className="mt-4 text-3xl font-extrabold text-red-900">
+            {dashboardData?.rejectedcomplains || 0}
+          </div>
+          <div className="text-sm text-red-700">Rejected cases</div>
+        </div>
+
+        {/* Pending */}
+        <div className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-2">
+              <FaExclamationTriangle className="text-2xl text-yellow-600" />
+              <h3 className="text-sm font-medium text-yellow-800">Pending</h3>
+            </div>
+          </div>
+          <div className="mt-4 text-3xl font-extrabold text-yellow-900">
+            {dashboardData?.pendingcomplains || 0}
+          </div>
+          <div className="text-sm text-yellow-700">In progress</div>
+        </div>
+
+        {/* Avg. Processing */}
+        <div className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-2">
+              <FaClock className="text-2xl text-teal-600" />
+              <h3 className="text-sm font-medium text-teal-800">Avg. pending</h3>
+            </div>
+            <div className="text-red-600 text-sm font-semibold">↓</div>
+          </div>
+          <div className="mt-4 text-3xl font-extrabold text-teal-900">
+            {dashboardData?.avgPendingDays || '0'} days
+          </div>
+          <div className="text-sm text-teal-700">Average time</div>
+        </div>
+
       </div>
-      <div className="text-green-600 text-sm font-semibold">↑ 12%</div>
-    </div>
-    <div className="mt-4 text-3xl font-extrabold text-blue-900">1,247</div>
-    <div className="text-sm text-blue-700">All time</div>
-  </div>
-
-  {/* Today's Entry */}
-  <div className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-    <div className="flex justify-between items-start">
-      <div className="flex items-center space-x-2">
-        <FaClock className="text-2xl text-indigo-600" />
-        <h3 className="text-sm font-medium text-indigo-800">Today's Entry</h3>
-      </div>
-      <div className="text-green-600 text-sm font-semibold">↑ 8%</div>
-    </div>
-    <div className="mt-4 text-3xl font-extrabold text-indigo-900">18</div>
-    <div className="text-sm text-indigo-700">New complaints</div>
-  </div>
-
-  {/* Disposed */}
-  <div className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-    <div className="flex justify-between items-start">
-      <div className="flex items-center space-x-2">
-        <FaCheckCircle className="text-2xl text-green-600" />
-        <h3 className="text-sm font-medium text-green-800">Disposed</h3>
-      </div>
-      <div className="text-green-600 text-sm font-semibold">↑ 5%</div>
-    </div>
-    <div className="mt-4 text-3xl font-extrabold text-green-900">842</div>
-    <div className="text-sm text-green-700">67.5% of total</div>
-  </div>
-
-  {/* Rejected */}
-  <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-    <div className="flex justify-between items-start">
-      <div className="flex items-center space-x-2">
-        <FaTimesCircle className="text-2xl text-red-600" />
-        <h3 className="text-sm font-medium text-red-800">Rejected</h3>
-      </div>
-      <div className="text-red-600 text-sm font-semibold">↓ 3%</div>
-    </div>
-    <div className="mt-4 text-3xl font-extrabold text-red-900">156</div>
-    <div className="text-sm text-red-700">12.5% of total</div>
-  </div>
-
-  {/* In Progress */}
-  <div className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-    <div className="flex justify-between items-start">
-      <div className="flex items-center space-x-2">
-        <FaExclamationTriangle className="text-2xl text-yellow-600" />
-        <h3 className="text-sm font-medium text-yellow-800">In Progress</h3>
-      </div>
-    </div>
-    <div className="mt-4 text-3xl font-extrabold text-yellow-900">249</div>
-    <div className="text-sm text-yellow-700">20% of total</div>
-  </div>
-
-  {/* Avg. Processing */}
-  <div className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
-    <div className="flex justify-between items-start">
-      <div className="flex items-center space-x-2">
-        <FaClock className="text-2xl text-teal-600" />
-        <h3 className="text-sm font-medium text-teal-800">Avg. Processing</h3>
-      </div>
-      <div className="text-red-600 text-sm font-semibold">↓ 2%</div>
-    </div>
-    <div className="mt-4 text-3xl font-extrabold text-teal-900">15.4 days</div>
-    <div className="text-sm text-teal-700">Target: 20 days</div>
-  </div>
-
-</div>
-
-
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
@@ -486,7 +644,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                  <LineChart data={monthlyTrends}>
+                  <LineChart data={monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis dataKey="month" stroke="#6b7280" />
                     <YAxis stroke="#6b7280" />
@@ -506,7 +664,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                       stroke="#10b981" 
                       strokeWidth={3}
                       dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                      name="Disposed"
+                      name="Approved"
                     />
                     <Line 
                       type="monotone" 
@@ -525,12 +683,15 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             <Card>
               <CardHeader>
                 <CardTitle>Current Status Distribution</CardTitle>
+                 {/* <div className="text-[17px] font-semiboldold text-gray-500 -mt-2">
+      Total Complains: {dashboardData?.totalcomplains || 0}
+    </div> */}
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
                   <PieChart>
                     <Pie
-                      data={statusDistribution}
+                      data={statusData}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -539,7 +700,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {statusDistribution.map((entry, index) => (
+                      {statusData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>

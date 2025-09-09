@@ -39,13 +39,14 @@ const Complaints = () => {
     fee_exempted: true,                     
     amount: '',
     challan_no: '',
-    subject: '',
+    title: '',          // ✅ Title field for Outside Correspondence
     file: null,
     dob: '',
-    icer_name: '',
+    department: '',     
+    officer_name: '',
     designation: '',
     category: '',
-    subject: '',
+    subject: '',        // ✅ Subject dropdown in Complaint Details
     nature: '',
     description: ''
   });
@@ -158,39 +159,6 @@ const Complaints = () => {
     const fileFormData = new FormData();
     fileFormData.append('file', file);
 
-    // ✅ Upload file with progress tracking
-    const uploadFile = async () => {
-      try {
-        const response = await axios.post(`${BASE_URL}/admin/upload-file`, fileFormData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          },
-        });
-
-        // Success
-        setUploadSuccess(true);
-        setFormData(prev => ({
-          ...prev,
-          file: response.data.file || file
-        }));
-        // toast.success('File uploaded successfully!');
-        
-      } catch (error) {
-        setUploadError('Failed to upload file');
-        // toast.error('Failed to upload file');
-        console.error('Upload error:', error);
-      } finally {
-        setIsUploading(false);
-      }
-    };
-
     // ✅ Alternative: Simulate upload progress (if no API endpoint yet)
     const simulateUpload = () => {
       let progress = 0;
@@ -205,7 +173,6 @@ const Complaints = () => {
             ...prev,
             file: file
           }));
-          // toast.success('File uploaded successfully!');
           clearInterval(interval);
         } else {
           setUploadProgress(Math.round(progress));
@@ -213,8 +180,6 @@ const Complaints = () => {
       }, 200);
     };
 
-    // ✅ Choose one: Real upload or simulation
-    // uploadFile(); // For real API
     simulateUpload(); // For simulation
 
     // Clear error when user selects file
@@ -248,7 +213,7 @@ const Complaints = () => {
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint registered successfully!');
         
-        // Reset form after successful submission
+        // ✅ Reset form after successful submission with corrected field names
         setFormData({
           name: '',
           mobile: '',
@@ -258,14 +223,14 @@ const Complaints = () => {
           fee_exempted: true,
           amount: '',
           challan_no: '',
-          subject: '',
+          title: '',          
           file: null,
           dob: '',
-          department: '',
+          department: '',     
           officer_name: '',
           designation: '',
           category: '',
-          subject: '',
+          subject: '',        
           nature: '',
           description: ''
         });
@@ -551,7 +516,8 @@ const Complaints = () => {
                   )}
                 </div>
 
-                  {!formData.fee_exempted && (
+                {/* Date of Birth - show only if NOT exempted */}
+                {!formData.fee_exempted && (
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                       Date of Birth / जन्म तिथि
@@ -569,27 +535,34 @@ const Complaints = () => {
                   </div>
                 )}
 
-                {/* ✅ NEW: Subject Field */}
+  <div className="flex items-center gap-3 mb-4">
+              <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+              <div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Outside Correspondence</h2>
+                <p className="text-xs sm:text-sm text-gray-500">बाहरी पत्राचार</p>
+              </div>
+            </div>
+                {/* ✅ NEW: Title Field (moved from previous Outside Correspondence) */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Subject / विषय *
+                    Title / शीर्षक *
                   </label>
                   <input
                     type="text"
-                    name="subject"
-                    value={formData.subject}
+                    name="title"
+                    value={formData.title}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    placeholder="Enter subject"
+                    placeholder="Enter complaint title"
                   />
-                  {errors.subject && (
-                    <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
+                  {errors.title && (
+                    <p className="mt-1 text-sm text-red-600">{errors.title}</p>
                   )}
                 </div>
 
-                {/* ✅ NEW: File Upload with Progress */}
+                {/* ✅ NEW: File Upload with Progress (moved from previous Outside Correspondence) */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  <label className="block teOutside Correspondencext-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Choose File / फ़ाइल चुनें *
                   </label>
                   
@@ -601,7 +574,7 @@ const Complaints = () => {
                         <span className="text-sm text-gray-700">Choose PDF file</span>
                         <input
                           type="file"
-                          accept=".pdf .jpeg, .jpg, .png"
+                          accept=".pdf,.jpeg,.jpg,.png"
                           onChange={handleFileChange}
                           className="hidden"
                         /> 
@@ -676,12 +649,12 @@ const Complaints = () => {
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
                   )}
                 </div>
-
-                {/* Date of Birth - show only if NOT exempted */}
-              
               </div>
             </div>
           </div>
+
+          {/* ✅ NEW: Outside Correspondence - Separate Section */}
+        
 
           {/* Respondent Department - Full Width */}
           <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
@@ -798,7 +771,7 @@ const Complaints = () => {
             </div>
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                {/* Subject */}
+                {/* Subject Dropdown */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Subject / विषय *
