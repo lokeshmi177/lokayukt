@@ -192,7 +192,6 @@ class UserManagement extends Controller
             $user->sub_role_id   = $request->sub_role_id;
             $user->number        = $request->number;
             $user->district_id   = $request->district_id;
-            $user->status        = $request->status;
             $user->department_id = $request->department;
             $user->designation_id = $request->designation;
             $user->save();
