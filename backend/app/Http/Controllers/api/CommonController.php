@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\District;
 use App\Models\RejectionReasons;
+use App\Models\Role;
 use App\Models\Subjects;
 use App\Models\SubRole;
 use Illuminate\Http\Request;
@@ -666,11 +667,31 @@ class CommonController extends Controller
         }
     }
 
-    // public function getRoles(){
+    public function getRoles(){
+        $role = Role::get();
+             return response()->json([
+                'status' => true,
+                'message' => 'Role fetch successfully.',
+                'role' => $role
+            ], 200);
         
-    // }
+    }
     public function getSubroles(Request $request,$roleId){
         $subroles = SubRole::where('role_id',$roleId)->get();
-        dd($subroles);
+        // dd($subroles);
+        if($subroles){
+            
+            return response()->json([
+                  'status' => true,
+                  'message' => 'Rejection deleted successfully.',
+                  'subrole' => $subroles
+              ], 200);
+        }else{
+                 return response()->json([
+                'status' => false,
+                'message' => 'SubRole not found.'
+            ], 404);
+        }
+        
     }
 }
