@@ -18,7 +18,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         
         Route::get('/get-roles', [CommonController::class, 'getRoles']);
-        Route::get(s'/get-sub-roles/{roleId}', [CommonController::class, 'getSubroles']);
+        Route::get('/get-sub-roles/{roleId}', [CommonController::class, 'getSubroles']);
 
         // Route::prefix('admin')->group(function () {
         
@@ -108,7 +108,9 @@ Route::middleware('auth:sanctum')->group(function(){
         // Daishboard
         Route::get('/dashboard/{date}',[AdminDashboardController::class,'index']);
         Route::get('/montly-complaint',[AdminDashboardController::class,'getDistrictGraph']);
+        Route::get('/getWeeklyGraph',[AdminDashboardController::class,'getWeeklyGraph']);
         Route::get('/district-wise-company-type',[AdminDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
+        Route::get('/role-wise-reports',[AdminDashboardController::class,'getRolewisData']);
 
         Route::get('/status-distribution',[AdminDashboardController::class,'gestatusDistribution']);
       

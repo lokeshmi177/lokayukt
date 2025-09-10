@@ -13,6 +13,8 @@ class ComplaintsController extends Controller
     public function complaint_register(Request $request)
     {
         // dd($request->all());
+        // $user = $request->user()->id;
+        // $user = Auth::user();
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
