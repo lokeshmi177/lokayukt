@@ -69,7 +69,7 @@ class LoginController extends Controller
              try {
        
   $validator = Validator::make($request->all(), [
-            'user_name' => 'required|exists:users,user_name',
+             'email' => 'required|email|unique:users,email',
             'password'  => 'required|string|min:6',
         ]);
 
@@ -77,7 +77,7 @@ class LoginController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        if (!Auth::attempt($request->only('user_name', 'password'))) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return ApiResponse::generateResponse('error', 'Invalid credentials.', null, 401);
         }
 
