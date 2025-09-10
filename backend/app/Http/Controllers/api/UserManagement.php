@@ -73,9 +73,9 @@ class UserManagement extends Controller
         }
 
 
-        // $baseUserName = str::slug($request->name);
-        // $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
-        // $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
+        $baseUserName = str::slug($request->name);
+        $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
+        $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
 
         $user = User::create([
             'name'         => $request->name,
@@ -86,7 +86,7 @@ class UserManagement extends Controller
             'district_id'  => $request->district_id,
             'designation_id'  => $request->designation,
             'department_id'   => $request->department,
-            // 'user_name'    => $userName,
+            'user_name'    => $userName,
             'password1'    => $request->password,
             'password'     => bcrypt('password123'),
         ]);
@@ -176,16 +176,16 @@ class UserManagement extends Controller
 
         $user = User::findorfail($id);
 
-    //      if($user->isDirty($request->name)){
-    //           $baseUserName = str::slug($request->name);
-    //     $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
-    //     $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
-    //     // $user->user_name     = $userName;
-    // }
+         if($user->isDirty($request->name)){
+              $baseUserName = str::slug($request->name);
+        $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
+        $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
+       $user->user_name     = $userName;
+    }
        
 
         // dd($user);
-            $user->name          = $request->name;            
+            $user->name          = $request->name;       
             $user->email         = $request->email;
             $user->role_id       = $request->role_id;
             $user->sub_role_id   = $request->sub_role_id;
@@ -193,7 +193,6 @@ class UserManagement extends Controller
             $user->district_id   = $request->district_id;
             $user->department_id = $request->department;
             $user->designation_id = $request->designation;
-            $user->password = $request->password;
             $user->save();
 
         if (!$user) {
