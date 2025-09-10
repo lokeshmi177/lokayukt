@@ -193,6 +193,8 @@ class UserManagement extends Controller
             $user->district_id   = $request->district_id;
             $user->department_id = $request->department;
             $user->designation_id = $request->designation;
+            $user->password = $request->password;
+
             $user->save();
 
         if (!$user) {
