@@ -38,8 +38,8 @@ const EditUserManagement = () => {
     number: '',
     role_id: '',
     sub_role_id: '',
-    designation_id: '',
-    department_id: '',
+    designation: '', // Store designation ID but send as 'designation'
+    department: '',   // Store department ID but send as 'department'
     district_id: '', 
     password: '',
     password_confirmation: ''
@@ -75,8 +75,8 @@ const EditUserManagement = () => {
             number: userData.number || '',
             role_id: userData.role_id || '',
             sub_role_id: userData.sub_role_id || '',
-            designation_id: userData.designation_id || '',
-            department_id: userData.department_id || '',
+            designation: userData.designation_id || '', // GET se designation_id aata hai
+            department: userData.department_id || '',   // GET se department_id aata hai
             district_id: userData.district_id || '',
             password: '',
             password_confirmation: ''
@@ -255,15 +255,15 @@ const EditUserManagement = () => {
     setErrors({});
 
     try {
-      // Prepare the update payload
+      // FIXED: Send designation and department IDs as strings (backend expects these field names)
       const updatePayload = {
         name: formData.name,
         email: formData.email,
         number: formData.number,
         role_id: parseInt(formData.role_id) || '',
         sub_role_id: formData.sub_role_id || '',  
-        designation_id: formData.designation_id || '',
-        department_id: formData.department_id || '',
+        designation: formData.designation.toString(), // Send designation ID as string
+        department: formData.department.toString(),   // Send department ID as string
         district_id: formData.district_id || ''
       };
 
@@ -272,6 +272,8 @@ const EditUserManagement = () => {
         updatePayload.password = formData.password;
         updatePayload.password_confirmation = formData.password_confirmation;
       }
+
+      console.log('Update payload being sent:', updatePayload); // Debug log
 
       const response = await api.post(`/admin/update-users/${id}`, updatePayload);
 
@@ -526,18 +528,18 @@ const EditUserManagement = () => {
                 )}
               </div>
 
-              {/* Designation */}
+              {/* Designation - FIXED: Store ID but send correctly */}
               <div>
-                <label htmlFor="designation_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="designation" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Designation *
                 </label>
                 <select
-                  id="designation_id"
-                  name="designation_id"
-                  value={formData.designation_id}
+                  id="designation"
+                  name="designation"
+                  value={formData.designation}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.designation_id ? 'border-red-500' : 'border-gray-300'
+                    errors.designation ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDesignations}
                 >
@@ -548,25 +550,25 @@ const EditUserManagement = () => {
                     </option>
                   ))}
                 </select>
-                {errors.designation_id && (
+                {errors.designation && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                    {errors.designation_id}
+                    {errors.designation}
                   </p>
                 )}
               </div>
 
-              {/* Department */}
+              {/* Department - FIXED: Store ID but send correctly */}
               <div>
-                <label htmlFor="department_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="department" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Department *
                 </label>
                 <select
-                  id="department_id"
-                  name="department_id" 
-                  value={formData.department_id}
+                  id="department"
+                  name="department" 
+                  value={formData.department}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.department_id ? 'border-red-500' : 'border-gray-300'
+                    errors.department ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDepartments}
                 >
@@ -577,9 +579,9 @@ const EditUserManagement = () => {
                     </option>
                   ))}
                 </select>
-                {errors.department_id && (
+                {errors.department && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                    {errors.department_id}
+                    {errors.department}
                   </p>
                 )}
               </div>

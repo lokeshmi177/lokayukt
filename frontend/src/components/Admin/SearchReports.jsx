@@ -528,7 +528,7 @@ const SearchReports = () => {
                             <tbody className="bg-white divide-y divide-gray-100">
                               {paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
-                                  <tr key={result.id || index} className="hover:bg-gray-50">
+                                  <tr key={result.id} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
                                       {result.complain_no || result.application_no || "N/A"}
                                     </td>
@@ -574,7 +574,7 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3">
                                       <button 
                                       onClick={()=>{
-                                        navigate("view")
+                                        navigate(`view/${result.id}`)
                                       }}
                                        className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors">
                                         <FaFileAlt className="w-3 text-green-600 h-3" />

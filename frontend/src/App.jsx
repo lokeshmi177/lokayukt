@@ -38,7 +38,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="complaints" element={<AdminComplaints />} />
-          <Route path="search-reports/view" element={<ViewComplaints />} />
+          <Route path="search-reports/view/:id" element={<ViewComplaints />} />
           <Route path="progress-register" element={<AdminProgressRegister />} />
           <Route path="search-reports" element={<AdminSearchReports />} />
           <Route path="user-management" element={<AdminUserManagement />} />
