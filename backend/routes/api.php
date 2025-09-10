@@ -18,7 +18,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         
         Route::get('/get-roles', [CommonController::class, 'getRoles']);
-        Route::get(s'/get-sub-roles/{roleId}', [CommonController::class, 'getSubroles']);
+        Route::get('/get-sub-roles/{roleId}', [CommonController::class, 'getSubroles']);
 
         // Route::prefix('admin')->group(function () {
         

@@ -20,7 +20,7 @@ class ComplaintsController extends Controller
             'district_id' => 'required|exists:district_master,district_code',
             'email' => 'required|email|unique:complaints,email',
             'dob' => 'nullable|date',
-            'fee_exempted' => 'required|boolean',
+            // 'fee_exempted' => 'required|boolean',
             'department' => 'required',
             'officer_name' => 'required|string|max:255',
             'designation' => 'required',
@@ -41,7 +41,7 @@ class ComplaintsController extends Controller
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already registered.',
             'dob.date' => 'Date of Birth must be a valid date.',
-            'fee_exempted.required' => 'Please specify if fee is exempted or not.',
+            // 'fee_exempted.required' => 'Please specify if fee is exempted or not.',
             'department.required' => 'Department is required.',
             'officer_name.required' => 'Officer name is required.',
             'designation.required' => 'Designation is required.',
@@ -71,7 +71,7 @@ class ComplaintsController extends Controller
         $complaint->amount = $request->amount;
         $complaint->challan_no = $request->challan_no;
         $complaint->dob = $request->dob;
-        $complaint->fee_exempted = $request->fee_exempted;
+        $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         $complaint->department_id = $request->department;
         $complaint->officer_name = $request->officer_name;
         $complaint->designation_id = $request->designation;

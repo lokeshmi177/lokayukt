@@ -22,6 +22,7 @@ import OperatorMasterData from './components/Operator/MasterData';
 import OperatorAddUserManagement from './components/Operator/AddUserManagement';
 
 import Login from './components/Login';
+import ViewComplaints from './components/Admin/ViewComplaints';
 
 function App() {
   const role = localStorage.getItem("role");
@@ -37,6 +38,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="complaints" element={<AdminComplaints />} />
+          <Route path="search-reports/view" element={<ViewComplaints />} />
           <Route path="progress-register" element={<AdminProgressRegister />} />
           <Route path="search-reports" element={<AdminSearchReports />} />
           <Route path="user-management" element={<AdminUserManagement />} />

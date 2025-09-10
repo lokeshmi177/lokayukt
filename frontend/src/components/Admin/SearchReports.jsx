@@ -13,6 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Pagination from '../Pagination';
 import * as XLSX from "xlsx-js-style"; // ✅ Added for Excel export
 import { saveAs } from "file-saver"; // ✅ Added for file download
+import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -249,6 +250,7 @@ const SearchReports = () => {
     return `${average}`;
   };
 
+  const navigate = useNavigate()
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
       <ToastContainer
@@ -354,7 +356,8 @@ const SearchReports = () => {
                           />
                         </div>
 
-                        {/* ✅ Updated Filters - Same Color Export Button */}
+
+                        
                         <div className="flex flex-col sm:flex-row gap-3">
                           <div className="flex-1">
                             <select
@@ -569,9 +572,13 @@ const SearchReports = () => {
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <button className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors">
-                                        <FaFileAlt className="w-3 h-3" />
-                                        <span className="hidden sm:inline">View</span>
+                                      <button 
+                                      onClick={()=>{
+                                        navigate("view")
+                                      }}
+                                       className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors">
+                                        <FaFileAlt className="w-3 text-green-600 h-3" />
+                                        <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                       </button>
                                     </td>
                                   </tr>
