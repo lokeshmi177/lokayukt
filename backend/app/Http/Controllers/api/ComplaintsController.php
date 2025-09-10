@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Complaint;
 use App\Models\ComplainType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ComplaintsController extends Controller
@@ -14,7 +15,7 @@ class ComplaintsController extends Controller
     {
         // dd($request->all());
         // $user = $request->user()->id;
-        // $user = Auth::user();
+        $added_by = Auth::user()->id;
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
@@ -78,6 +79,7 @@ class ComplaintsController extends Controller
         $complaint->officer_name = $request->officer_name;
         $complaint->designation_id = $request->designation;
         $complaint->category = $request->category;
+        $complaint->added_by = $added_by;
         $complaint->subject_id = $request->subject;
         $complaint->complaintype_id = $request->nature;
         $complaint->description = $request->description;
