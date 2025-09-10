@@ -173,6 +173,33 @@ class AdminReportController extends Controller
                'data' => $complainDetails,
            ]);
     }
+        public function viewComplaint($id)
+  {
+       $complainDetails = DB::table('complaints as cm')
+    ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+    ->select(
+        'cm.*',
+        'dd.district_name',
+        'dp.name as department_name',
+        'ds.name as designation_name',
+        'ct.name as complaintype_name',
+        'sub.name as subject_name'
+    )
+    ->where('cm.id', $id)
+    ->first();
+
+           
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 
          public function allComplainsDashboard(){
        

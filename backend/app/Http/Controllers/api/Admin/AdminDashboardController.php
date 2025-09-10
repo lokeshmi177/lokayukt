@@ -434,6 +434,39 @@ class AdminDashboardController extends Controller
         })->toArray();
     }
 
+     public function getRolewisData(){
+            $departmentdata = DB::table('roles as rl')
+    ->leftJoin('complaints as hd', 'hd.department_id', '=', 'rl.id')
+    ->select(
+        'rl.id as role_id',
+        'rl.name as role_name',
+        DB::raw('COUNT(hd.id) as total_complains'),
+        DB::raw("SUM(CASE WHEN hd.status = 'approved' THEN 1 ELSE 0 END) as total_approved_complains")
+    )
+    ->groupBy('rl.id', 'rl.name')
+    ->having('total_complains', '>', 0)
+    ->orderBy('rl.name')
+    // ->limit(10)
+    ->get();
+    $departmentdata = $departmentdata->map(function ($item) {
+        if($item->total_complains){
+   return  [
+                'role_id' => $item->role_id,
+                'role_name' => $item->role_name,
+                'total_complains' => $item->total_complains,
+                // 'total_approved_complains' => $item->total_approved_complains,
+            ];
+        }
+         
+        })->toArray();
+         return response()->json([
+             'data' => $departmentdata
+               
+         
+        ]);
+    }
+
+
       public function gestatusDistribution(){
             $departmentdata = DB::table('complaints as hd')
     // ->leftJoin('complaints as hd', 'hd.department_id', '=', 'dm.id')
@@ -538,6 +571,149 @@ class AdminDashboardController extends Controller
             'rejected' =>$rejecteddData,
             'total' =>$totalData,
         ]);
+
+    }
+
+      public function getWeeklyGraph(){
+        //  $user_district_code = Auth::user()->district_id ?? null;
+        //     $year = now()->year;
+        //     $month = now()->month;
+        //  $total = DB::table('complaints')
+        //     ->selectRaw('WEEK(created_at) as week, COUNT(*) as count')
+        //     ->whereYear('created_at', $year)
+        //     ->whereMonth('created_at', $month)
+        //     // ->where('status', 2)
+        //     // ->where('district_id', $user_district_code)
+        //     // ->where('added_by', $addedBy)
+        //     ->groupBy('week')
+        //     ->pluck('count', 'week')->toArray();
+        //     // dd($total);
+
+        // $pending = DB::table('complaints')
+        //      ->selectRaw('WEEK(created_at) as week, COUNT(*) as count')
+        //     ->whereYear('created_at', $year)
+        //     ->whereMonth('created_at', $month)
+        //     // ->where('application_status', 'pending')
+        //      ->where('status', 'In Progress')
+        //     // ->where('district_id', $user_district_code)
+        //     // ->where('added_by', $addedBy)
+        //      ->groupBy('week')
+        //     ->pluck('count', 'week')->toArray();
+        // $approved = DB::table('complaints')
+        //      ->selectRaw('WEEK(created_at) as week, COUNT(*) as count')
+        //     ->whereYear('created_at', $year)
+        //     ->whereMonth('created_at', $month)
+        //     // ->where('application_status', 'approved')
+        //      ->where('status', 'Disposed - Accepted')
+        //     // ->where('district_id', $user_district_code)
+        //     // ->where('added_by', $addedBy)
+        //      ->groupBy('week')
+        //     ->pluck('count', 'week')->toArray();
+        // $rejected = DB::table('complaints')
+        //      ->selectRaw('WEEK(created_at) as week, COUNT(*) as count')
+        //     ->whereYear('created_at', $year)
+        //     ->whereMonth('created_at', $month)
+        //     // ->where('application_status', 'rejected')
+        //      ->where('status', 'Rejected')
+        //     // ->where('district_id', $user_district_code)
+        //     // ->where('added_by', $addedBy)
+        //      ->groupBy('week')
+        //     ->pluck('count', 'week')->toArray();
+
+        //     // dd($approved);
+
+        // $months = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        // $pendingData = [];
+        // $approvedData = [];
+        // $rejecteddData = [];
+        // $totalData = [];
+
+        // for ($i = 1; $i <= 7; $i++) {
+        //     $pendingData[] = $pending[$i] ?? 0;
+        //     $totalData[]=$total[$i] ?? 0;
+        //     $approvedData[] = $approved[$i] ?? 0;
+        //     $rejecteddData[]= $rejected[$i] ?? 0;
+        // }
+
+        // return response()->json([
+        //     'pending' =>$pendingData,
+        //     'approved' =>$approvedData,
+        //     'rejected' =>$rejecteddData,
+        //     'total' =>$totalData,
+        // ]);
+
+  $year = now()->year;
+    $month = now()->month;
+
+    // total complaints by day (last 7 days)
+    $total = DB::table('complaints')
+        ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
+        ->whereYear('created_at', $year)
+        ->whereMonth('created_at', $month)
+        ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()])
+        ->groupBy('day')
+        ->pluck('count', 'day')
+        ->toArray();
+
+    // pending complaints
+    $pending = DB::table('complaints')
+        ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
+        ->whereYear('created_at', $year)
+        ->whereMonth('created_at', $month)
+        ->where('status', 'In Progress')
+        ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()])
+        ->groupBy('day')
+        ->pluck('count', 'day')
+        ->toArray();
+
+    // approved complaints
+    $approved = DB::table('complaints')
+        ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
+        ->whereYear('created_at', $year)
+        ->whereMonth('created_at', $month)
+        ->where('status', 'Disposed - Accepted')
+        ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()])
+        ->groupBy('day')
+        ->pluck('count', 'day')
+        ->toArray();
+
+    // rejected complaints
+    $uI= DB::table('complaints')
+        ->selectRaw('DATE(created_at) as day, COUNT(*) as count')
+        ->whereYear('created_at', $year)
+        ->whereMonth('created_at', $month)
+        ->where('status', 'Under Investigation')
+        ->whereBetween('created_at', [now()->subDays(6)->startOfDay(), now()->endOfDay()])
+        ->groupBy('day')
+        ->pluck('count', 'day')
+        ->toArray();
+
+    // build arrays for last 7 days
+    $pendingData = [];
+    $approvedData = [];
+    $uIData = [];
+    $totalData   = [];
+    $labels      = [];
+
+    for ($i = 6; $i >= 0; $i--) {
+        $date = now()->subDays($i);
+        $day  = $date->toDateString();   // YYYY-MM-DD
+        $labels[]      = $date->format('D');  // Mon, Tue, Wed
+        $pendingData[] = $pending[$day] ?? 0;
+        $approvedData[]= $approved[$day] ?? 0;
+        $uIData[]= $rejected[$day] ?? 0;
+        $totalData[]   = $total[$day] ?? 0;
+    }
+
+    return response()->json([
+        'labels'   => $labels,      // last 7 days (YYYY-MM-DD)
+        'progress'  => $pendingData,
+        'disposed' => $approvedData,
+        'ui' => $uIData,
+        'total'    => $totalData,
+    ]);
+
+
 
     }
 

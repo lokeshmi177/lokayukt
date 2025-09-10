@@ -683,7 +683,7 @@ class CommonController extends Controller
             
             return response()->json([
                   'status' => true,
-                  'message' => 'Rejection deleted successfully.',
+                  'message' => 'Subrole fetch successfully.',
                   'subrole' => $subroles
               ], 200);
         }else{
