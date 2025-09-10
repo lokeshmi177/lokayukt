@@ -13,10 +13,12 @@ Route::post('/login',[LoginController::class,'login']);
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::post('/logout', [LoginController::class, 'logout']);
+   
      
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         
-
+        Route::post('/get-roles', [CommonController::class, 'getRoles']);
+        Route::post('/get-sub-roles/{roleId}', [CommonController::class, 'getSubroles']);
 
         // Route::prefix('admin')->group(function () {
         

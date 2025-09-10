@@ -10,6 +10,7 @@ use App\Models\Designation;
 use App\Models\District;
 use App\Models\RejectionReasons;
 use App\Models\Subjects;
+use App\Models\SubRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -665,4 +666,11 @@ class CommonController extends Controller
         }
     }
 
+    // public function getRoles(){
+        
+    // }
+    public function getSubroles(Request $request,$roleId){
+        $subroles = SubRole::where('role_id',$roleId)->get();
+        dd($subroles);
+    }
 }
