@@ -69,7 +69,7 @@ class LoginController extends Controller
              try {
        
   $validator = Validator::make($request->all(), [
-            'email' => 'required|exists:users,email',
+             'email' => 'required|email|unique:users,email',
             'password'  => 'required|string|min:6',
         ]);
 
