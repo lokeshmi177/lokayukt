@@ -44,3 +44,6 @@
 //  Aprooved
 // under investigation
 // Rejected 
+
+
+ // $complaint->added_by = $added_by;

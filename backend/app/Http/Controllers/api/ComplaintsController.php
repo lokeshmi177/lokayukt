@@ -79,7 +79,7 @@ class ComplaintsController extends Controller
         $complaint->officer_name = $request->officer_name;
         $complaint->designation_id = $request->designation;
         $complaint->category = $request->category;
-        $complaint->added_by = $added_by;
+        // $complaint->added_by = $added_by;
         $complaint->subject_id = $request->subject;
         $complaint->complaintype_id = $request->nature;
         $complaint->description = $request->description;
