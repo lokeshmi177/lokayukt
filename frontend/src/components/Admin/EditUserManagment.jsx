@@ -32,30 +32,14 @@ const EditUserManagement = () => {
   const { id } = useParams(); // Get user ID from URL params
   const navigate = useNavigate();
 
-  // Role options with IDs for dropdown
-  const roleOptions = [
-    { id: 1, name: 'Administrator' },
-    { id: 2, name: 'Operator' },
-    { id: 3, name: 'Supervisor' },
-    { id: 4, name: 'Onrable Lokayukta' },
-    { id: 5, name: 'Onrable up-Lokayukta' }
-  ];
-
-  // Sub Role options added
-  const subRoleOptions = [
-    { id: 1, name: 'Senior Level' },
-    { id: 2, name: 'Junior Level' },
-    { id: 3, name: 'Executive Level' }
-  ];
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     number: '',
     role_id: '',
     sub_role_id: '',
-    designation_id: '',
-    department_id: '',
+    designation: '', // Store designation ID but send as 'designation'
+    department: '',   // Store department ID but send as 'department'
     district_id: '', 
     password: '',
     password_confirmation: ''
@@ -68,6 +52,14 @@ const EditUserManagement = () => {
   const [districts, setDistricts] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
+  const [isLoadingDistricts, setIsLoadingDistricts] = useState(true);
+  const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
+  const [isLoadingDesignations, setIsLoadingDesignations] = useState(true);
+
+  // Roles and Sub-roles - Dynamic from API
+  const [roles, setRoles] = useState([]);
+  const [subRoles, setSubRoles] = useState([]);
+  const [isLoadingSubRoles, setIsLoadingSubRoles] = useState(false);
 
   // Fetch user data and all dropdown data on component mount
   useEffect(() => {
@@ -83,15 +75,15 @@ const EditUserManagement = () => {
             number: userData.number || '',
             role_id: userData.role_id || '',
             sub_role_id: userData.sub_role_id || '',
-            designation_id: userData.designation_id || '',
-            department_id: userData.department_id || '',
+            designation: userData.designation_id || '', // GET se designation_id aata hai
+            department: userData.department_id || '',   // GET se department_id aata hai
             district_id: userData.district_id || '',
             password: '',
             password_confirmation: ''
           });
         } else {
           toast.error('Failed to load user data');
-          navigate('/users'); // Redirect if user not found
+          navigate('/admin/user-management'); // Redirect if user not found
         }
 
         // Fetch districts
@@ -123,8 +115,12 @@ const EditUserManagement = () => {
         console.error('Failed to fetch data:', error);
         toast.error('Failed to load required data from server');
         if (error.response?.status === 404) {
-          navigate('/users'); // Redirect if user not found
+          navigate('/admin/user-management'); // Redirect if user not found
         }
+      } finally {
+        setIsLoadingDistricts(false);
+        setIsLoadingDepartments(false);
+        setIsLoadingDesignations(false);
       }
     };
 
@@ -132,6 +128,57 @@ const EditUserManagement = () => {
       fetchAllData();
     }
   }, [id, navigate]);
+
+  // Fetch roles on component mount - ADDED
+  useEffect(() => {
+    async function fetchRoles() {
+      try {
+        const res = await api.get("/admin/get-roles");
+        if (res.data.status === true) {
+          setRoles(res.data.role);
+          console.log('Roles fetched:', res.data.role);
+        }
+      } catch (error) {
+        console.log("Roles are not defined:", error);
+        toast.error('Failed to load roles');
+      }
+    }
+
+    fetchRoles();
+  }, []);
+
+  // Fetch sub-roles when role_id changes - ADDED
+  useEffect(() => {
+    async function fetchSubRoles() {
+      if (!formData.role_id) {
+        setSubRoles([]);
+        return;
+      }
+
+      setIsLoadingSubRoles(true);
+      try {
+        const res = await api.get(`/admin/get-sub-roles/${formData.role_id}`);
+        console.log('Sub-roles API response:', res.data);
+        
+        // Based on your API response structure
+        if (res.data && res.data.status === true && res.data.subrole) {
+          setSubRoles(res.data.subrole);
+          console.log('Sub-roles set:', res.data.subrole);
+        } else {
+          setSubRoles([]);
+          console.log('No sub-roles found or invalid response structure');
+        }
+      } catch (error) {
+        console.log("Sub-role fetch error:", error);
+        setSubRoles([]);
+        // toast.error('Failed to load sub-roles for selected role');
+      } finally {
+        setIsLoadingSubRoles(false);
+      }
+    }
+
+    fetchSubRoles();
+  }, [formData.role_id]); // This will trigger when role_id changes
 
   // Validation functions
   const validateName = (name) => /^[A-Za-z\s]*$/.test(name);
@@ -141,8 +188,21 @@ const EditUserManagement = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
+    // Handle role_id change - reset sub_role_id when role changes - ADDED
+    if (name === 'role_id') {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        sub_role_id: '' // Reset sub-role when role changes
+      }));
+      
+      // Clear sub-role error
+      if (errors.sub_role_id) {
+        setErrors(prev => ({ ...prev, sub_role_id: '' }));
+      }
+    }
     // Handle name validation - only alphabets and spaces
-    if (name === 'name') {
+    else if (name === 'name') {
       setFormData(prev => ({ ...prev, [name]: value }));
       if (errors[name]) {
         setErrors(prev => ({ ...prev, [name]: '' }));
@@ -195,15 +255,15 @@ const EditUserManagement = () => {
     setErrors({});
 
     try {
-      // Prepare the update payload
+      // FIXED: Send designation and department IDs as strings (backend expects these field names)
       const updatePayload = {
         name: formData.name,
         email: formData.email,
         number: formData.number,
         role_id: parseInt(formData.role_id) || '',
         sub_role_id: formData.sub_role_id || '',  
-        designation_id: formData.designation_id || '',
-        department_id: formData.department_id || '',
+        designation: formData.designation.toString(), // Send designation ID as string
+        department: formData.department.toString(),   // Send department ID as string
         district_id: formData.district_id || ''
       };
 
@@ -212,6 +272,8 @@ const EditUserManagement = () => {
         updatePayload.password = formData.password;
         updatePayload.password_confirmation = formData.password_confirmation;
       }
+
+      console.log('Update payload being sent:', updatePayload); // Debug log
 
       const response = await api.post(`/admin/update-users/${id}`, updatePayload);
 
@@ -243,7 +305,7 @@ const EditUserManagement = () => {
         console.log('Backend validation errors:', backendErrors);
       } else if (error.response?.status === 404) {
         toast.error('User not found');
-        navigate("edit");
+        navigate("/admin/user-management");
       } else if (error.response?.status === 403) {
         toast.error('You do not have permission to update this user');
       } else {
@@ -374,7 +436,7 @@ const EditUserManagement = () => {
                 )}
               </div>
 
-              {/* Role */}
+              {/* Role - UPDATED to use dynamic API */}
               <div>
                 <label htmlFor="role_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Role *
@@ -389,8 +451,8 @@ const EditUserManagement = () => {
                   }`}
                 >
                   <option value="">Select Role</option>
-                  {roleOptions.map(role => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>{role.label}</option>
                   ))}
                 </select>
                 {errors.role_id && (
@@ -400,23 +462,35 @@ const EditUserManagement = () => {
                 )}
               </div>
 
-              {/* Sub Role */}
+              {/* Sub Role - UPDATED to use dynamic API with dependency on role */}
               <div>
                 <label htmlFor="sub_role_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                  Sub Role
+                  Sub Role *
                 </label>
                 <select
                   id="sub_role_id"
                   name="sub_role_id"
                   value={formData.sub_role_id}
                   onChange={handleInputChange}
+                  disabled={!formData.role_id || isLoadingSubRoles}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
                     errors.sub_role_id ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  } ${(!formData.role_id || isLoadingSubRoles) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <option value="">Select Sub Role</option>
-                  {subRoleOptions.map(subRole => (
-                    <option key={subRole.id} value={subRole.id}>{subRole.name}</option>
+                  <option value="">
+                    {!formData.role_id 
+                      ? 'First select a role' 
+                      : isLoadingSubRoles 
+                        ? 'Loading sub-roles...' 
+                        : subRoles.length === 0 
+                          ? 'No sub-roles'
+                          : 'Select Sub Role'
+                    }
+                  </option>
+                  {subRoles.map(subRole => (
+                    <option key={subRole.id} value={subRole.id}>
+                      {subRole.label || subRole.name}
+                    </option>
                   ))}
                 </select>
                 {errors.sub_role_id && (
@@ -438,6 +512,7 @@ const EditUserManagement = () => {
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
                     errors.district_id ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  disabled={isLoadingDistricts}
                 >
                   <option value="">Select District</option>
                   {districts.map(district => (
@@ -453,19 +528,20 @@ const EditUserManagement = () => {
                 )}
               </div>
 
-              {/* Designation */}
+              {/* Designation - FIXED: Store ID but send correctly */}
               <div>
-                <label htmlFor="designation_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="designation" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Designation *
                 </label>
                 <select
-                  id="designation_id"
-                  name="designation_id"
-                  value={formData.designation_id}
+                  id="designation"
+                  name="designation"
+                  value={formData.designation}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.designation_id ? 'border-red-500' : 'border-gray-300'
+                    errors.designation ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  disabled={isLoadingDesignations}
                 >
                   <option value="">Select Designation</option>
                   {designations.map(designation => (
@@ -474,26 +550,27 @@ const EditUserManagement = () => {
                     </option>
                   ))}
                 </select>
-                {errors.designation_id && (
+                {errors.designation && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                    {errors.designation_id}
+                    {errors.designation}
                   </p>
                 )}
               </div>
 
-              {/* Department */}
+              {/* Department - FIXED: Store ID but send correctly */}
               <div>
-                <label htmlFor="department_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="department" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Department *
                 </label>
                 <select
-                  id="department_id"
-                  name="department_id" 
-                  value={formData.department_id}
+                  id="department"
+                  name="department" 
+                  value={formData.department}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.department_id ? 'border-red-500' : 'border-gray-300'
+                    errors.department ? 'border-red-500' : 'border-gray-300'
                   }`}
+                  disabled={isLoadingDepartments}
                 >
                   <option value="">Select Department</option>
                   {departments.map(department => (
@@ -502,9 +579,9 @@ const EditUserManagement = () => {
                     </option>
                   ))}
                 </select>
-                {errors.department_id && (
+                {errors.department && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                    {errors.department_id}
+                    {errors.department}
                   </p>
                 )}
               </div>

@@ -440,7 +440,7 @@ const UserManagement = () => {
                                     </div>
                                     <div>
                                       <div className="font-medium text-sm">{displayValue(user.name)}</div>
-                                      <div className="text-xs text-gray-500">{displayValue(user.user_name)}</div>
+                                      <div className="text-xs text-gray-500">{displayValue(user.role?.name)}</div>
                                     </div>
                                   </div>
                                 </td>

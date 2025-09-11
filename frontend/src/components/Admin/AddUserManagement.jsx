@@ -28,22 +28,6 @@ const api = axios.create({
 });
 
 const AddUserManagement = () => {
-  // Role options with IDs for dropdown
-  const roleOptions = [
-    { id: 1, name: 'Administrator' },
-    { id: 2, name: 'Operator' },
-    { id: 3, name: 'Supervisor' },
-    { id: 4, name: "hon'ble Lokayukta" },
-    { id: 5, name: "hon'ble up-Lokayukta" }
-  ];
-
-  // Sub Role options added
-  const subRoleOptions = [
-    { id: 1, name: 'Senior Level' },
-    { id: 2, name: 'Junior Level' },
-    { id: 3, name: 'Executive Level' }
-  ];
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -68,6 +52,11 @@ const AddUserManagement = () => {
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
   const [isLoadingDesignations, setIsLoadingDesignations] = useState(true);
 
+  // Roles and Sub-roles
+  const [roles, setRoles] = useState([]);
+  const [subRoles, setSubRoles] = useState([]);
+  const [isLoadingSubRoles, setIsLoadingSubRoles] = useState(false);
+
   // Fetch all data from APIs on component mount
   useEffect(() => {
     const fetchAllData = async () => {
@@ -87,7 +76,6 @@ const AddUserManagement = () => {
           setDepartments(departmentsResponse.data.data);
         } else {
           console.warn('Unexpected departments API response:', departmentsResponse.data);
-          // toast.error('Failed to load departments - Invalid response format');
         }
 
         // Fetch designations
@@ -96,12 +84,10 @@ const AddUserManagement = () => {
           setDesignations(designationsResponse.data.data);
         } else {
           console.warn('Unexpected designations API response:', designationsResponse.data);
-          // toast.error('Failed to load designations - Invalid response format');
         }
 
       } catch (error) {
         console.error('Failed to fetch data:', error);
-        // toast.error('Failed to load required data from server');
       } finally {
         setIsLoadingDistricts(false);
         setIsLoadingDepartments(false);
@@ -112,6 +98,57 @@ const AddUserManagement = () => {
     fetchAllData();
   }, []);
 
+  // Fetch roles on component mount
+  useEffect(() => {
+    async function fetchRoles() {
+      try {
+        const res = await api.get("/admin/get-roles");
+        if (res.data.status === true) {
+          setRoles(res.data.role);
+          console.log('Roles fetched:', res.data.role);
+        }
+      } catch (error) {
+        console.log("Roles are not defined:", error);
+        toast.error('Failed to load roles');
+      }
+    }
+
+    fetchRoles();
+  }, []);
+
+  // Fetch sub-roles when role_id changes - FIXED
+  useEffect(() => {
+    async function fetchSubRoles() {
+      if (!formData.role_id) {
+        setSubRoles([]);
+        return;
+      }
+
+      setIsLoadingSubRoles(true);
+      try {
+        const res = await api.get(`/admin/get-sub-roles/${formData.role_id}`);
+        console.log('Sub-roles API response:', res.data);
+        
+        // FIXED: Based on your API response structure
+        if (res.data && res.data.status === true && res.data.subrole) {
+          setSubRoles(res.data.subrole); // Use 'subrole' from API response
+          console.log('Sub-roles set:', res.data.subrole);
+        } else {
+          setSubRoles([]);
+          console.log('No sub-roles found or invalid response structure');
+        }
+      } catch (error) {
+        console.log("Sub-role fetch error:", error);
+        setSubRoles([]);
+        // toast.error('Failed to load sub-roles for selected role');
+      } finally {
+        setIsLoadingSubRoles(false);
+      }
+    }
+
+    fetchSubRoles();
+  }, [formData.role_id]); // This will trigger when role_id changes
+
   // Validation functions
   const validateName = (name) => /^[A-Za-z\s]*$/.test(name);
   const validateMobile = (mobile) => /^\d{10}$/.test(mobile);
@@ -120,16 +157,26 @@ const AddUserManagement = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
+    // Handle role_id change - reset sub_role_id when role changes
+    if (name === 'role_id') {
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        sub_role_id: '' // Reset sub-role when role changes
+      }));
+      
+      // Clear sub-role error
+      if (errors.sub_role_id) {
+        setErrors(prev => ({ ...prev, sub_role_id: '' }));
+      }
+    }
     // Handle name validation - only alphabets and spaces
-  if (name === 'name') {
-  // Directly set the value without restriction
-  setFormData(prev => ({ ...prev, [name]: value }));
-
-  if (errors[name]) {
-    setErrors(prev => ({ ...prev, [name]: '' }));
-  }
-}
-
+    else if (name === 'name') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      if (errors[name]) {
+        setErrors(prev => ({ ...prev, [name]: '' }));
+      }
+    }
     // Handle mobile validation
     else if (name === 'number') {
       if (value === '' || validateMobile(value)) {
@@ -176,12 +223,6 @@ const AddUserManagement = () => {
     setIsSubmitting(true);
     setErrors({});
 
-    // Debug logging
-    // console.log('Form Data before submit:', formData);
-    // console.log('Department ID:', formData.department_id, typeof formData.department_id);
-    // console.log('Designation:', formData.designation, typeof formData.designation);
-    // console.log('Sub Role ID:', formData.sub_role_id, typeof formData.sub_role_id);
-
     try {
       const response = await api.post('/admin/add-user', {
         name: formData.name,
@@ -190,7 +231,7 @@ const AddUserManagement = () => {
         role_id: parseInt(formData.role_id) || '',
         sub_role_id: formData.sub_role_id || '',  
         designation: formData.designation || '',
-        department: formData.department || '', // Send as 'department' with department_id value
+        department: formData.department_id || '', 
         district_id: formData.district_id, 
         password: formData.password,
         password_confirmation: formData.password_confirmation
@@ -207,12 +248,13 @@ const AddUserManagement = () => {
           role_id: '',
           sub_role_id: '',
           designation: '',
-          department: '',
+          department_id: '',
           district_id: '',
           password: '',
           password_confirmation: ''
         });
         setErrors({});
+        setSubRoles([]); // Clear sub-roles
       }
     } catch (error) {
       // Enhanced error handling for backend validation
@@ -237,7 +279,7 @@ const AddUserManagement = () => {
         // Generic error handling
         // toast.error(error.response?.data?.message || 'Something went wrong. Please try again.');
       }
-      // console.error('Submit error:', error.response?.data || error);
+      console.error('Submit error:', error.response?.data || error);
     } finally {
       setIsSubmitting(false);
     }
@@ -294,13 +336,12 @@ const AddUserManagement = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.name ? ' ' : 'border-gray-300'
+                    errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter full name (only alphabets and spaces)"
                 />
                 {errors.name && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.name}
                   </p>
                 )}
@@ -318,13 +359,12 @@ const AddUserManagement = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.email ? ' ' : 'border-gray-300'
+                    errors.email ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter email address"
                 />
                 {errors.email && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.email}
                   </p>
                 )}
@@ -351,14 +391,13 @@ const AddUserManagement = () => {
                     }
                   }}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.number ? ' ' : 'border-gray-300'
+                    errors.number ? 'border-red-300' : 'border-gray-300'
                   }`}
                   maxLength="10"
                   pattern="[0-9]*"
                 />
                 {errors.number && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.number}
                   </p>
                 )}
@@ -375,23 +414,22 @@ const AddUserManagement = () => {
                   value={formData.role_id}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.role_id ? ' ' : 'border-gray-300'
+                    errors.role_id ? 'border-red-300' : 'border-gray-300'
                   }`}
                 >
                   <option value="">Select Role</option>
-                  {roleOptions.map(role => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>{role.label}</option>
                   ))}
                 </select>
                 {errors.role_id && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.role_id}
                   </p>
                 )}
               </div>
 
-              {/* Sub Role */}
+              {/* Sub Role - Now dynamic based on selected role */}
               <div>
                 <label htmlFor="sub_role_id" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Sub Role *
@@ -401,21 +439,38 @@ const AddUserManagement = () => {
                   name="sub_role_id"
                   value={formData.sub_role_id}
                   onChange={handleInputChange}
+                  disabled={!formData.role_id || isLoadingSubRoles}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.sub_role_id ? ' ' : 'border-gray-300'
-                  }`}
+                    errors.sub_role_id ? 'border-red-300' : 'border-gray-300'
+                  } ${(!formData.role_id || isLoadingSubRoles) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <option value="">Select Sub Role</option>
-                  {subRoleOptions.map(subRole => (
-                    <option key={subRole.id} value={subRole.id}>{subRole.name}</option>
+                  <option value="">
+                    {!formData.role_id 
+                      ? 'First select a role' 
+                      : isLoadingSubRoles 
+                        ? 'Loading sub-roles...' 
+                        : subRoles.length === 0 
+                          ? 'No sub-roles'
+                          : 'Select Sub Role'
+                    }
+                  </option>
+                  {subRoles.map(subRole => (
+                    <option key={subRole.id} value={subRole.id}>
+                      {subRole.label || subRole.name}
+                    </option>
                   ))}
                 </select>
                 {errors.sub_role_id && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.sub_role_id}
                   </p>
                 )}
+                {/* Debug info - Remove in production */}
+                {/* {formData.role_id && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    Found {subRoles.length} sub-role(s) for selected role
+                  </p>
+                )} */}
               </div>
 
               {/* District */}
@@ -428,7 +483,7 @@ const AddUserManagement = () => {
                   value={formData.district_id}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.district_id ? ' ' : 'border-gray-300'
+                    errors.district_id ? 'border-red-300' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDistricts}
                 >
@@ -441,7 +496,6 @@ const AddUserManagement = () => {
                 </select>
                 {errors.district_id && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.district_id}
                   </p>
                 )}
@@ -458,7 +512,7 @@ const AddUserManagement = () => {
                   value={formData.designation}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.designation ? ' ' : 'border-gray-300'
+                    errors.designation ? 'border-red-300' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDesignations}
                 >
@@ -471,7 +525,6 @@ const AddUserManagement = () => {
                 </select>
                 {errors.designation && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.designation}
                   </p>
                 )}
@@ -484,11 +537,11 @@ const AddUserManagement = () => {
                 </label>
                 <select
                   id="department_id"
-                  name="department" 
-                  value={formData.department}
+                  name="department_id" 
+                  value={formData.department_id}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.department ? ' ' : 'border-gray-300'
+                    errors.department_id ? 'border-red-300' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDepartments}
                 >
@@ -499,10 +552,9 @@ const AddUserManagement = () => {
                     </option>
                   ))}
                 </select>
-                {errors.department && (
+                {errors.department_id && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
-                    {errors.department}
+                    {errors.department_id}
                   </p>
                 )}
               </div>
@@ -532,13 +584,12 @@ const AddUserManagement = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.password ? ' ' : 'border-gray-300'
+                    errors.password ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter password"
                 />
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.password}
                   </p>
                 )}
@@ -556,13 +607,12 @@ const AddUserManagement = () => {
                   value={formData.password_confirmation}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.password_confirmation ? ' ' : 'border-gray-300'
+                    errors.password_confirmation ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Confirm password"
                 />
                 {errors.password_confirmation && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
-                 
                     {errors.password_confirmation}
                   </p>
                 )}

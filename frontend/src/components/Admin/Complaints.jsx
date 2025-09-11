@@ -24,7 +24,6 @@ const token = localStorage.getItem("access_token");
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
-    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
@@ -39,14 +38,14 @@ const Complaints = () => {
     fee_exempted: true,                     
     amount: '',
     challan_no: '',
-    title: '',          // ✅ Title field for Outside Correspondence
+    title: '',          
     file: null,
     dob: '',
     department: '',     
     officer_name: '',
     designation: '',
     category: '',
-    subject: '',        // ✅ Subject dropdown in Complaint Details
+    subject: '',        
     nature: '',
     description: ''
   });
@@ -155,10 +154,6 @@ const Complaints = () => {
     setUploadSuccess(false);
     setUploadError('');
 
-    // Create FormData for file upload
-    const fileFormData = new FormData();
-    fileFormData.append('file', file);
-
     // ✅ Alternative: Simulate upload progress (if no API endpoint yet)
     const simulateUpload = () => {
       let progress = 0;
@@ -203,17 +198,41 @@ const Complaints = () => {
     setUploadError('');
   };
 
+  // ✅ Fixed submit handler with FormData for file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      const response = await api.post('/admin/complaints', formData);
+      // ✅ Create FormData for file upload
+      const submitFormData = new FormData();
+      
+      // Add all form fields to FormData
+      Object.keys(formData).forEach(key => {
+        if (key === 'file' && formData.file) {
+          submitFormData.append('file', formData.file);
+        } else if (formData[key] !== null && formData[key] !== '') {
+          submitFormData.append(key, formData[key]);
+        }
+      });
+
+      // ✅ Use FormData with multipart/form-data headers
+      const response = await axios.post(
+        `${BASE_URL}/admin/complaints`,
+        submitFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint registered successfully!');
         
-        // ✅ Reset form after successful submission with corrected field names
+        // ✅ Reset form after successful submission
         setFormData({
           name: '',
           mobile: '',
@@ -282,16 +301,16 @@ const Complaints = () => {
             <p className="text-xs sm:text-sm text-gray-600">शिकायत प्रविष्टि फॉर्म</p>
           </div>
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-            <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
+            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
               <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden xs:inline">Check Duplicates</span>
               <span className="xs:hidden">Check Duplicates</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
+            </button> */}
+            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
               <FaSave className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden xs:inline">Save Draft</span>
               <span className="xs:hidden">Save</span>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -393,7 +412,7 @@ const Complaints = () => {
                     name="district_id"
                     value={formData.district_id}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select District</option>
                     {districts.map(district => (
@@ -535,14 +554,15 @@ const Complaints = () => {
                   </div>
                 )}
 
-  <div className="flex items-center gap-3 mb-4">
-              <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
-              <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-900">Outside Correspondence</h2>
-                <p className="text-xs sm:text-sm text-gray-500">बाहरी पत्राचार</p>
-              </div>
-            </div>
-                {/* ✅ NEW: Title Field (moved from previous Outside Correspondence) */}
+                <div className="flex items-center gap-3 mb-4">
+                  <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+                  <div>
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900">Outside Correspondence</h2>
+                    <p className="text-xs sm:text-sm text-gray-500">बाहरी पत्राचार</p>
+                  </div>
+                </div>
+
+                {/* ✅ Title Field */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Title / शीर्षक *
@@ -560,9 +580,9 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/* ✅ NEW: File Upload with Progress (moved from previous Outside Correspondence) */}
+                {/* ✅ File Upload with Progress */}
                 <div>
-                  <label className="block teOutside Correspondencext-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Choose File / फ़ाइल चुनें *
                   </label>
                   
@@ -574,7 +594,7 @@ const Complaints = () => {
                         <span className="text-sm text-gray-700">Choose PDF file</span>
                         <input
                           type="file"
-                          accept=".pdf,.jpeg,.jpg,.png"
+                          accept=".pdf"
                           onChange={handleFileChange}
                           className="hidden"
                         /> 
@@ -653,9 +673,6 @@ const Complaints = () => {
             </div>
           </div>
 
-          {/* ✅ NEW: Outside Correspondence - Separate Section */}
-        
-
           {/* Respondent Department - Full Width */}
           <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
@@ -675,7 +692,7 @@ const Complaints = () => {
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Department</option>
                   {departments.map(department => (
@@ -720,7 +737,7 @@ const Complaints = () => {
                   name="designation"
                   value={formData.designation}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Designation</option>
                   {designations.map(designation => (
@@ -745,7 +762,7 @@ const Complaints = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Category</option>
                   <option value="class_1">Class 1</option>
@@ -780,7 +797,7 @@ const Complaints = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select Subject</option>
                     {subjects.map(subject => (
@@ -805,7 +822,7 @@ const Complaints = () => {
                     name="nature"
                     value={formData.nature}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select Nature</option>
                     {complaintTypes.map(complaintType => (
