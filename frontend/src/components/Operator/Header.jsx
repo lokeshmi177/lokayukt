@@ -170,7 +170,7 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
                 {user?.name || 'Relief Commissioner'}
               </span>
               <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">
-                {user?.role || 'Admin'}
+                {user?.role || 'operator'}
               </span>
             </div>
 

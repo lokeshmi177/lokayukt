@@ -178,13 +178,11 @@ class UserManagement extends Controller
 
          if($user->isDirty($request->name)){
               $baseUserName = str::slug($request->name);
-        $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
-        $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
-       $user->user_name     = $userName;
-    }
+                $count = User::where('user_name', 'LIKE', "$baseUserName%")->count();
+                $userName = $count > 0 ? $baseUserName . '-' . str_pad($count + 1, 3, '0', STR_PAD_LEFT) : $baseUserName . '-001';
+                $user->user_name     = $userName;
+            }
        
-
-        // dd($user);
             $user->name          = $request->name;       
             $user->email         = $request->email;
             $user->role_id       = $request->role_id;
@@ -196,7 +194,7 @@ class UserManagement extends Controller
 
           if ($request->filled('password')) {
             $user->password = bcrypt($request->password); // always hash passwords!
-         }
+           }
            
 
             $user->save();

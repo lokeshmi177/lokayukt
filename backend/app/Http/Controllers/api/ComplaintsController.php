@@ -110,6 +110,111 @@ class ComplaintsController extends Controller
         ], 201);
     }
 
+public function editComplain($id){
+    $cmpedit = Complaint::findOrFail($id);
+
+     return response()->json([
+            'status' => true,
+            'message' => 'Complaint fetch successfully.',
+            'data' => $cmpedit
+        ], 200);
+}
+
+public function updateComplain(Request $request,$id){
+      $added_by = Auth::user()->id;
+        $validation = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'mobile' => 'required|digits_between:10,15',
+            'address' => 'required|string|max:255',
+            'district_id' => 'required|exists:district_master,district_code',
+            'email' => 'required|email|unique:complaints,email',
+            'dob' => 'nullable|date',
+            'fee_exempted' => 'required|boolean',
+            'department' => 'required',
+            'officer_name' => 'required|string|max:255',
+            'designation' => 'required',
+            'category' => 'required',
+            'subject' => 'required',
+            'nature' => 'required',
+            'description' => 'required|string',
+            'title' => 'required|string',
+            'file' =>  'file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ], [
+            'name.required' => 'Name is required.',
+            'mobile.required' => 'Mobile number is required.',
+            'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
+            'address.required' => 'Address is required.',
+            'district_id.required' => 'District is required.',
+            'district_id.exists' => 'District does not exist.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already registered.',
+            'dob.date' => 'Date of Birth must be a valid date.',
+            'fee_exempted.required' => 'Please specify if fee is exempted or not.',
+            'department.required' => 'Department is required.',
+            'officer_name.required' => 'Officer name is required.',
+            'designation.required' => 'Designation is required.',
+            'category.required' => 'Category is required.',
+            'subject.required' => 'Subject is required.',
+            'nature.required' => 'Nature of complaint is required.',
+            'description.required' => 'Complaint description is required.',
+            'title.required' => 'Letter Subject is Required',
+            // 'file.required' => 'File is Required',
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+
+     
+        $complaint = Complaint::findOrFail($id);
+        $complaint->name = $request->name;
+        $complaint->complain_no = $complaintNo ?? null;
+        $complaint->mobile = $request->mobile;
+        $complaint->address = $request->address;
+        $complaint->district_id = $request->district_id;
+        $complaint->email = $request->email;
+        $complaint->amount = $request->amount;
+        $complaint->challan_no = $request->challan_no;
+        $complaint->dob = $request->dob;
+        $complaint->fee_exempted = $request->fee_exempted;
+        $complaint->department_id = $request->department;
+        $complaint->officer_name = $request->officer_name;
+        $complaint->designation_id = $request->designation;
+        $complaint->category = $request->category;
+        $complaint->added_by = $added_by;
+        $complaint->subject_id = $request->subject;
+        $complaint->complaintype_id = $request->nature;
+        $complaint->description = $request->description;
+        $complaint->title = $request->title;
+        
+        $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
+        $filePath = $request->file('file')->storeAs('letters', $file, 'public');
+        $complaint->file = $file;
+        
+        $complaint->save(); // ✅ Insert into DB
+
+           // MP2024ALG001
+        $year = date('Y');
+        if($request->nature){
+         $com_type = ComplainType::find($request->nature);
+         $str = strtoupper(substr($com_type->name, 0, 3));
+
+        }
+   
+        $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
+        $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
+       
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Complaint update successfully.',
+            'data' => $complaint
+        ], 201);
+}
 
 public function checkDuplicate()
 {
