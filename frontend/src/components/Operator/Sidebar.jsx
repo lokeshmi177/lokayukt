@@ -210,7 +210,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Dashboard */}
             <li>
               <Link
-                to="/dashboard"
+                to="/operator/dashboard"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/')
