@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class OperatorComplaintsController extends Controller
 {
-    public function complaint_register(Request $request)
+    public function addComplaint(Request $request)
     {
         // dd($request->all());
         // $user = $request->user()->id;

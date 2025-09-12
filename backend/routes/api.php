@@ -138,15 +138,16 @@ Route::middleware('auth:sanctum')->group(function(){
         
         Route::get('/all-district',[OperatorCommonController::class,'fetch_district']);
 
-        Route::post('/complaints',[OperatorComplaintsController::class,'complaint_register']);
-        Route::post('/all-complaints',[OperatorComplaintsController::class,'allComplainsDashboard']);
-        Route::post('/all-pending-complaints',[OperatorComplaintsController::class,'allComplainsDashboardPending']);
-        Route::post('/all-approved-complaints',[OperatorComplaintsController::class,'allComplainsDashboardApproved']);
-        Route::post('/all-rejected-complaints',[OperatorComplaintsController::class,'allComplainsDashboardRejected']);
+        Route::post('/add-complaint',[OperatorComplaintsController::class,'addComplaint']);
+        // Route::post('/all-complaints',[OperatorComplaintsController::class,'allComplainsDashboard']);
+        // Route::post('/all-pending-complaints',[OperatorComplaintsController::class,'allComplainsDashboardPending']);
+        // Route::post('/all-approved-complaints',[OperatorComplaintsController::class,'allComplainsDashboardApproved']);
+        // Route::post('/all-rejected-complaints',[OperatorComplaintsController::class,'allComplainsDashboardRejected']);
 
         Route::get('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
         Route::post('/check-duplicate-store',[OperatorComplaintsController::class,'checkduplicateStoreComplain']);
         Route::get('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
+        // Route::get('//{complainId}',[OperatorComplaintsController::class,'']);
 
         Route::get('/progress-register',[OperatorComplaintsController::class,'progress_report']);
         Route::get('/complain-report',[OperatorReportController::class,'complainReports']);

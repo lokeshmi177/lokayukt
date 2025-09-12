@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AdminReportController extends Controller
 {
@@ -191,8 +192,11 @@ class AdminReportController extends Controller
     )
     ->where('cm.id', $id)
     ->first();
-
-           
+        if($complainDetails->file){
+            $path = Storage::path('letters/' . $complainDetails->file);  
+            $complainDetails->filepath = $path;
+        }
+     
 
           return response()->json([
                'status' => true,
