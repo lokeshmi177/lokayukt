@@ -84,7 +84,7 @@ public function role() {
 }
 
 public function subrole() {
-    return $this->belongsTo(Role::class);
+    return $this->belongsTo(SubRole::class, 'sub_role_id','id');
 }
 // public function user()
 // {

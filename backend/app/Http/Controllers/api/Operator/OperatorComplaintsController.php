@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\api\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Complaint;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class ComplaintsController extends Controller
+class OperatorComplaintsController extends Controller
 {
     public function complaint_register(Request $request)
     {
@@ -345,4 +345,40 @@ class ComplaintsController extends Controller
         ]);
     }
 
+    public function approvedByRo($id){
+
+        if(isset($id)){
+
+            $apc = Complaint::findOrFail($id);
+                $apc->form_status = 1;
+                $apc->approved_by_ro = 1;
+                $apc->save();
+    
+              return response()->json([
+                'status' => 'success',
+                'message' => 'Approved Successfully',
+                'data' => $apc
+            ]);
+        }else{
+             return response()->json([
+                'status' => 'failed',
+                'message' => 'Please Check Id',
+                
+            ]);
+        }
+        
+    }
+
+          public function allComplainsDashboard(){
+       
+           $query = DB::table('complaints');
+          $complainDetails = $query->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 }
