@@ -295,38 +295,39 @@ class OperatorComplaintsController extends Controller
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
-            'address' => 'required|string|max:255',
+            // 'address' => 'required|string|max:255',
             'district_id' => 'required|exists:district_master,district_code',
-            'email' => 'required|email|unique:complaints,email',
-            'dob' => 'nullable|date',
+            'email' => 'required',
+            // 'email' => 'required|email|unique:complaints,email',
+            // 'dob' => 'nullable|date',
             // 'fee_exempted' => 'required|boolean',
-            'department' => 'required',
-            'officer_name' => 'required|string|max:255',
-            'designation' => 'required',
-            'category' => 'required',
-            'subject' => 'required',
-            'nature' => 'required',
-            'description' => 'required|string',
+            // 'department' => 'required',
+            // 'officer_name' => 'required|string|max:255',
+            // 'designation' => 'required',
+            // 'category' => 'required',
+            // 'subject' => 'required',
+            // 'nature' => 'required',
+            // 'description' => 'required|string',
             'title' => 'required|string',
         ], [
             'name.required' => 'Name is required.',
             'mobile.required' => 'Mobile number is required.',
             'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
-            'address.required' => 'Address is required.',
+            // 'address.required' => 'Address is required.',
             'district_id.required' => 'District is required.',
             'district_id.exists' => 'District does not exist.',
             'email.required' => 'Email is required.',
-            'email.email' => 'Please enter a valid email address.',
-            'email.unique' => 'This email is already registered.',
-            'dob.date' => 'Date of Birth must be a valid date.',
+            // 'email.email' => 'Please enter a valid email address.',
+            // 'email.unique' => 'This email is already registered.',
+            // 'dob.date' => 'Date of Birth must be a valid date.',
             // 'fee_exempted.required' => 'Please specify if fee is exempted or not.',
-            'department.required' => 'Department is required.',
-            'officer_name.required' => 'Officer name is required.',
-            'designation.required' => 'Designation is required.',
-            'category.required' => 'Category is required.',
-            'subject.required' => 'Subject is required.',
-            'nature.required' => 'Nature of complaint is required.',
-            'description.required' => 'Complaint description is required.',
+            // 'department.required' => 'Department is required.',
+            // 'officer_name.required' => 'Officer name is required.',
+            // 'designation.required' => 'Designation is required.',
+            // 'category.required' => 'Category is required.',
+            // 'subject.required' => 'Subject is required.',
+            // 'nature.required' => 'Nature of complaint is required.',
+            // 'description.required' => 'Complaint description is required.',
             'title.required' => 'Letter Subject is Required',
         ]);
 
@@ -340,10 +341,11 @@ class OperatorComplaintsController extends Controller
         $complaints = Complaint::all();
         $duplicates = [];
         $checked = [];
+        dd($request->all());
 
         foreach ($request->all() as $complaint) {
             foreach ($complaints as $other) {
-                if ($complaint->id !== $other->id && !in_array([$other->id, $complaint->id], $checked)) {
+                if ($complaint->name !== $other->name && !in_array([$other->name, $complaint->name], $checked)) {
                     $matchCount = 0;
                     $totalFields = 0;
 

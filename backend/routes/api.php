@@ -138,8 +138,8 @@ Route::middleware('auth:sanctum')->group(function(){
         // Route::prefix('admin')->group(function () {
         
         Route::get('/all-district',[OperatorCommonController::class,'fetch_district']);
-         Route::get('/department',[OperatorCommonController::class,'fetch_department']);
-          Route::get('/designation',[OperatorCommonController::class,'fetch_designation']);
+        Route::get('/department',[OperatorCommonController::class,'fetch_department']);
+        Route::get('/designation',[OperatorCommonController::class,'fetch_designation']);
            Route::get('/subjects',[OperatorCommonController::class,'fetch_subject']);
            Route::get('/rejections',[OperatorCommonController::class,'fetch_rejection']);
             Route::get('/complainstype',[OperatorCommonController::class,'fetch_complainstype']);
