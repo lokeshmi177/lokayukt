@@ -148,11 +148,10 @@ Route::middleware('auth:sanctum')->group(function(){
         // Route::post('/all-pending-complaints',[OperatorComplaintsController::class,'allComplainsDashboardPending']);
         // Route::post('/all-approved-complaints',[OperatorComplaintsController::class,'allComplainsDashboardApproved']);
         // Route::post('/all-rejected-complaints',[OperatorComplaintsController::class,'allComplainsDashboardRejected']);
-
         Route::get('/view-complaint/{id}',[OperatorReportController::class,'viewComplaint']);
          Route::get('/get-file-preview/{id}',[OperatorReportController::class,'getFilePreview']);
         Route::get('/edit-complaint/{id}',[OperatorComplaintsController::class,'editComplain']);
-        Route::get('/update-complaint/{id}',[OperatorComplaintsController::class,'updateComplain']);
+        Route::post('/update-complaint/{id}',[OperatorComplaintsController::class,'updateComplain']);
         Route::get('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
         // Route::post('/check-duplicate-store',[OperatorComplaintsController::class,'checkduplicateStoreComplain']);
         Route::get('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
