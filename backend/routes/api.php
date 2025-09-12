@@ -104,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/complain-report',[AdminReportController::class,'complainReports']);
         Route::get('/all-complains',[AdminReportController::class,'allComplains']);
          Route::get('/view-complaint/{id}',[AdminReportController::class,'viewComplaint']);
+         Route::get('/get-file-preview/{id}',[AdminReportController::class,'getFilePreview']);
         Route::get('/detail-by-complaintype',[AdminReportController::class,'complainComplaintypeWise']);
 
 
@@ -139,11 +140,13 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/all-district',[OperatorCommonController::class,'fetch_district']);
 
         Route::post('/add-complaint',[OperatorComplaintsController::class,'addComplaint']);
-        // Route::post('/all-complaints',[OperatorComplaintsController::class,'allComplainsDashboard']);
+        Route::post('/all-complaints',[OperatorComplaintsController::class,'allComplainsDashboard']);
         // Route::post('/all-pending-complaints',[OperatorComplaintsController::class,'allComplainsDashboardPending']);
         // Route::post('/all-approved-complaints',[OperatorComplaintsController::class,'allComplainsDashboardApproved']);
         // Route::post('/all-rejected-complaints',[OperatorComplaintsController::class,'allComplainsDashboardRejected']);
 
+        Route::get('/edit-complaint/{id}',[OperatorComplaintsController::class,'editComplain']);
+        Route::get('/update-complaint/{id}',[OperatorComplaintsController::class,'updateComplain']);
         Route::get('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
         Route::post('/check-duplicate-store',[OperatorComplaintsController::class,'checkduplicateStoreComplain']);
         Route::get('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
@@ -151,7 +154,7 @@ Route::middleware('auth:sanctum')->group(function(){
 
         Route::get('/progress-register',[OperatorComplaintsController::class,'progress_report']);
         Route::get('/complain-report',[OperatorReportController::class,'complainReports']);
-        Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
+        // Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
 
         Route::get('/detail-by-complaintype',[OperatorReportController::class,'complainComplaintypeWise']);
 

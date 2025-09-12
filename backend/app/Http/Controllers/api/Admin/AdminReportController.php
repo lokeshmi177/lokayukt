@@ -192,10 +192,10 @@ class AdminReportController extends Controller
     )
     ->where('cm.id', $id)
     ->first();
-        if($complainDetails->file){
-            $path = Storage::url('app/public/letters/' . $complainDetails->file);  
-            $complainDetails->filepath = $path;
-        }
+        // if($complainDetails->file){
+        //     $path = Storage::url('app/public/letters/' . $complainDetails->file);  
+        //     $complainDetails->filepath = $path;
+        // }
      
 
           return response()->json([
@@ -203,6 +203,18 @@ class AdminReportController extends Controller
                'message' => 'Records Fetch successfully',
                'data' => $complainDetails,
            ]);
+    }
+
+    public function getFilePreview($id){
+        $cmp = Complaint::findOrFail($id);
+        $path = Storage::url('letters/' . $cmp->file); 
+        $cmp->filepath = $path;
+           return response()->json([
+               'status' => true,
+               'message' => 'File Fetch successfully',
+               'data' => $cmp->filepath,
+           ]);
+
     }
 
          public function allComplainsDashboard(){
