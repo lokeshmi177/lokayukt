@@ -193,7 +193,7 @@ class AdminReportController extends Controller
     ->where('cm.id', $id)
     ->first();
         if($complainDetails->file){
-            $path = Storage::path('letters/' . $complainDetails->file);  
+            $path = Storage::url('letters/' . $complainDetails->file);  
             $complainDetails->filepath = $path;
         }
      
