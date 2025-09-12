@@ -11,18 +11,18 @@ import AdminUserManagement from './components/Admin/UserManagement';
 import AdminMasterData from './components/Admin/MasterData';
 import AdminAddUserManagement from './components/Admin/AddUserManagement';
 import AdminEditUserManagment from './components/Admin/EditUserManagment';
+import AdminViewComplaints from './components/Admin/ViewComplaints';
 
 import OperatorLayout from './components/Operator/Layout';
 import OperatorDashboard from './components/Operator/Dashboard';
 import OperatorComplaints from './components/Operator/Complaints';
 import OperatorProgressRegister from './components/Operator/ProgressRegister';
 import OperatorSearchReports from './components/Operator/SearchReports';
-import OperatorUserManagement from './components/Operator/UserManagement';
-import OperatorMasterData from './components/Operator/MasterData';
-import OperatorAddUserManagement from './components/Operator/AddUserManagement';
+import OperatorViewComplaints from './components/Operator/ViewComplaints';
+import OperatorEditComplaints from './components/Operator/EditComplaints';
+
 
 import Login from './components/Login';
-import ViewComplaints from './components/Admin/ViewComplaints';
 
 function App() {
   const role = localStorage.getItem("role");
@@ -38,7 +38,7 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="complaints" element={<AdminComplaints />} />
-          <Route path="search-reports/view/:id" element={<ViewComplaints />} />
+          <Route path="search-reports/view/:id" element={<AdminViewComplaints />} />
           <Route path="progress-register" element={<AdminProgressRegister />} />
           <Route path="search-reports" element={<AdminSearchReports />} />
           <Route path="user-management" element={<AdminUserManagement />} />
@@ -49,15 +49,14 @@ function App() {
       )}
 
       {/* ✅ Operator Routes - /operator/... */}
-      {role === 'oprter' && (
+      {role === 'operator' && (
         <Route path="/operator" element={<OperatorLayout />}>
           <Route path="dashboard" element={<OperatorDashboard />} />
           <Route path="complaints" element={<OperatorComplaints />} />
           <Route path="progress-register" element={<OperatorProgressRegister />} />
           <Route path="search-reports" element={<OperatorSearchReports />} />
-          <Route path="user-management" element={<OperatorUserManagement />} />
-          <Route path="user-management/add" element={<OperatorAddUserManagement />} />
-          <Route path="master-data" element={<OperatorMasterData />} />
+          <Route path="search-reports/view/:id" element={<OperatorViewComplaints />} />
+             <Route path="search-reports/edit" element={<OperatorEditComplaints />} />
         </Route>
       )}
 

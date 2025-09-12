@@ -58,14 +58,14 @@ const ViewComplaints = () => {
         setLoading(true);
 
         // Fetch complaint data
-        const complaintResponse = await api.get(`/admin/view-complaint/${id}`);
+        const complaintResponse = await api.get(`/operator/view-complaint/${id}`);
 
         if (complaintResponse.data.status === true) {
           setComplaintData(complaintResponse.data.data);
 
           // Fetch file preview data
           try {
-            const fileResponse = await api.get(`/admin/get-file-preview/${id}`);
+            const fileResponse = await api.get(`/operator/get-file-preview/${id}`);
             if (fileResponse.data.status === true) {
               setFilePreviewData(fileResponse.data.data);
               console.log(fileResponse.data.data);
@@ -184,14 +184,14 @@ const ViewComplaints = () => {
               <div className="text-center">
                 <FaFileAlt className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">
-                  Preview not available for this file type
+                  No File
                 </p>
-                <button
+                {/* <button
                   onClick={() => handleFileDownload(filePreviewData)}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Download File
-                </button>
+                </button> */}
               </div>
             </div>
           )}
@@ -231,9 +231,20 @@ const ViewComplaints = () => {
           </div>
           <div
           onClick={()=>{
-            navigate("/admin/search-reports")
+            navigate("/operator/search-reports/edit")
           }}
-           className="flex flex-wrap gap-4 items-center">
+          >
+            <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+              Edit
+            </button>
+          </div>
+
+          <div
+            onClick={() => {
+              navigate("/operator/search-reports");
+            }}
+            className="flex flex-wrap gap-4 items-center"
+          >
             <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
               <IoMdArrowBack className="mr-2 text-lg" />
               Back

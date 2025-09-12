@@ -57,6 +57,7 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
         localStorage.setItem('role', response.data.data.user.role.name);
         
+        
         // Get user role from nested object
         const userRole = response.data.data.user.role.name;
         
@@ -69,6 +70,7 @@ const Login = () => {
             window.open("/admin/dashboard", "_self");
             
           } else if (userRole === "operator") {
+            localStorage.setItem('subrole', response.data.data.user.subrole.name);
             window.open("/operator/dashboard", "_self");
           } else {
             toast.error("Unauthorized role.");

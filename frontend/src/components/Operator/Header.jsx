@@ -80,6 +80,7 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
         setTimeout(() => {
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');
+          localStorage.removeItem('role'); 
           window.open("/login", "_self");
         }, 1500);
        
@@ -103,17 +104,29 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
     window.location.reload();
   };
 
-  // Get user data from localStorage
+  // ✅ Safe user data parsing with error handling
   const getUserData = () => {
     try {
       const userData = localStorage.getItem('user');
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
+      console.warn('Error parsing user data:', error);
       return null;
     }
   };
 
+  // ✅ Safe role parsing from localStorage
+  const getUserRole = () => {
+    try {
+      const role = localStorage.getItem('role');
+      return role || 'Operator';
+    } catch (error) {
+      return 'Operator';
+    }
+  };
+
   const user = getUserData();
+  const userRole = getUserRole();
 
   return (
     <>
@@ -169,8 +182,9 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
               <span className="font-medium text-gray-900">
                 {user?.name || 'Relief Commissioner'}
               </span>
+              {/* ✅ Fixed: Safe role rendering */}
               <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">
-                {user?.role || 'operator'}
+                {typeof user?.role === 'object' ? user.role.name : userRole}
               </span>
             </div>
 
@@ -186,13 +200,8 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
                 <span className="hidden sm:inline">{user?.email || 'test@gmail.com'}</span>
               </p>
 
-              {/* Phone */}
-             
-
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
-               
-
                 <button 
                   className={`p-1.5 text-gray-500 hover:text-red-600 transition-colors rounded-md hover:bg-gray-100 flex items-center gap-1 ${
                     isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''

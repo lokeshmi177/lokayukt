@@ -8,7 +8,10 @@ import {
   FaSave, 
   FaPaperPlane,
   FaRupeeSign,
-  FaSpinner
+  FaSpinner,
+  FaUpload,
+  FaCheck,
+  FaTimes
 } from 'react-icons/fa';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -21,7 +24,6 @@ const token = localStorage.getItem("access_token");
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
-    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
@@ -36,12 +38,14 @@ const Complaints = () => {
     fee_exempted: true,                     
     amount: '',
     challan_no: '',
-department: '',
+    title: '',          
+    file: null,
     dob: '',
-    icer_name: '',
+    department: '',     
+    officer_name: '',
     designation: '',
     category: '',
-    subject: '',
+    subject: '',        
     nature: '',
     description: ''
   });
@@ -54,36 +58,42 @@ department: '',
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ✅ File upload progress states
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
   // Fetch all required data on component mount
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         // Fetch districts
-        const districtsResponse = await api.get(`/all-district`);
+        const districtsResponse = await api.get(`/operator/all-district`);
         if (districtsResponse.data.status === 'success') {
           setDistricts(districtsResponse.data.data);
         }
 
         // Fetch departments
-        const departmentsResponse = await api.get(`/department`);
+        const departmentsResponse = await api.get(`/operator/department`);
         if (departmentsResponse.data.status === 'success') {
           setDepartments(departmentsResponse.data.data);
         }
 
         // Fetch designations
-        const designationsResponse = await api.get(`/designation`);
+        const designationsResponse = await api.get(`/operator/designation`);
         if (designationsResponse.data.status === 'success') {
           setDesignations(designationsResponse.data.data);
         }
 
         // Fetch subjects
-        const subjectsResponse = await api.get(`/subjects`);
+        const subjectsResponse = await api.get(`/operator/subjects`);
         if (subjectsResponse.data.status === 'success') {
           setSubjects(subjectsResponse.data.data);
         }
 
         // Fetch complaint types
-        const complaintTypesResponse = await api.get(`/complainstype`);
+        const complaintTypesResponse = await api.get(`/operator/complainstype`);
         if (complaintTypesResponse.data.status === 'success') {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
@@ -120,17 +130,109 @@ department: '',
     }
   };
 
+  // ✅ Enhanced file upload with progress
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    
+    if (!file) return;
+
+    // Validate file type (only PDF allowed)
+    if (file.type !== 'application/pdf') {
+      toast.error('Only PDF files are allowed');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should not exceed 5MB');
+      return;
+    }
+
+    // Reset upload states
+    setUploadProgress(0);
+    setIsUploading(true);
+    setUploadSuccess(false);
+    setUploadError('');
+
+    // ✅ Alternative: Simulate upload progress (if no API endpoint yet)
+    const simulateUpload = () => {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 15; // Random increment
+        if (progress >= 100) {
+          progress = 100;
+          setUploadProgress(100);
+          setIsUploading(false);
+          setUploadSuccess(true);
+          setFormData(prev => ({
+            ...prev,
+            file: file
+          }));
+          clearInterval(interval);
+        } else {
+          setUploadProgress(Math.round(progress));
+        }
+      }, 200);
+    };
+
+    simulateUpload(); // For simulation
+
+    // Clear error when user selects file
+    if (errors.file) {
+      setErrors(prev => ({
+        ...prev,
+        file: ''
+      }));
+    }
+  };
+
+  // ✅ Remove uploaded file
+  const handleRemoveFile = () => {
+    setFormData(prev => ({
+      ...prev,
+      file: null
+    }));
+    setUploadProgress(0);
+    setIsUploading(false);
+    setUploadSuccess(false);
+    setUploadError('');
+  };
+
+  // ✅ Fixed submit handler with FormData for file upload
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      const response = await api.post('/complaints', formData);
+      // ✅ Create FormData for file upload
+      const submitFormData = new FormData();
+      
+      // Add all form fields to FormData
+      Object.keys(formData).forEach(key => {
+        if (key === 'file' && formData.file) {
+          submitFormData.append('file', formData.file);
+        } else if (formData[key] !== null && formData[key] !== '') {
+          submitFormData.append(key, formData[key]);
+        }
+      });
+
+      // ✅ Use FormData with multipart/form-data headers
+      const response = await axios.post(
+        `${BASE_URL}/operator/add-complaint`,
+        submitFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint registered successfully!');
         
-        // Reset form after successful submission
+        // ✅ Reset form after successful submission
         setFormData({
           name: '',
           mobile: '',
@@ -140,15 +242,23 @@ department: '',
           fee_exempted: true,
           amount: '',
           challan_no: '',
+          title: '',          
+          file: null,
           dob: '',
-          department: '',
+          department: '',     
           officer_name: '',
           designation: '',
           category: '',
-          subject: '',
+          subject: '',        
           nature: '',
           description: ''
         });
+
+        // Reset file upload states
+        setUploadProgress(0);
+        setIsUploading(false);
+        setUploadSuccess(false);
+        setUploadError('');
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
@@ -191,16 +301,16 @@ department: '',
             <p className="text-xs sm:text-sm text-gray-600">शिकायत प्रविष्टि फॉर्म</p>
           </div>
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-            <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
+            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
               <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden xs:inline">Check Duplicates</span>
               <span className="xs:hidden">Check Duplicates</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
+            </button> */}
+            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
               <FaSave className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden xs:inline">Save Draft</span>
               <span className="xs:hidden">Save</span>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -302,7 +412,7 @@ department: '',
                     name="district_id"
                     value={formData.district_id}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select District</option>
                     {districts.map(district => (
@@ -443,6 +553,122 @@ department: '',
                     )}
                   </div>
                 )}
+
+                <div className="flex items-center gap-3 mb-4">
+                  <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+                  <div>
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900">Outside Correspondence</h2>
+                    <p className="text-xs sm:text-sm text-gray-500">बाहरी पत्राचार</p>
+                  </div>
+                </div>
+
+                {/* ✅ Title Field */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Title / शीर्षक *
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="Enter complaint title"
+                  />
+                  {errors.title && (
+                    <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                  )}
+                </div>
+
+                {/* ✅ File Upload with Progress */}
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                    Choose File / फ़ाइल चुनें *
+                  </label>
+                  
+                  {/* File Upload Area */}
+                  {!formData.file ? (
+                    <div className="flex items-center space-x-2">
+                      <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
+                        <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
+                        <span className="text-sm text-gray-700">Choose PDF file</span>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        /> 
+                      </label>
+                    </div>
+                  ) : (
+                    // File Selected Area
+                    <div className="border border-gray-300 rounded-md p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <FaFileAlt className="w-4 h-4 text-red-600" />
+                          <span className="text-sm font-medium text-gray-700">
+                            {formData.file.name}
+                          </span>
+                          {uploadSuccess && (
+                            <FaCheck className="w-4 h-4 text-green-600" />
+                          )}
+                          {uploadError && (
+                            <FaTimes className="w-4 h-4 text-red-600" />
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveFile}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                          disabled={isUploading}
+                        >
+                          <FaTimes className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* ✅ Progress Bar */}
+                      {(isUploading || uploadProgress > 0) && (
+                        <div className="mb-2">
+                          <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                            <span>Uploading...</span>
+                            <span>{uploadProgress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                              style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Upload Status */}
+                      {uploadSuccess && (
+                        <p className="text-xs text-green-600 flex items-center">
+                          <FaCheck className="w-3 h-3 mr-1" />
+                          Upload completed successfully
+                        </p>
+                      )}
+                      
+                      {uploadError && (
+                        <p className="text-xs text-red-600 flex items-center">
+                          <FaTimes className="w-3 h-3 mr-1" />
+                          {uploadError}
+                        </p>
+                      )}
+
+                      {/* File Size */}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Size: {(formData.file.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
+                  {errors.file && (
+                    <p className="mt-1 text-sm text-red-600">{errors.file}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -466,7 +692,7 @@ department: '',
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Department</option>
                   {departments.map(department => (
@@ -511,7 +737,7 @@ department: '',
                   name="designation"
                   value={formData.designation}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Designation</option>
                   {designations.map(designation => (
@@ -536,7 +762,7 @@ department: '',
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 >
                   <option value="">Select Category</option>
                   <option value="class_1">Class 1</option>
@@ -562,7 +788,7 @@ department: '',
             </div>
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                {/* Subject */}
+                {/* Subject Dropdown */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Subject / विषय *
@@ -571,7 +797,7 @@ department: '',
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select Subject</option>
                     {subjects.map(subject => (
@@ -596,7 +822,7 @@ department: '',
                     name="nature"
                     value={formData.nature}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                   >
                     <option value="">Select Nature</option>
                     {complaintTypes.map(complaintType => (

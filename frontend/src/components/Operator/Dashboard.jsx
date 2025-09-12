@@ -329,7 +329,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 
 // Main Dashboard Component
-const Dashboard = ({ userRole = "operator" }) => {
+const Dashboard = ({ userRole = "operatoristrator" }) => {
   // ✅ API State Management + Date Picker State
   const [dashboardData, setDashboardData] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
