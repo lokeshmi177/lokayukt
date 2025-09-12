@@ -201,6 +201,18 @@ class OperatorReportController extends Controller
            ]);
     }
 
+        public function getFilePreview($id){
+        $cmp = Complaint::findOrFail($id);
+        $path = Storage::url('letters/' . $cmp->file); 
+        $cmp->filepath = $path;
+           return response()->json([
+               'status' => true,
+               'message' => 'File Fetch successfully',
+               'data' => $cmp->filepath,
+           ]);
+
+    }
+
          public function allComplainsDashboard(){
        
            $query = DB::table('complaints');

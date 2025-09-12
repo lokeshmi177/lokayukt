@@ -113,7 +113,7 @@ class OperatorComplaintsController extends Controller
 
     public function checkduplicateStoreComplain(Request $request)
     {
-        DB::beginTransaction();
+        // DB::beginTransaction();
 
         try {
             // Find duplicate complaint by title + name
@@ -126,17 +126,17 @@ class OperatorComplaintsController extends Controller
 
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
-                $descriptions = $existingComplaint->description ? json_decode($existingComplaint->description, true) : [];
-
+                $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
+                
                 // Add new description entry with timestamp
-                $descriptions[] = [
-                    'text' => $request->description,
-                    'added_at' => now()->toDateTimeString(),
-                ];
+                // $descriptions[] = [
+                //     'text' => $request->description,
+                //     'added_at' => now()->toDateTimeString(),
+                // ];
 
                 // Save back as JSON
-                $existingComplaint->description = json_encode($descriptions);
-                $existingComplaint->save();
+                // $existingComplaint->description = $request->description;
+                // $existingComplaint->save();
 
                 DB::commit();
                 return response()->json([
@@ -166,21 +166,19 @@ class OperatorComplaintsController extends Controller
             $complaint->title = $request->title;
 
             // Store description as JSON array
-            $complaint->description = json_encode([[
-                'text' => $request->description,
-                'added_at' => now()->toDateTimeString(),
-            ]]);
+            $complaint->description = $request->description;
+                
 
             $complaint->save();
 
-            DB::commit();
+            // DB::commit();
             return response()->json([
                 'message' => 'Complaint created successfully.',
                 'complaint' => $complaint
             ], 201);
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -292,20 +290,65 @@ class OperatorComplaintsController extends Controller
             ], 201);
     }
 
-    public function checkDuplicate()
+    public function checkDuplicate(Request $request)
     {
+        $validation = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'mobile' => 'required|digits_between:10,15',
+            'address' => 'required|string|max:255',
+            'district_id' => 'required|exists:district_master,district_code',
+            'email' => 'required|email|unique:complaints,email',
+            'dob' => 'nullable|date',
+            // 'fee_exempted' => 'required|boolean',
+            'department' => 'required',
+            'officer_name' => 'required|string|max:255',
+            'designation' => 'required',
+            'category' => 'required',
+            'subject' => 'required',
+            'nature' => 'required',
+            'description' => 'required|string',
+            'title' => 'required|string',
+        ], [
+            'name.required' => 'Name is required.',
+            'mobile.required' => 'Mobile number is required.',
+            'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
+            'address.required' => 'Address is required.',
+            'district_id.required' => 'District is required.',
+            'district_id.exists' => 'District does not exist.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'email.unique' => 'This email is already registered.',
+            'dob.date' => 'Date of Birth must be a valid date.',
+            // 'fee_exempted.required' => 'Please specify if fee is exempted or not.',
+            'department.required' => 'Department is required.',
+            'officer_name.required' => 'Officer name is required.',
+            'designation.required' => 'Designation is required.',
+            'category.required' => 'Category is required.',
+            'subject.required' => 'Subject is required.',
+            'nature.required' => 'Nature of complaint is required.',
+            'description.required' => 'Complaint description is required.',
+            'title.required' => 'Letter Subject is Required',
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+
         $complaints = Complaint::all();
         $duplicates = [];
         $checked = [];
 
-        foreach ($complaints as $complaint) {
+        foreach ($request->all() as $complaint) {
             foreach ($complaints as $other) {
                 if ($complaint->id !== $other->id && !in_array([$other->id, $complaint->id], $checked)) {
                     $matchCount = 0;
                     $totalFields = 0;
 
                     // Fields to compare
-                    $fields = ['name', 'mobile', 'email', 'subject', 'district_id'];
+                    $fields = ['name', 'mobile', 'email', 'subject', 'district_id','title'];
 
                     foreach ($fields as $field) {
                         $totalFields++;
