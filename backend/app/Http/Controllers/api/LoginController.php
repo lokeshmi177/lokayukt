@@ -105,6 +105,7 @@ class LoginController extends Controller
             'token_type'   => 'Bearer',
             'user'         => $user,
             'role' => $user->role->name ?? 'N/A',
+            'subrole' => $user->subrole->name ?? 'N/A',
         ]);
 
     } catch (ValidationException $e) {
