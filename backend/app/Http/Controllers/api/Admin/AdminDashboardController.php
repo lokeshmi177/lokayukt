@@ -435,19 +435,24 @@ class AdminDashboardController extends Controller
     }
 
      public function getRolewisData(){
-            $departmentdata = DB::table('roles as rl')
-    ->leftJoin('complaints as hd', 'hd.department_id', '=', 'rl.id')
-    ->select(
-        'rl.id as role_id',
-        'rl.name as role_name',
-        DB::raw('COUNT(hd.id) as total_complains'),
-        DB::raw("SUM(CASE WHEN hd.status = 'approved' THEN 1 ELSE 0 END) as total_approved_complains")
-    )
-    ->groupBy('rl.id', 'rl.name')
-    ->having('total_complains', '>', 0)
-    ->orderBy('rl.name')
-    // ->limit(10)
-    ->get();
+       
+        $departmentdata = DB::table('sub_roles as rl')
+            ->leftJoin('complaints as hd', 'hd.added_by', '=', 'rl.id')
+            ->leftJoin('users as u', 'u.id', '=', 'hd.added_by')
+            ->leftJoin('roles as u', 'u.id', '=', 'hd.added_by')
+            ->leftJoin('sub_roles as u', 'u.id', '=', 'hd.added_by')
+            ->select(
+                'rl.id as role_id',
+                'rl.name as role_name',
+                DB::raw('COUNT(hd.id) as total_complains'),
+                DB::raw("SUM(CASE WHEN hd.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending_complains"),
+                DB::raw("SUM(CASE WHEN hd.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved_complains")
+            )
+            ->groupBy('rl.id', 'rl.name')
+            ->having('total_complains', '>', 0)
+            ->orderBy('rl.name')
+            // ->limit(10)
+            ->get();
     $departmentdata = $departmentdata->map(function ($item) {
         if($item->total_complains){
    return  [

@@ -18,7 +18,7 @@ class OperatorComplaintsController extends Controller
         // $user = $request->user()->id;
         $added_by = Auth::user()->id;
         $validation = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'y' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
             'address' => 'required|string|max:255',
             'district_id' => 'required|exists:district_master,district_code',
@@ -265,9 +265,13 @@ class OperatorComplaintsController extends Controller
             $complaint->description = $request->description;
             $complaint->title = $request->title;
             
-            $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
+            if($request->hasFile('file')){
+                    $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
             $filePath = $request->file('file')->storeAs('letters', $file, 'public');
             $complaint->file = $file;
+            }
+
+            
             
             $complaint->save(); // ✅ Insert into DB
 
@@ -295,39 +299,17 @@ class OperatorComplaintsController extends Controller
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
-            // 'address' => 'required|string|max:255',
             'district_id' => 'required|exists:district_master,district_code',
             'email' => 'required',
-            // 'email' => 'required|email|unique:complaints,email',
-            // 'dob' => 'nullable|date',
-            // 'fee_exempted' => 'required|boolean',
-            // 'department' => 'required',
-            // 'officer_name' => 'required|string|max:255',
-            // 'designation' => 'required',
-            // 'category' => 'required',
-            // 'subject' => 'required',
-            // 'nature' => 'required',
-            // 'description' => 'required|string',
             'title' => 'required|string',
         ], [
             'name.required' => 'Name is required.',
             'mobile.required' => 'Mobile number is required.',
             'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
-            // 'address.required' => 'Address is required.',
             'district_id.required' => 'District is required.',
             'district_id.exists' => 'District does not exist.',
             'email.required' => 'Email is required.',
-            // 'email.email' => 'Please enter a valid email address.',
-            // 'email.unique' => 'This email is already registered.',
-            // 'dob.date' => 'Date of Birth must be a valid date.',
-            // 'fee_exempted.required' => 'Please specify if fee is exempted or not.',
-            // 'department.required' => 'Department is required.',
-            // 'officer_name.required' => 'Officer name is required.',
-            // 'designation.required' => 'Designation is required.',
-            // 'category.required' => 'Category is required.',
-            // 'subject.required' => 'Subject is required.',
-            // 'nature.required' => 'Nature of complaint is required.',
-            // 'description.required' => 'Complaint description is required.',
+
             'title.required' => 'Letter Subject is Required',
         ]);
 
@@ -338,56 +320,85 @@ class OperatorComplaintsController extends Controller
             ], 422);
         }
 
-        $complaints = Complaint::all();
-        $duplicates = [];
-        $checked = [];
-        dd($request->all());
+                $existingComplaint = Complaint::where('title', 'LIKE', "%{$request->title}%")
+        ->where('name', 'LIKE', "%{$request->name}%")
+        ->first();
+            // dd($existingComplaint);
+            if ($existingComplaint) {
+                // Decode existing description (JSON) into array
+                $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
+                
+                // Add new description entry with timestamp
+                // $descriptions[] = [
+                //     'text' => $request->description,
+                //     'added_at' => now()->toDateTimeString(),
+                // ];
 
-        foreach ($request->all() as $complaint) {
-            foreach ($complaints as $other) {
-                if ($complaint->name !== $other->name && !in_array([$other->name, $complaint->name], $checked)) {
-                    $matchCount = 0;
-                    $totalFields = 0;
+                // Save back as JSON
+                // $existingComplaint->description = $request->description;
+                // $existingComplaint->save();
 
-                    // Fields to compare
-                    $fields = ['name', 'mobile', 'email', 'subject', 'district_id','title'];
-
-                    foreach ($fields as $field) {
-                        $totalFields++;
-                        if (!empty($complaint->$field) && $complaint->$field == $other->$field) {
-                            $matchCount++;
-                        }
-                    }
-
-                    $percentage = ($totalFields > 0) ? ($matchCount / $totalFields) * 100 : 0;
-
-                    if ($percentage >= 50) {
-                        $duplicates[] = [
-                            'complaint_id'   => $complaint->id,
-                            'name'           => $complaint->name,
-                            'subject'        => $complaint->subject,
-                            'district_id'    => $complaint->district_id,
-
-                            'duplicate_with' => $other->id,
-                            'dup_name'       => $other->name,
-                            'dup_subject'    => $other->subject,
-                            'dup_district_id'=> $other->district_id,
-
-                            'match_percentage' => round($percentage, 2)
-                        ];
-
-                        // Mark pair as checked
-                        $checked[] = [$complaint->id, $other->id];
-                    }
-                }
+       
+                return response()->json([
+                    'message' => 'Duplicate found. Description merged into existing complaint.',
+                    'complaint' => $existingComplaint
+                ], 200);
             }
-        }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Duplicate check completed',
-            'duplicates' => $duplicates
-        ]);
+        // $complaints = Complaint::all();
+        // $duplicates = [];
+        // $checked = [];
+       
+   
+        // foreach ($request->all() as $k =>$complaint) {
+        //     //   dd($k);
+        //     foreach ($complaints as $key => $other) {
+        //         // dd($complaint,$other->name);
+        //         if ($k == $other->name) {
+        //             $matchCount = 0;
+        //             $totalFields = 0;
+
+        //             // Fields to compare
+        //             $fields = ['name', 'mobile', 'email', 'subject', 'district_id','title'];
+
+        //             foreach ($fields as $field) {
+        //                 $totalFields++;
+        //                 if (!empty($complaint->$field) && $complaint->$field == $other->$field) {
+        //                     $matchCount++;
+        //                 }
+        //             }
+
+        //             $percentage = ($totalFields > 0) ? ($matchCount / $totalFields) * 100 : 0;
+
+        //             if ($percentage >= 50) {
+        //                 $duplicates[] = [
+        //                     'complaint_id'   => $complaint->id,
+        //                     'name'           => $complaint->name,
+        //                     'subject'        => $complaint->subject,
+        //                     'district_id'    => $complaint->district_id,
+
+        //                     'duplicate_with' => $other->id,
+        //                     'dup_name'       => $other->e,
+        //                     'dup_subject'    => $other->subject,
+        //                     'dup_district_id'=> $other->district_id,
+
+        //                     'match_percentage' => round($percentage, 2)
+        //                 ];
+
+        //                 // Mark pair as checked
+        //                 $checked[] = [$complaint->id, $other->id];
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return response()->json([
+        //     'status' => 'success',
+        //     'message' => 'Duplicate check completed',
+        //     'duplicates' => $duplicates
+        // ]);
+
+
     }
 
     public function approvedByRo($id){
