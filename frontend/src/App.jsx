@@ -22,6 +22,15 @@ import OperatorViewComplaints from './components/Operator/ViewComplaints';
 import OperatorEditComplaints from './components/Operator/EditComplaints';
 
 
+import SupervisorLayout from './components/Supervisor/Layout';
+import SupervisorDashboard from './components/Supervisor/Dashboard';
+import SupervisorComplaints from './components/Supervisor/Complaints';
+import SupervisorProgressRegister from './components/Supervisor/ProgressRegister';
+import SupervisorSearchReports from './components/Supervisor/SearchReports';
+// import SupervisorViewComplaints from './components/Supervisor/ViewComplaints';
+// import SupervisorEditComplaints from './components/Supervisor/EditComplaints';
+
+
 import Login from './components/Login';
 
 function App() {
@@ -56,7 +65,17 @@ function App() {
           <Route path="progress-register" element={<OperatorProgressRegister />} />
           <Route path="search-reports" element={<OperatorSearchReports />} />
           <Route path="search-reports/view/:id" element={<OperatorViewComplaints />} />
-             <Route path="search-reports/edit" element={<OperatorEditComplaints />} />
+             <Route path="search-reports/edit/:id" element={<OperatorEditComplaints />} />
+        </Route>
+      )}
+      
+      {role === 'supervisor' && (
+        <Route path="/supervisor" element={<SupervisorLayout />}>
+          <Route path="dashboard" element={<SupervisorDashboard />} />
+          <Route path="complaints" element={<SupervisorComplaints />} />
+          <Route path="progress-register" element={<SupervisorProgressRegister />} />
+          <Route path="search-reports" element={<SupervisorSearchReports />} />
+         
         </Route>
       )}
 

@@ -72,7 +72,13 @@ const Login = () => {
           } else if (userRole === "operator") {
             localStorage.setItem('subrole', response.data.data.user.subrole.name);
             window.open("/operator/dashboard", "_self");
-          } else {
+          }
+          else if (userRole === "supervisor") {
+            localStorage.setItem('subrole', response.data.data.user.subrole.name);
+            window.open("/supervisor/dashboard", "_self");
+          }
+          
+          else {
             toast.error("Unauthorized role.");
             navigate("/login");
           }

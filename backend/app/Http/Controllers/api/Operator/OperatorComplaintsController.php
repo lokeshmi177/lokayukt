@@ -203,7 +203,7 @@ class OperatorComplaintsController extends Controller
                 'district_id' => 'required|exists:district_master,district_code',
                 'email' => 'required',
                 'dob' => 'nullable|date',
-                'fee_exempted' => 'required|boolean',
+                // 'fee_exempted' => 'required|boolean',
                 'department' => 'required',
                 'officer_name' => 'required|string|max:255',
                 'designation' => 'required',
