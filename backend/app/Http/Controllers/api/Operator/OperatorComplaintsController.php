@@ -246,7 +246,7 @@ class OperatorComplaintsController extends Controller
         
             $complaint = Complaint::findOrFail($id);
             $complaint->name = $request->name;
-            $complaint->complain_no = $complaintNo ?? null;
+            // $complaint->complain_no = $complaintNo ?? null;
             $complaint->mobile = $request->mobile;
             $complaint->address = $request->address;
             $complaint->district_id = $request->district_id;
@@ -283,8 +283,8 @@ class OperatorComplaintsController extends Controller
 
             }
     
-            $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
-            $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
+            // $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
+            // $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
         
 
             return response()->json([
