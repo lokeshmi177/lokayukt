@@ -456,17 +456,7 @@ class AdminDashboardController extends Controller
             ->orderBy('rl.name')
             // ->limit(10)
             ->get();
-//     $departmentdata = $departmentdata->map(function ($item) {
-//         if($item->total_complains){
-//    return  [
-//                 'role_id' => $item->role_id,
-//                 'role_name' => $item->role_name,
-//                 'total_complains' => $item->total_complains,
-//                 // 'total_approved_complains' => $item->total_approved_complains,
-//             ];
-//         }
-         
-//         })->toArray();
+
          return response()->json([
              'data' => $departmentdata
                
@@ -487,9 +477,7 @@ class AdminDashboardController extends Controller
         DB::raw("ROUND(SUM(CASE WHEN hd.status = 'In Progress' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as pending_percentage"),
         DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as approved_percentage"),
         DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Rejected' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as rejected_percentage"),
-        DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Under Investigation' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as investigation_percentage")
- 
-      
+        DB::raw("ROUND(SUM(CASE WHEN hd.status = 'Under Investigation' THEN 1 ELSE 0 END) * 100.0 / COUNT(hd.id), 2) as investigation_percentage")      
     )->first();
     // ->groupBy('hd.status')
     // ->having('total_complains', '>', 0)
