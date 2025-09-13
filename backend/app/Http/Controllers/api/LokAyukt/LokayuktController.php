@@ -1,17 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\api\Supervisor;
+namespace App\Http\Controllers\api\LokAyukt;
 
 use App\Http\Controllers\Controller;
-use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
-class SupervisorComplaintsController extends Controller
+class LokayuktController extends Controller
 {
-    public function allComplains(){
+   public function allComplains(){
       $userSubrole = Auth::user()->subrole->id; 
       $records = DB::table('complaints')
             ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
@@ -65,49 +63,5 @@ class SupervisorComplaintsController extends Controller
                 'message' => 'Records Fetch successfully',
                 'data' => $complainDetails,
             ]);
-    }
-
-
-    public function forwardbySO(Request $request,$complainId){
-         $validation = Validator::make($request->all(), [
-            'forward_by' => 'required|exists:users,id',
-            'forward_to_d_a' => 'required|exists:users,id',
-         
-          
-        ], [
-            'forward_by.required' => 'Forward by Supervisor is required.',
-            'forward_by.exists' => 'Forward by Supervisor does not exist.',
-            'forward_to_d_a.required' => 'Forward to Dealing Assistant is required.',
-            'forward_to_d_a.exists' => 'Forward to Dealing Assistant does not exist.',
-           
-        ]);
-
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validation->errors()
-            ], 422);
-        }
-        if(isset($complainId) && $request->isMethod('post')){
-
-            $cmp =  Complaint::findOrFail($complainId);
-            $cmp->forward_by = $request->forward_by;
-            $cmp->forward_to_d_a = $request->forward_to_d_a;
-            $cmp->sup_status = 1;
-            $cmp->save();
-    
-             return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Successfully',
-                    'data' => $cmp
-                ], 200);
-        }else{
-            
-             return response()->json([
-                    'status' => false,
-                    'message' => 'Please check Id'
-                ], 401);
-        }
-
     }
 }

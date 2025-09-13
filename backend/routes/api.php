@@ -4,6 +4,7 @@ use App\Http\Controllers\api\Admin\AdminDashboardController;
 use App\Http\Controllers\api\Admin\AdminReportController;
 // use App\Http\Controllers\api\Admin\AdminDashboardController;
 // use App\Http\Controllers\api\Admin\OperatorReportController;
+use App\Http\Controllers\api\Operator\OperatorDashboardController;
 use App\Http\Controllers\api\Operator\OperatorReportController;
 // use App\Http\Controllers\api\Admin\OperatorReportController;
 use App\Http\Controllers\api\CommonController;
@@ -140,21 +141,21 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/all-district',[OperatorCommonController::class,'fetch_district']);
         Route::get('/department',[OperatorCommonController::class,'fetch_department']);
         Route::get('/designation',[OperatorCommonController::class,'fetch_designation']);
-           Route::get('/subjects',[OperatorCommonController::class,'fetch_subject']);
-           Route::get('/rejections',[OperatorCommonController::class,'fetch_rejection']);
-            Route::get('/complainstype',[OperatorCommonController::class,'fetch_complainstype']);
+        Route::get('/subjects',[OperatorCommonController::class,'fetch_subject']);
+        Route::get('/rejections',[OperatorCommonController::class,'fetch_rejection']);
+        Route::get('/complainstype',[OperatorCommonController::class,'fetch_complainstype']);
         Route::post('/add-complaint',[OperatorComplaintsController::class,'addComplaint']);
-        Route::post('/all-complaints',[OperatorComplaintsController::class,'allComplainsDashboard']);
-        // Route::post('/all-pending-complaints',[OperatorComplaintsController::class,'allComplainsDashboardPending']);
-        // Route::post('/all-approved-complaints',[OperatorComplaintsController::class,'allComplainsDashboardApproved']);
+        Route::get('/all-complaints',[OperatorComplaintsController::class,'allComplainsDashboard']);
+        Route::get('/all-pending-complaints',[OperatorComplaintsController::class,'allComplainspending']);
+        Route::get('/all-approved-complaints',[OperatorComplaintsController::class,'allComplainsapproved']);
         // Route::post('/all-rejected-complaints',[OperatorComplaintsController::class,'allComplainsDashboardRejected']);
         Route::get('/view-complaint/{id}',[OperatorReportController::class,'viewComplaint']);
-         Route::get('/get-file-preview/{id}',[OperatorReportController::class,'getFilePreview']);
+        Route::get('/get-file-preview/{id}',[OperatorReportController::class,'getFilePreview']);
         Route::get('/edit-complaint/{id}',[OperatorComplaintsController::class,'editComplain']);
         Route::post('/update-complaint/{id}',[OperatorComplaintsController::class,'updateComplain']);
         Route::get('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
         // Route::post('/check-duplicate-store',[OperatorComplaintsController::class,'checkduplicateStoreComplain']);
-        Route::get('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
+        Route::post('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
         // Route::get('//{complainId}',[OperatorComplaintsController::class,'']);
 
         Route::get('/progress-register',[OperatorComplaintsController::class,'progress_report']);
@@ -169,11 +170,11 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/compliance-report',[OperatorReportController::class,'complianceReport']);
 
         // // Daishboard
-        // Route::get('/dashboard/{date}',[OperatorDashboardController::class,'index']);
-        // Route::get('/montly-complaint',[OperatorDashboardController::class,'getDistrictGraph']);
-        // Route::get('/district-wise-company-type',[OperatorDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
-        // Route::get('/status-distribution',[OperatorDashboardController::class,'gestatusDistribution']);
-        // Route::get('/status-distribution',action: [OperatorDashboardController::class,'gestatusDistribution']);
+        Route::get('/dashboard/{date}',[OperatorDashboardController::class,'index']);
+        Route::get('/montly-complaint',[OperatorDashboardController::class,'getDistrictGraph']);
+        Route::get('/district-wise-company-type',[OperatorDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
+        Route::get('/status-distribution',[OperatorDashboardController::class,'gestatusDistribution']);
+        Route::get('/status-distribution',action: [OperatorDashboardController::class,'gestatusDistribution']);
 
     });
 
