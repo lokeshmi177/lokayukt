@@ -21,6 +21,9 @@ import OperatorSearchReports from './components/Operator/SearchReports';
 import OperatorViewComplaints from './components/Operator/ViewComplaints';
 import OperatorEditComplaints from './components/Operator/EditComplaints';
 import OperatorAllComplaits from './components/Operator/AllComplaits';
+// import OperatorAllComplaits from './components/Operator/AllComplaits';
+import OperatorPendingComplaints from './components/Operator/PendingComplaints/';
+import OperatorApprovedComplaints from './components/Operator/ApprovedComplaints';
 
 
 import SupervisorLayout from './components/Supervisor/Layout';
@@ -69,8 +72,8 @@ function App() {
           <Route path="search-reports/view/:id" element={<OperatorViewComplaints />} />
              <Route path="search-reports/edit/:id" element={<OperatorEditComplaints />} />
              <Route path="all-complaints" element={<OperatorAllComplaits />} />
-             <Route path="pending-complaints" element={<OperatorAllComplaits />} />
-             <Route path="approved-complaints" element={<OperatorAllComplaits />} />
+             <Route path="pending-complaints" element={<OperatorPendingComplaints />} />
+             <Route path="approved-complaints" element={<OperatorApprovedComplaints />} />
 
         </Route>
       )}

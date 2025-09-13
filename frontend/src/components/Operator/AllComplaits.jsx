@@ -202,7 +202,7 @@ const AllComplaints = () => {
               {/* ✅ Row 1 - Only Complaint No is bold */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="font-semibold text-blue-600 text-xs sm:text-sm mb-1 sm:mb-0">
+                  <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
                     Complaint No:
                   </span>
                   <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">

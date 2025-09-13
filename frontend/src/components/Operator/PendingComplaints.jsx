@@ -29,6 +29,7 @@ const PendingComplaints = () => {
         
         if (response.data.status === true) {
           setComplaintsData(response.data.data);
+          console.log(response.data.data)
         } else {
           setError("Failed to fetch complaints data");
         }
