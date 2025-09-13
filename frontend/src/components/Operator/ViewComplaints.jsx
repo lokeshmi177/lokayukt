@@ -18,6 +18,7 @@ import {
   FaExpand,
   FaTimes,
 } from "react-icons/fa";
+import { FaRegEdit } from "react-icons/fa";
 import { IoMdArrowBack } from "react-icons/io";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,6 +26,7 @@ import "react-toastify/dist/ReactToastify.css";
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const APP_URL = BASE_URL.replace("/api", "");
 const token = localStorage.getItem("access_token");
+const subRole = localStorage.getItem("subrole");
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -58,14 +60,18 @@ const ViewComplaints = () => {
         setLoading(true);
 
         // Fetch complaint data
-        const complaintResponse = await api.get(`/operator/view-complaint/${id}`);
+        const complaintResponse = await api.get(
+          `/operator/view-complaint/${id}`
+        );
 
         if (complaintResponse.data.status === true) {
           setComplaintData(complaintResponse.data.data);
 
           // Fetch file preview data
           try {
-            const fileResponse = await api.get(`/operator/get-file-preview/${id}`);
+            const fileResponse = await api.get(
+              `/operator/get-file-preview/${id}`
+            );
             if (fileResponse.data.status === true) {
               setFilePreviewData(fileResponse.data.data);
               console.log(fileResponse.data.data);
@@ -152,6 +158,27 @@ const ViewComplaints = () => {
     return filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   };
 
+  // Handle edit navigation - FIXED PART
+  const handleEditNavigation = () => {
+    if (id && complaintData) {
+      console.log("Navigating to edit with ID:", id);
+      console.log("Complaint data:", complaintData);
+
+      // Method 1: Using URL parameter (Recommended)
+      navigate(`/operator/search-reports/edit/${id}`);
+
+      // Method 2: Using state (Alternative)
+      // navigate('/operator/search-reports/edit', {
+      //   state: {
+      //     complaintId: id,
+      //     complaintData: complaintData
+      //   }
+      // });
+    } else {
+      toast.error("Unable to edit: Missing complaint data");
+    }
+  };
+
   // PDF Preview Modal Component
   const PDFPreviewModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -183,15 +210,7 @@ const ViewComplaints = () => {
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <FaFileAlt className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  No File
-                </p>
-                {/* <button
-                  onClick={() => handleFileDownload(filePreviewData)}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Download File
-                </button> */}
+                <p className="text-gray-600">No File</p>
               </div>
             </div>
           )}
@@ -204,7 +223,9 @@ const ViewComplaints = () => {
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        {/* <div className="text-center text-lg font-medium text-gray-700">Loading...</div> */}
+        <div className="text-center text-lg font-medium text-gray-700">
+          Loading...
+        </div>
       </div>
     );
   }
@@ -229,28 +250,31 @@ const ViewComplaints = () => {
               </span>
             </p>
           </div>
-          <div
-          onClick={()=>{
-            navigate("/operator/search-reports/edit")
-          }}
-          >
-            <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+
+          {/* FIXED EDIT BUTTON */}
+          {subRole === "entry-operator" && (
+            <button
+              onClick={handleEditNavigation}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+              disabled={!id || !complaintData}
+            >
+              <FaRegEdit className="mr-2 text-lg" />
               Edit
             </button>
-          </div>
-
-          <div
-            onClick={() => {
-              navigate("/operator/search-reports");
-            }}
-            className="flex flex-wrap gap-4 items-center"
-          >
-            <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+          )}
+          
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate("/operator/search-reports")}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
               <IoMdArrowBack className="mr-2 text-lg" />
               Back
             </button>
           </div>
         </div>
+
+        {/* Debug Info - Remove in production */}
 
         {/* Main Content */}
         {complaintData && (
@@ -366,6 +390,7 @@ const ViewComplaints = () => {
               </div>
             </div>
 
+            {/* Rest of your existing sections remain the same */}
             {/* Respondent Department */}
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
@@ -458,7 +483,7 @@ const ViewComplaints = () => {
               </div>
             </div>
 
-            {/* Outside Correspondence - Updated section */}
+            {/* Outside Correspondence */}
             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <FaFileAlt className="w-5 h-5 text-purple-600" />

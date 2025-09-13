@@ -26,7 +26,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
       title: "LokAyukta",
       subtitle: "CRMS",
       description: "Complaint Management",
-      admin: "Admin",
+      supervisor: "Supervisor",
       dashboard: "Dashboard",
       complaints: "Complaints",
       progressRegister: "Progress Register",
@@ -40,7 +40,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
       title: "लोकायुक्त",
       subtitle: "CRMS",
       description: "शिकायत प्रबंधन",
-      admin: "व्यवस्थापक",
+      supervisor: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
       complaints: "शिकायतें",
       progressRegister: "प्रगति रजिस्टर",
@@ -75,12 +75,14 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     setIsHindi(!isHindi);
   };
 
-  // Function to check if current route is active
+  // ✅ Simple isActive function for supervisor routes
   const isActive = (href) => {
-    if (href === '/dashboard' || href === '/') {
-      return location.pathname === '/dashboard' || location.pathname === '/';
+    const fullPath = `/supervisor${href}`;
+    
+    if (href === '/dashboard') {
+      return location.pathname === fullPath;
     }
-    return location.pathname.startsWith(href);
+    return location.pathname.startsWith(fullPath);
   };
 
   // Close mobile menu when clicking link
@@ -159,11 +161,11 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             )}
           </div>
           
-          {/* Admin Badge */}
+          {/* ✅ supervisor Badge (Fixed) */}
           {(isMobile || !isCollapsed) && (
             <div className="mb-3 transition-all duration-300">
               <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                {t.admin}
+                {t.supervisor}
               </span>
             </div>
           )}
@@ -202,7 +204,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           )}
         </div>
 
-        {/* Navigation Menu */}
+        {/* ✅ Navigation Menu - Only supervisor Routes */}
         <nav className={`flex-1 transition-all duration-300 overflow-y-auto ${
           (!isMobile && isCollapsed) ? 'py-4' : 'py-6'
         }`}>
@@ -210,10 +212,10 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Dashboard */}
             <li>
               <Link
-                to="/dashboard"
+                to="/supervisor/dashboard"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive('/')
+                  isActive('/dashboard')
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 } ${
@@ -231,7 +233,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Complaints */}
             <li>
               <Link
-                to="/complaints"
+                to="/supervisor/complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/complaints')
@@ -252,10 +254,10 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Progress Register */}
             <li>
               <Link
-                to="/Progress-register"
+                to="/supervisor/progress-register"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive('/Progress-register')
+                  isActive('/progress-register')
                     ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 } ${
@@ -273,7 +275,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Search & Reports */}
             <li>
               <Link
-                to="/search-reports"
+                to="/supervisor/search-reports"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/search-reports')
@@ -291,47 +293,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
-            {/* User Management */}
-            <li>
-              <Link
-                to="/user-management"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive('/user-management')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                } ${
-                  (!isMobile && isCollapsed)
-                    ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
-                    : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
-                }`}
-                title={(!isMobile && isCollapsed) ? t.userManagement : ''}
-              >
-                <FaUsers className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.userManagement}</span>}
-              </Link>
-            </li>
-
-            {/* Master Data */}
-            <li>
-              <Link
-                to="/master-data"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive('/master-data')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                } ${
-                  (!isMobile && isCollapsed)
-                    ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
-                    : 'gap-3 px-6 py-3 rounded-r-3xl mr-5'
-                }`}
-                title={(!isMobile && isCollapsed) ? t.masterData : ''}
-              >
-                <FaDatabase className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.masterData}</span>}
-              </Link>
-            </li>
+           
           </ul>
         </nav>
 

@@ -34,10 +34,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
 
-
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
-
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -48,12 +46,10 @@ const api = axios.create({
   },
 });
 
-
 // Utility function for className merging
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
 };
-
 
 // Card Components
 const Card = React.forwardRef(({ className, ...props }, ref) => (
@@ -68,7 +64,6 @@ const Card = React.forwardRef(({ className, ...props }, ref) => (
 ));
 Card.displayName = "Card";
 
-
 const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
@@ -77,7 +72,6 @@ const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
   />
 ));
 CardHeader.displayName = "CardHeader";
-
 
 const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
   <h3
@@ -91,12 +85,10 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
 ));
 CardTitle.displayName = "CardTitle";
 
-
 const CardContent = React.forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
-
 
 // Badge Component
 const Badge = ({ children, variant = "default", className, ...props }) => {
@@ -110,7 +102,6 @@ const Badge = ({ children, variant = "default", className, ...props }) => {
         return 'bg-blue-100 text-blue-800 border-blue-200';
     }
   };
-
 
   return (
     <div
@@ -126,7 +117,6 @@ const Badge = ({ children, variant = "default", className, ...props }) => {
   );
 };
 
-
 // Button Component
 const Button = React.forwardRef(({ className, variant = "default", size = "default", ...props }, ref) => {
   const getVariantClasses = () => {
@@ -140,7 +130,6 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
     }
   };
 
-
   const getSizeClasses = () => {
     switch (size) {
       case 'sm':
@@ -151,7 +140,6 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
         return 'h-10 px-4 py-2';
     }
   };
-
 
   return (
     <button
@@ -168,7 +156,6 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
 });
 Button.displayName = "Button";
 
-
 // Tabs Components
 const Tabs = ({ value, onValueChange, children, defaultValue, className, ...props }) => {
   const [activeTab, setActiveTab] = useState(defaultValue || value);
@@ -178,7 +165,6 @@ const Tabs = ({ value, onValueChange, children, defaultValue, className, ...prop
     if (onValueChange) onValueChange(newValue);
   };
 
-
   return (
     <div className={cn("w-full", className)} {...props}>
       {React.Children.map(children, child =>
@@ -187,7 +173,6 @@ const Tabs = ({ value, onValueChange, children, defaultValue, className, ...prop
     </div>
   );
 };
-
 
 const TabsList = ({ children, className, activeTab, onTabChange, ...props }) => (
   <div
@@ -203,7 +188,6 @@ const TabsList = ({ children, className, activeTab, onTabChange, ...props }) => 
   </div>
 );
 
-
 const TabsTrigger = ({ value, children, activeTab, onTabChange, className, ...props }) => (
   <button
     className={cn(
@@ -217,7 +201,6 @@ const TabsTrigger = ({ value, children, activeTab, onTabChange, className, ...pr
     {children}
   </button>
 );
-
 
 const TabsContent = ({ value, children, activeTab, className, ...props }) => {
   if (activeTab !== value) return null;
@@ -234,81 +217,6 @@ const TabsContent = ({ value, children, activeTab, className, ...props }) => {
     </div>
   );
 };
-
-
-// StatsCard Component
-const StatsCard = ({ 
-  title, 
-  value, 
-  subtitle, 
-  icon: Icon, 
-  variant = 'default',
-  trend 
-}) => {
-  const getVariantClasses = () => {
-    switch (variant) {
-      case 'primary':
-        return 'border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100';
-      case 'secondary':
-        return 'border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100';
-      case 'success':
-        return 'border-green-200 bg-gradient-to-br from-green-50 to-green-100';
-      case 'warning':
-        return 'border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100';
-      case 'destructive':
-        return 'border-red-200 bg-gradient-to-br from-red-50 to-red-100';
-      default:
-        return '';
-    }
-  };
-
-
-  const getIconColor = () => {
-    switch (variant) {
-      case 'primary': return 'text-blue-600';
-      case 'secondary': return 'text-gray-600';
-      case 'success': return 'text-green-600';
-      case 'warning': return 'text-yellow-600';
-      case 'destructive': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-
-  return (
-    <Card className={`p-6 hover:shadow-md transition-shadow cursor-pointer ${getVariantClasses()}`}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-2 flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
-            {trend && (
-              <span className={`
-                text-xs font-medium px-2 py-1 rounded-full
-                ${trend.isPositive 
-                  ? 'bg-green-100 text-green-600' 
-                  : 'bg-red-100 text-red-600'
-                }
-              `}>
-                {trend.isPositive ? '+' : ''}{trend.value}%
-              </span>
-            )}
-          </div>
-          {subtitle && (
-            <p className="text-xs text-gray-500">{subtitle}</p>
-          )}
-        </div>
-        <div className={`
-          p-3 rounded-lg bg-white/50 backdrop-blur-sm
-          ${getIconColor()}
-        `}>
-          <Icon className="h-6 w-6" />
-        </div>
-      </div>
-    </Card>
-  );
-};
-
 
 // Custom Tooltip Components
 const CustomTooltip = ({ active, payload, label }) => {
@@ -327,7 +235,6 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-
 // Main Dashboard Component
 const Dashboard = ({ userRole = "Administrator" }) => {
   // ✅ API State Management + Date Picker State
@@ -336,13 +243,89 @@ const Dashboard = ({ userRole = "Administrator" }) => {
   const [statusData, setStatusData] = useState([]);
   const [departmentData, setDepartmentData] = useState([]);
   const [districtData, setDistrictData] = useState([]);
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [workloadData, setWorkloadData] = useState([]); // ✅ NEW: API data for workload
   const [showMonthlyTab, setShowMonthlyTab] = useState(false);
   
-  // ✅ NEW: Date Picker State
+  // ✅ Date Picker State
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
 
+  // ✅ NEW: Fetch Weekly Graph Data
+  const fetchWeeklyData = async () => {
+    try {
+      console.log('🔄 Fetching weekly graph data...');
+      const response = await api.get('/admin/getWeeklyGraph');
+      console.log('📊 Weekly API Response:', response.data);
+      
+      if (response.data && response.data.labels) {
+        const { labels, progress, disposed, ui } = response.data;
+        
+        // ✅ Transform API data to chart format (WITHOUT total)
+        const weeklyChartData = labels.map((label, index) => ({
+          day: label,
+          progress: progress[index] || 0,      // ✅ In progress
+          disposed: disposed[index] || 0,      // ✅ Disposed
+          underInvestigation: ui[index] || 0   // ✅ Under investigation
+        }));
+        
+        console.log('🔄 Transformed weekly data:', weeklyChartData);
+        
+        // ✅ Force state update
+        setWeeklyData([...weeklyChartData]);
+        
+        console.log('✅ WeeklyData state updated successfully');
+      } else {
+        console.error('❌ Invalid API response structure:', response.data);
+      }
+    } catch (error) {
+      console.error('💥 Error fetching weekly data:', error);
+      console.error('💥 Error details:', error.response?.data);
+    }
+  };
+
+  // ✅ NEW: Fetch Role-wise Workload Data
+  const fetchWorkloadData = async () => {
+    try {
+      console.log('🔄 Fetching role-wise workload data...');
+      const response = await api.get('/admin/role-wise-reports');
+      console.log('📊 Workload API Response:', response.data);
+      
+      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // ✅ Transform API data to chart format
+        const workloadChartData = response.data.data.map((role) => ({
+          role: role.sub_role_name || 'Unknown Role',
+          pending: parseInt(role.total_pending_complains) || 0,   // ✅ Pending complaints
+          completed: parseInt(role.total_approved_complains) || 0  // ✅ Approved/Completed complaints
+        }));
+        
+        console.log('🔄 Transformed workload data:', workloadChartData);
+        
+        // ✅ Set workload data
+        setWorkloadData(workloadChartData);
+        
+        console.log('✅ WorkloadData state updated successfully');
+      } else {
+        console.error('❌ Invalid workload API response structure:', response.data);
+      }
+    } catch (error) {
+      console.error('💥 Error fetching workload data:', error);
+      console.error('💥 Error details:', error.response?.data);
+      
+      // ✅ Fallback to empty array if API fails
+      setWorkloadData([]);
+    }
+  };
+
+  // ✅ Add useEffect to log state changes
+  useEffect(() => {
+    console.log('🔄 WeeklyData state changed:', weeklyData);
+  }, [weeklyData]);
+
+  useEffect(() => {
+    console.log('🔄 WorkloadData state changed:', workloadData);
+  }, [workloadData]);
 
   // ✅ API Data Fetching Function
   const fetchDashboardData = async (monthParam) => {
@@ -352,7 +335,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
       if (dashResponse.data.status) {
         setDashboardData(dashResponse.data.dataDashboard);
       }
-
 
       // 2. Monthly Complaint API
       const monthlyResponse = await api.get('/admin/montly-complaint');
@@ -366,7 +348,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         }));
         setMonthlyData(monthlyTrends);
       }
-
 
       // 3. Status Distribution API
       const statusResponse = await api.get('/admin/status-distribution');
@@ -397,7 +378,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         setStatusData(statusDistribution);
       }
 
-
       // 4. Department-wise API
       const deptResponse = await api.get('/admin/department-wise-complaint');
       if (deptResponse.data.status) {
@@ -408,7 +388,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         }));
         setDepartmentData(deptData);
       }
-
 
       // 5. District-wise API
       const districtResponse = await api.get('/admin/district-wise-company-type');
@@ -423,18 +402,21 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         setDistrictData(districtFormatted);
       }
 
+      // ✅ 6. Fetch Weekly Data
+      await fetchWeeklyData();
+
+      // ✅ 7. NEW: Fetch Workload Data
+      await fetchWorkloadData();
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
   };
 
-
   // ✅ Initial Data Fetch
   useEffect(() => {
     fetchDashboardData(currentMonth);
   }, [currentMonth]);
-
 
   // ✅ Handle Date Picker Change
   const handleDateChange = (date) => {
@@ -445,7 +427,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     fetchDashboardData(newMonth);
   };
 
-
   // ✅ Refresh to Current Month
   const handleRefresh = () => {
     const now = new Date();
@@ -455,19 +436,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     fetchDashboardData(currentMonthYear);
   };
 
-
   // Sample data for charts with realistic values (keeping original for other tabs)
-  const weeklyActivity = [
-    { day: 'Mon', entries: 12, disposals: 8, investigations: 3 },
-    { day: 'Tue', entries: 15, disposals: 11, investigations: 5 },
-    { day: 'Wed', entries: 18, disposals: 14, investigations: 4 },
-    { day: 'Thu', entries: 14, disposals: 16, investigations: 6 },
-    { day: 'Fri', entries: 16, disposals: 12, investigations: 7 },
-    { day: 'Sat', entries: 8, disposals: 6, investigations: 2 },
-    { day: 'Sun', entries: 4, disposals: 3, investigations: 1 }
-  ];
-
-
   const processingTimeData = [
     { stage: 'Entry to Verification', avg: 2.3, target: 3 },
     { stage: 'Verification to Forward', avg: 4.1, target: 5 },
@@ -477,24 +446,12 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     { stage: 'Decision to Disposal', avg: 3.2, target: 5 }
   ];
 
-
-  const workloadData = [
-    { role: 'RO/ARO', pending: 23, completed: 156 },
-    { role: 'Section Officer', pending: 18, completed: 134 },
-    { role: 'DS/JS', pending: 12, completed: 98 },
-    { role: 'Secretary', pending: 8, completed: 87 },
-    { role: 'CIO/IO', pending: 15, completed: 45 },
-    { role: 'LokAyukta', pending: 6, completed: 78 }
-  ];
-
-
   const slaCompliance = [
     { metric: 'Entry SLA', value: 95, target: 90 },
     { metric: 'Verification SLA', value: 87, target: 85 },
     { metric: 'Investigation SLA', value: 78, target: 80 },
     { metric: 'Disposal SLA', value: 82, target: 85 }
   ];
-
 
   // Add CSS class for cursor pointer on chart elements
   const chartStyles = `
@@ -511,7 +468,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     }
   `;
 
-
   return (
     <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
       {/* Add styles for chart cursor pointer */}
@@ -525,7 +481,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </p>
         </div>
         <div className="flex gap-2 relative">
-          {/* ✅ Month-Year Picker Button - UPDATED */}
+          {/* ✅ Month-Year Picker Button */}
           <Button 
             variant="outline" 
             size="sm"
@@ -535,8 +491,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
           </Button>
 
-
-          {/* ✅ Date Picker Dropdown - NEW */}
+          {/* ✅ Date Picker Dropdown */}
           {showDatePicker && (
             <div className="absolute top-full right-0 mt-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
               <DatePicker
@@ -553,8 +508,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </div>
           )}
 
-
-          {/* ✅ Refresh Button - UPDATED */}
+          {/* ✅ Refresh Button */}
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <FaChartLine className="h-4 w-4 mr-2" />
             Refresh
@@ -562,8 +516,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </div>
       </div>
 
-
-      {/* Monthly Tab - UPDATED with selected date */}
+      {/* Monthly Tab */}
       {showMonthlyTab && (
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">
@@ -590,10 +543,8 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </div>
       )}
 
-
-      {/* Key Performance Indicators - UPDATED with API data */}
+      {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-
 
         {/* Total Complaints */}
         <div className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
@@ -610,7 +561,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-blue-700">All time</div>
         </div>
 
-
         {/* Today's Entry */}
         <div className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -625,7 +575,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
           <div className="text-sm text-indigo-700">New complaints</div>
         </div>
-
 
         {/* Approved */}
         <div className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
@@ -642,7 +591,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-green-700">Disposed cases</div>
         </div>
 
-
         {/* Rejected */}
         <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -658,7 +606,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-red-700">Rejected cases</div>
         </div>
 
-
         {/* Pending */}
         <div className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -672,7 +619,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
           <div className="text-sm text-yellow-700">In progress</div>
         </div>
-
 
         {/* Avg. Processing */}
         <div className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
@@ -689,9 +635,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <div className="text-sm text-teal-700">Average time</div>
         </div>
 
-
       </div>
-
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
@@ -701,7 +645,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           <TabsTrigger value="workload">Workload</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
         </TabsList>
-
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -747,7 +690,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
-
             {/* Status Distribution Pie Chart */}
             <Card className="cursor-pointer">
               <CardHeader>
@@ -777,7 +719,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </Card>
           </div>
 
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Department-wise Bar Chart */}
             <Card className="cursor-pointer">
@@ -796,7 +737,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
 
             {/* District-wise Stacked Bar Chart */}
             <Card className="cursor-pointer">
@@ -820,29 +760,31 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
         </TabsContent>
 
-
         <TabsContent value="trends" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Weekly Activity Area Chart */}
+            {/* ✅ Weekly Activity Area Chart with API Data (WITHOUT Total) */}
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Weekly Activity Trends</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                  <AreaChart data={weeklyActivity}>
+                  <AreaChart 
+                    data={weeklyData} 
+                    key={JSON.stringify(weeklyData)} // ✅ Force re-render when data changes
+                  >
                     <defs>
-                      <linearGradient id="colorEntries" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                      <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                       </linearGradient>
-                      <linearGradient id="colorDisposals" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#82ca9d" stopOpacity={0}/>
+                      <linearGradient id="colorDisposed" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                       </linearGradient>
-                      <linearGradient id="colorInvestigations" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ffc658" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#ffc658" stopOpacity={0}/>
+                      <linearGradient id="colorUI" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -852,36 +794,38 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                     <Legend />
                     <Area 
                       type="monotone" 
-                      dataKey="entries" 
+                      dataKey="progress" 
                       stackId="1" 
-                      stroke="#8884d8" 
+                      stroke="#f59e0b" 
+                      strokeWidth={2}
                       fillOpacity={1} 
-                      fill="url(#colorEntries)"
-                      name="Entries"
+                      fill="url(#colorProgress)"
+                      name="In Progress"
                     />
                     <Area 
                       type="monotone" 
-                      dataKey="disposals" 
+                      dataKey="disposed" 
                       stackId="1" 
-                      stroke="#82ca9d" 
+                      stroke="#10b981" 
+                      strokeWidth={2}
                       fillOpacity={1} 
-                      fill="url(#colorDisposals)"
-                      name="Disposals"
+                      fill="url(#colorDisposed)"
+                      name="Disposed"
                     />
                     <Area 
                       type="monotone" 
-                      dataKey="investigations" 
+                      dataKey="underInvestigation" 
                       stackId="1" 
-                      stroke="#ffc658" 
+                      stroke="#8b5cf6" 
+                      strokeWidth={2}
                       fillOpacity={1} 
-                      fill="url(#colorInvestigations)"
-                      name="Investigations"
+                      fill="url(#colorUI)"
+                      name="Under Investigation"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
 
             {/* Processing Time vs Target */}
             <Card className="cursor-pointer">
@@ -904,7 +848,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </Card>
           </div>
         </TabsContent>
-
 
         <TabsContent value="performance" className="space-y-6">
           {/* SLA Compliance Metrics */}
@@ -938,16 +881,20 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </div>
         </TabsContent>
 
-
         <TabsContent value="workload" className="space-y-6">
-          {/* Role-wise Workload */}
+          {/* ✅ UPDATED: Role-wise Workload with API Data */}
           <Card className="cursor-pointer">
             <CardHeader>
               <CardTitle>Role-wise Workload Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={workloadData} layout="vertical" margin={{ left: 100 }}>
+                <BarChart 
+                  data={workloadData} 
+                  layout="vertical" 
+                  margin={{ left: 100 }}
+                  key={JSON.stringify(workloadData)} // ✅ Force re-render when data changes
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis type="number" stroke="#6b7280" />
                   <YAxis dataKey="role" type="category" width={100} stroke="#6b7280" />
@@ -960,7 +907,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </CardContent>
           </Card>
         </TabsContent>
-
 
         <TabsContent value="compliance" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -979,7 +925,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardContent>
             </Card>
 
-
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -994,7 +939,6 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                 </div>
               </CardContent>
             </Card>
-
 
             <Card className="cursor-pointer">
               <CardHeader>
@@ -1016,6 +960,5 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     </div>
   );
 };
-
 
 export default Dashboard;
