@@ -401,47 +401,50 @@ class OperatorComplaintsController extends Controller
 
     }
 
-    public function approvedByRo($id){
-
-        if(isset($id)){
+    public function approvedByRo(Request $request,$id){
+         $userId = Auth::user()->id;
+        if(isset($id) && $request->isMethod('post')){
 
             $apc = Complaint::findOrFail($id);
                 $apc->form_status = 1;
                 $apc->approved_by_ro = 1;
+                $apc->approved_by_ro_id =  $userId;
+                $apc->form_status = 1;
                 $apc->save();
     
               return response()->json([
                 'status' => 'success',
                 'message' => 'Approved Successfully',
                 'data' => $apc
+                
             ]);
         }else{
              return response()->json([
                 'status' => 'failed',
-                'message' => 'Please Check Id',
+                'message' => 'Please Check Id'
                 
             ]);
         }
         
     }
 
-          public function allComplainsDashboard(){
+    public function allComplainsDashboard(){
        
            $complainDetails = DB::table('complaints as cm')
-    ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-    ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
-    ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
-    ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
-    ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
-    ->select(
-        'cm.*',
-        'dd.district_name',
-        'dp.name as department_name',
-        'ds.name as designation_name',
-        'ct.name as complaintype_name',
-        'sub.name as subject_name'
-    )
-    ->get();
+                ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->select(
+                    'cm.*',
+                    'dd.district_name',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->get();
         // dd($deadpersondetails);
 
           return response()->json([
@@ -450,4 +453,98 @@ class OperatorComplaintsController extends Controller
                'data' => $complainDetails,
            ]);
     }
+
+     public function allComplainspending(){
+       
+           $complainDetails = DB::table('complaints as cm')
+                ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->select(
+                    'cm.*',
+                    'dd.district_name',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->where('form_status',0)
+                ->where('approved_by_ro',0)
+                ->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+     public function allComplainsapproved(){
+       
+           $complainDetails = DB::table('complaints as cm')
+                ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->select(
+                    'cm.*',
+                    'dd.district_name',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->where('form_status',1)
+                ->where('approved_by_ro',1)
+                ->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+
+    //  public function forwardbyRo(Request $request,$complainId){
+    //     $userrole = Auth::user();
+    //     dd($userrole);
+    //     //  $validation = Validator::make($request->all(), [
+    //     //     'approved_by_ro' => 'required|exists:users,id',
+    //     //     'forward_to' => 'required|exists:users,id',
+         
+          
+    //     // ], [
+    //     //     'forward_by.required' => 'Forward by Supervisor is required.',
+    //     //     'forward_by.exists' => 'Forward by Supervisor does not exist.',
+    //     //     'forward_to.required' => 'Forward to Dealing Assistant is required.',
+    //     //     'forward_to.exists' => 'Forward to Dealing Assistant does not exist.',
+           
+    //     // ]);
+
+    //     // if ($validation->fails()) {
+    //     //     return response()->json([
+    //     //         'status' => false,
+    //     //         'errors' => $validation->errors()
+    //     //     ], 422);
+    //     // }
+
+    //     $cmp =  Complaint::findOrFail($complainId);
+    //     $cmp->approved_by_ro = $request->approved_by_ro;
+    //     // $cmp->approved_by_ro_role = $request->;
+    //     $cmp->form_status = 1;
+    //     $cmp->save();
+
+    //      return response()->json([
+    //             'status' => true,
+    //             'message' => 'Forwarded Successfully',
+    //             'data' => $cmp
+    //         ], 200);
+
+    // }
 }
