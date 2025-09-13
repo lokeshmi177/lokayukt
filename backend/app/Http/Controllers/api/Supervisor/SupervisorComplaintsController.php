@@ -23,6 +23,7 @@ class SupervisorComplaintsController extends Controller
         ->leftJoin('designations as ds', 'complaints.designation_id', '=', 'ds.id')
         ->leftJoin('complaintype as ct', 'complaints.complaintype_id', '=', 'ct.id')
         ->leftJoin('subjects as sub', 'complaints.subject_id', '=', 'sub.id')
+        ->leftJoin('report as rep', 'complaints.id', '=', 'rep.complaint_id')
         ->select(
             'complaints.*',
             'dd.district_name as district_name',
@@ -30,6 +31,7 @@ class SupervisorComplaintsController extends Controller
             'ds.name as designation_name',
             'ct.name as complaintype_name',
             'sub.name as subject_name',
+            'rep.',
         );
         // ->where('form_status', 1)
         // ->where('approved_by_ro', 1);

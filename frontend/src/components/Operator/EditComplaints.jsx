@@ -756,7 +756,7 @@ const EditComplaints = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {/* ✅ Department - Fixed field name */}
+              {/*  Department - Fixed field name */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Department / विभाग *
@@ -861,7 +861,7 @@ const EditComplaints = () => {
             </div>
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                {/* ✅ Subject - Fixed field name */}
+                {/*  Subject - Fixed field name */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Subject / विषय *

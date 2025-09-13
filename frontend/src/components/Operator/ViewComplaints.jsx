@@ -252,7 +252,7 @@ const ViewComplaints = () => {
           </div>
 
           {/* FIXED EDIT BUTTON */}
-          {subRole === "entry-operator" && (
+          {subRole === "review-operator" && (
             <button
               onClick={handleEditNavigation}
               className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
