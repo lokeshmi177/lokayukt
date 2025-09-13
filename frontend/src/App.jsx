@@ -20,6 +20,7 @@ import OperatorProgressRegister from './components/Operator/ProgressRegister';
 import OperatorSearchReports from './components/Operator/SearchReports';
 import OperatorViewComplaints from './components/Operator/ViewComplaints';
 import OperatorEditComplaints from './components/Operator/EditComplaints';
+import OperatorAllComplaits from './components/Operator/AllComplaits';
 
 
 import SupervisorLayout from './components/Supervisor/Layout';
@@ -27,6 +28,7 @@ import SupervisorDashboard from './components/Supervisor/Dashboard';
 import SupervisorComplaints from './components/Supervisor/Complaints';
 import SupervisorProgressRegister from './components/Supervisor/ProgressRegister';
 import SupervisorSearchReports from './components/Supervisor/SearchReports';
+
 // import SupervisorViewComplaints from './components/Supervisor/ViewComplaints';
 // import SupervisorEditComplaints from './components/Supervisor/EditComplaints';
 
@@ -66,6 +68,10 @@ function App() {
           <Route path="search-reports" element={<OperatorSearchReports />} />
           <Route path="search-reports/view/:id" element={<OperatorViewComplaints />} />
              <Route path="search-reports/edit/:id" element={<OperatorEditComplaints />} />
+             <Route path="all-complaints" element={<OperatorAllComplaits />} />
+             <Route path="pending-complaints" element={<OperatorAllComplaits />} />
+             <Route path="approved-complaints" element={<OperatorAllComplaits />} />
+
         </Route>
       )}
       
