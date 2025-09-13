@@ -24,7 +24,6 @@ const AllComplaints = () => {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [complaintToApprove, setComplaintToApprove] = useState(null);
-  const [approvedComplaints, setApprovedComplaints] = useState(new Set());
   const [isApproving, setIsApproving] = useState(false);
 
   //  Fetch complaints data from API
@@ -76,9 +75,6 @@ const AllComplaints = () => {
       const response = await api.post(`/operator/approved-by-ro/${complaintToApprove.id}`);
       
       if (response.data.success || response.status === 200) {
-        // Add to approved set
-        setApprovedComplaints(prev => new Set(prev).add(complaintToApprove.id));
-        
         // Show success toast using react-toastify
         toast.success("Approved Successfully!", {
           position: "top-right",
@@ -89,11 +85,11 @@ const AllComplaints = () => {
           draggable: true,
         });
         
-        // Update complaint status in local state
+        // Update complaint approved_by_ro status in local state
         setComplaintsData(prevData => 
           prevData.map(complaint => 
             complaint.id === complaintToApprove.id 
-              ? { ...complaint, status: 'approved' }
+              ? { ...complaint, approved_by_ro: 1 }
               : complaint
           )
         );
@@ -154,9 +150,9 @@ const AllComplaints = () => {
     }
   };
 
-  // ✅ Check if complaint is approved
-  const isApproved = (complaintId) => {
-    return approvedComplaints.has(complaintId);
+  // ✅ Check if complaint is approved by RO (Regional Officer)
+  const isApprovedByRO = (complaint) => {
+    return complaint.approved_by_ro === 1;
   };
 
   if (error) {
@@ -230,10 +226,14 @@ const AllComplaints = () => {
                   <span className="text-gray-700 text-sm">{complaint.mobile}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
+                  {/* <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusTextColor(complaint.status)} self-start sm:self-center`}>
                     {complaint.status}
-                  </span>
+                  </span> */}
+                  
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
+                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
+                
                 </div>
               </div>
 
@@ -243,14 +243,11 @@ const AllComplaints = () => {
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
                   <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                </div>
+               
                 <div className="hidden sm:block"></div>
               </div>
 
-              {/* ✅ Row 4 - Action Buttons with dynamic styling */}
+              {/* ✅ Row 4 - Action Buttons with conditional rendering based on approved_by_ro */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                   <button
@@ -259,17 +256,23 @@ const AllComplaints = () => {
                   >
                     View Details
                   </button>
-                  <button
-                    onClick={(e) => handleApproveClick(e, complaint)}
-                    disabled={isApproved(complaint.id)}
-                    className={`w-full sm:w-auto px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium ${
-                      isApproved(complaint.id)
-                        ? "bg-green-500 text-white border border-green-500"
-                        : "border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700"
-                    }`}
-                  >
-                    {isApproved(complaint.id) ? "✓ Approved" : "Approve"}
-                  </button>
+                  
+                  {/* ✅ Conditional rendering based on approved_by_ro field */}
+                  {isApprovedByRO(complaint) ? (
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+                    >
+                      ✓ Approved
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleApproveClick(e, complaint)}
+                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Approve
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -304,17 +307,6 @@ const AllComplaints = () => {
                   </p>
                 </div>
               </div>
-              
-              {/* {complaintToApprove && (
-                <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Complaint No:</span> {complaintToApprove.complain_no}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    <span className="font-medium">Complainant:</span> {complaintToApprove.name}
-                  </p>
-                </div>
-              )} */}
 
               <div className="flex gap-3">
                 <button

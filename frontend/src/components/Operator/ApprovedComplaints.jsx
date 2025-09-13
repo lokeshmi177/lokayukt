@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -20,6 +22,9 @@ const ApprovedComplaints = () => {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [complaintToForward, setComplaintToForward] = useState(null);
+  const [isForwarding, setIsForwarding] = useState(false);
 
   // ✅ Fetch complaints data from API
   useEffect(() => {
@@ -53,11 +58,73 @@ const ApprovedComplaints = () => {
     setIsModalOpen(true);
   };
 
-  // ✅ Handle forward action
-  const handleForward = (e, complaintId) => {
-    e.stopPropagation(); // Prevent any parent event
-    console.log("Forward complaint:", complaintId);
-    // Add forward logic here
+  // ✅ Handle forward button click - Show confirmation
+  const handleForwardClick = (e, complaint) => {
+    e.stopPropagation();
+    setComplaintToForward(complaint);
+    setIsConfirmModalOpen(true);
+  };
+
+  // ✅ Handle forward confirmation with react-toastify
+  const handleConfirmForward = async () => {
+    if (!complaintToForward) return;
+    
+    setIsForwarding(true);
+    
+    try {
+      // Replace with your actual forward API endpoint
+      const response = await api.post(`/operator/forward-complaint/${complaintToForward.id}`);
+      
+      if (response.data.success || response.status === 200) {
+        // Show success toast
+        toast.success("Complaint Forwarded Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        
+        // Update complaint forward status in local state
+        setComplaintsData(prevData => 
+          prevData.map(complaint => 
+            complaint.id === complaintToForward.id 
+              ? { ...complaint, forward_by: 1, status: 'Forwarded' }
+              : complaint
+          )
+        );
+      } else {
+        toast.error("Failed to forward complaint", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      console.error("Forward Error:", error);
+      toast.error("Failed to forward complaint", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setIsForwarding(false);
+      setIsConfirmModalOpen(false);
+      setComplaintToForward(null);
+    }
+  };
+
+  // ✅ Cancel forward
+  const handleCancelForward = () => {
+    setIsConfirmModalOpen(false);
+    setComplaintToForward(null);
   };
 
   // ✅ Format date
@@ -79,9 +146,21 @@ const ApprovedComplaints = () => {
         return 'text-red-600 border-red-300 bg-red-50';
       case 'approved':
         return 'text-green-600 border-green-300 bg-green-50';
+      case 'forwarded':
+        return 'text-blue-600 border-blue-300 bg-blue-50';
       default:
         return 'text-gray-600 border-gray-300 bg-gray-50';
     }
+  };
+
+  // ✅ Check if complaint is forwarded
+  const isForwarded = (complaint) => {
+    return complaint.forward_by && complaint.forward_by !== null;
+  };
+
+  // ✅ Check if complaint is approved by RO
+  const isApprovedByRO = (complaint) => {
+    return complaint.approved_by_ro === 1;
   };
 
   if (error) {
@@ -96,10 +175,25 @@ const ApprovedComplaints = () => {
 
   return (
     <>
+      {/* ✅ React-Toastify Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
+
       <div className="min-h-screen p-2 sm:p-4">
         {/* ✅ Header - Responsive */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Complaints Report</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Approved Complaints</h1>
         </div>
 
         {/* ✅ Mobile-First Responsive Card Layout */}
@@ -140,10 +234,12 @@ const ApprovedComplaints = () => {
                   <span className="text-gray-700 text-sm">{complaint.mobile}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
+                  {/* <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusTextColor(complaint.status)} self-start sm:self-center`}>
                     {complaint.status}
-                  </span>
+                  </span> */}
+                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
+                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
                 </div>
               </div>
 
@@ -153,14 +249,12 @@ const ApprovedComplaints = () => {
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
                   <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                </div>
+                 
+            
                 <div className="hidden sm:block"></div>
               </div>
 
-              {/* ✅ Row 4 - Action Buttons */}
+              {/* ✅ Row 4 - Action Buttons with conditional rendering */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                   <button
@@ -169,12 +263,31 @@ const ApprovedComplaints = () => {
                   >
                     View Details
                   </button>
+                  
+                  {/* ✅ Show approved status (always visible for approved complaints) */}
                   <button
-                    onClick={(e) => handleForward(e, complaint.id)}
-                    className="w-full sm:w-auto border border-green-500 text-green-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-green-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    disabled
+                    className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
                   >
-                    Approved
+                    ✓ Approved
                   </button>
+                  
+                  {/* ✅ Conditional forward button based on forward status */}
+                  {/* {isForwarded(complaint) ? (
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-blue-500 text-white border border-blue-500 cursor-not-allowed"
+                    >
+                      ✓ Forwarded
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleForwardClick(e, complaint)}
+                      className="w-full sm:w-auto border border-orange-500 text-orange-500 hover:text-white hover:bg-orange-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Forward
+                    </button>
+                  )} */}
                 </div>
               </div>
             </div>
@@ -184,10 +297,52 @@ const ApprovedComplaints = () => {
         {/* ✅ Empty State */}
         {complaintsData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">No approved complaints found</p>
           </div>
         )}
       </div>
+
+      {/* ✅ Forward Confirmation Modal */}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">Confirm Forward</h3>
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to forward this complaint?
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelForward}
+                  disabled={isForwarding}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmForward}
+                  disabled={isForwarding}
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isForwarding ? "Forwarding..." : "Yes, Forward"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ✅ Mobile Responsive Modal */}
       {isModalOpen && selectedComplaint && (

@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -20,6 +22,9 @@ const PendingComplaints = () => {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [complaintToApprove, setComplaintToApprove] = useState(null);
+  const [isApproving, setIsApproving] = useState(false);
 
   // ✅ Fetch complaints data from API
   useEffect(() => {
@@ -29,7 +34,7 @@ const PendingComplaints = () => {
         
         if (response.data.status === true) {
           setComplaintsData(response.data.data);
-          console.log(response.data.data)
+          console.log(response.data.data);
         } else {
           setError("Failed to fetch complaints data");
         }
@@ -54,11 +59,72 @@ const PendingComplaints = () => {
     setIsModalOpen(true);
   };
 
-  // ✅ Handle forward action
-  const handleForward = (e, complaintId) => {
-    e.stopPropagation(); // Prevent any parent event
-    console.log("Forward complaint:", complaintId);
-    // Add forward logic here
+  // ✅ Handle approve button click - Show confirmation
+  const handleApproveClick = (e, complaint) => {
+    e.stopPropagation();
+    setComplaintToApprove(complaint);
+    setIsConfirmModalOpen(true);
+  };
+
+  // ✅ Handle approval confirmation with react-toastify
+  const handleConfirmApproval = async () => {
+    if (!complaintToApprove) return;
+    
+    setIsApproving(true);
+    
+    try {
+      const response = await api.post(`/operator/approved-by-ro/${complaintToApprove.id}`);
+      
+      if (response.data.success || response.status === 200) {
+        // Show success toast using react-toastify
+        toast.success("Approved Successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        
+        // Update complaint approved_by_ro status in local state
+        setComplaintsData(prevData => 
+          prevData.map(complaint => 
+            complaint.id === complaintToApprove.id 
+              ? { ...complaint, approved_by_ro: 1 }
+              : complaint
+          )
+        );
+      } else {
+        toast.error("Failed to approve complaint", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      console.error("Approval Error:", error);
+      toast.error("Failed to approve complaint", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setIsApproving(false);
+      setIsConfirmModalOpen(false);
+      setComplaintToApprove(null);
+    }
+  };
+
+  // ✅ Cancel approval
+  const handleCancelApproval = () => {
+    setIsConfirmModalOpen(false);
+    setComplaintToApprove(null);
   };
 
   // ✅ Format date
@@ -85,6 +151,11 @@ const PendingComplaints = () => {
     }
   };
 
+  // ✅ Check if complaint is approved by RO (Regional Officer)
+  const isApprovedByRO = (complaint) => {
+    return complaint.approved_by_ro === 1;
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -97,10 +168,25 @@ const PendingComplaints = () => {
 
   return (
     <>
+      {/* ✅ React-Toastify Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
+
       <div className="min-h-screen p-2 sm:p-4">
         {/* ✅ Header - Responsive */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Complaints Report</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pending Complaints</h1>
         </div>
 
         {/* ✅ Mobile-First Responsive Card Layout */}
@@ -141,10 +227,12 @@ const PendingComplaints = () => {
                   <span className="text-gray-700 text-sm">{complaint.mobile}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
+                  {/* <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusTextColor(complaint.status)} self-start sm:self-center`}>
                     {complaint.status}
-                  </span>
+                  </span> */}
+                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
+                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
                 </div>
               </div>
 
@@ -154,14 +242,12 @@ const PendingComplaints = () => {
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
                   <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                </div>
+                 
+               
                 <div className="hidden sm:block"></div>
               </div>
 
-              {/* ✅ Row 4 - Action Buttons */}
+              {/* ✅ Row 4 - Action Buttons with conditional rendering based on approved_by_ro */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                   <button
@@ -170,12 +256,23 @@ const PendingComplaints = () => {
                   >
                     View Details
                   </button>
-                  <button
-                    onClick={(e) => handleForward(e, complaint.id)}
-                    className="w-full sm:w-auto border border-green-500 text-green-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-green-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                  >
-                    Approved
-                  </button>
+                  
+                  {/* ✅ Conditional rendering based on approved_by_ro field */}
+                  {isApprovedByRO(complaint) ? (
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+                    >
+                      ✓ Approved
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleApproveClick(e, complaint)}
+                      className="w-full sm:w-auto border border-green-500 text-green-500 hover:text-white hover:bg-green-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Approve
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -185,10 +282,52 @@ const PendingComplaints = () => {
         {/* ✅ Empty State */}
         {complaintsData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">No pending complaints found</p>
           </div>
         )}
       </div>
+
+      {/* ✅ Confirmation Modal */}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-medium text-gray-900">Confirm Approval</h3>
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to approve this complaint?
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancelApproval}
+                  disabled={isApproving}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmApproval}
+                  disabled={isApproving}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isApproving ? "Approving..." : "Yes, Approve"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ✅ Mobile Responsive Modal */}
       {isModalOpen && selectedComplaint && (

@@ -243,12 +243,7 @@ const ViewComplaints = () => {
                 Complaint Details
               </h1>
             </div>
-            <p className="text-xs sm:text-sm text-gray-600">
-              Complaint No:{" "}
-              <span className="font-semibold text-gray-900">
-                {complaintData?.complain_no || "N/A"}
-              </span>
-            </p>
+          
           </div>
 
           {/* FIXED EDIT BUTTON */}
@@ -288,6 +283,13 @@ const ViewComplaints = () => {
                 </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <p className="text-xs sm:text-sm text-gray-600">
+              Complaint No:{" "}
+              <br/>
+              <span className="font-semibold relative top-1 text-gray-900">
+                {complaintData?.complain_no || "N/A"}
+              </span>
+            </p>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
