@@ -35,7 +35,7 @@ const Sidebar = ({
       description: "Complaint Management",
       operator: "Operator",
       dashboard: "Dashboard",
-      complaints: "Complaints",
+      complaints: "New Complaints",
       allComplaints: "All Complaints",
       pendingComplaints: "Pending Complaints",
       approvedComplaints: "Approved Complaints",

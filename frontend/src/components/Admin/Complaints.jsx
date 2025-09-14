@@ -199,83 +199,69 @@ const Complaints = () => {
   };
 
   // ✅ Fixed submit handler with FormData for file upload
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrors({});
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setErrors({});
 
-    try {
-      // ✅ Create FormData for file upload
-      const submitFormData = new FormData();
-      
-      // Add all form fields to FormData
-      Object.keys(formData).forEach(key => {
-        if (key === 'file' && formData.file) {
-          submitFormData.append('file', formData.file);
-        } else if (formData[key] !== null && formData[key] !== '') {
-          submitFormData.append(key, formData[key]);
-        }
+  try {
+    const submitFormData = new FormData();
+
+    Object.keys(formData).forEach(key => {
+      if (key === 'file' && formData.file) {
+        submitFormData.append('file', formData.file);
+      } else if (formData[key] !== null && formData[key] !== '') {
+        submitFormData.append(key, formData[key]);
+      }
+    });
+
+    const response = await api.post('/admin/complaints', submitFormData);
+
+    if (response.data.status === true) {
+      toast.success(response.data.message || 'Complaint registered successfully!');
+
+      setFormData({
+        name: '',
+        mobile: '',
+        address: '',
+        district_id: '',
+        email: '',
+        fee_exempted: true,
+        amount: '',
+        challan_no: '',
+        title: '',          
+        file: null,
+        dob: '',
+        department: '',     
+        officer_name: '',
+        designation: '',
+        category: '',
+        subject: '',        
+        nature: '',
+        description: ''
       });
 
-      // ✅ Use FormData with multipart/form-data headers
-      const response = await axios.post(
-        `${BASE_URL}/admin/complaints`,
-        submitFormData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        }
-      );
-
-      if (response.data.status === true) {
-        toast.success(response.data.message || 'Complaint registered successfully!');
-        
-        // ✅ Reset form after successful submission
-        setFormData({
-          name: '',
-          mobile: '',
-          address: '',
-          district_id: '',
-          email: '',
-          fee_exempted: true,
-          amount: '',
-          challan_no: '',
-          title: '',          
-          file: null,
-          dob: '',
-          department: '',     
-          officer_name: '',
-          designation: '',
-          category: '',
-          subject: '',        
-          nature: '',
-          description: ''
-        });
-
-        // Reset file upload states
-        setUploadProgress(0);
-        setIsUploading(false);
-        setUploadSuccess(false);
-        setUploadError('');
-      }
-    } catch (error) {
-      if (error.response?.data?.status === false && error.response?.data?.errors) {
-        // Handle validation errors
-        const backendErrors = {};
-        Object.keys(error.response.data.errors).forEach(field => {
-          backendErrors[field] = error.response.data.errors[field][0]; // Take first error message
-        });
-        setErrors(backendErrors);
-      } else {
-        toast.error('Something went wrong. Please try again.');
-      }
-      console.error('Submit error:', error);
-    } finally {
-      setIsSubmitting(false);
+      setUploadProgress(0);
+      setIsUploading(false);
+      setUploadSuccess(false);
+      setUploadError('');
     }
-  };
+  } catch (error) {
+    if (error.response?.data?.status === false && error.response?.data?.errors) {
+      const backendErrors = {};
+      Object.keys(error.response.data.errors).forEach(field => {
+        backendErrors[field] = error.response.data.errors[field][0];
+      });
+      setErrors(backendErrors);
+    } else {
+      toast.error('Something went wrong. Please try again.');
+    }
+    console.error('Submit error:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
