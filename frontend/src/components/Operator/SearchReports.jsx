@@ -6,6 +6,7 @@ import {
   FaFileAlt,
   FaChartBar,
   FaSpinner,
+  FaArrowRight, // Added Forward icon
 } from "react-icons/fa";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
@@ -26,6 +27,119 @@ const api = axios.create({
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
+
+// Forward Modal Component
+const ForwardModal = ({ 
+  isOpen, 
+  onClose, 
+  complaintId,
+  onSubmit 
+}) => {
+  const [formData, setFormData] = useState({
+    forwardTo: '',
+    remarks: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        forwardTo: '',
+        remarks: ''
+      });
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      // Your forward API call here
+      toast.success('Complaint forwarded successfully!');
+      onSubmit();
+      onClose();
+    } catch (error) {
+      toast.error('Error forwarding complaint');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div className="px-4 py-3 border-b text-lg font-semibold">
+          Forward Complaint
+        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Forward To *
+              </label>
+              <select
+                name="forwardTo"
+                value={formData.forwardTo}
+                onChange={(e) => setFormData(prev => ({ ...prev, forwardTo: e.target.value }))}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              >
+                <option value="">Select Department/Officer</option>
+                <option value="admin">Admin</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="department_head">Department Head</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remarks
+              </label>
+              <textarea
+                name="remarks"
+                value={formData.remarks}
+                onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter forwarding remarks..."
+                rows="3"
+              />
+            </div>
+          </div>
+          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+                isSubmitting 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  Forwarding...
+                </>
+              ) : (
+                'Forward'
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const SearchReports = () => {
   const [activeTab, setActiveTab] = useState("search");
@@ -51,8 +165,23 @@ const SearchReports = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  // Forward Modal States
+  const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
+  const [selectedComplaintId, setSelectedComplaintId] = useState(null);
+
   // Helper function to ensure array
   const ensureArray = (data) => Array.isArray(data) ? data : [];
+
+  // Forward Modal handlers
+  const handleForward = (complaintId) => {
+    setSelectedComplaintId(complaintId);
+    setIsForwardModalOpen(true);
+  };
+
+  const handleForwardSubmit = () => {
+    // Refresh data or update state as needed
+    console.log('Complaint forwarded');
+  };
 
   // Fetch initial data when component mounts
   useEffect(() => {
@@ -356,8 +485,6 @@ const SearchReports = () => {
                           />
                         </div>
 
-
-                        
                         <div className="flex flex-col sm:flex-row gap-3">
                           <div className="flex-1">
                             <select
@@ -572,14 +699,22 @@ const SearchReports = () => {
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <button 
-                                      onClick={()=>{
-                                        navigate(`view/${result.id}`)
-                                      }}
-                                       className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors">
-                                        <FaFileAlt className="w-3 text-green-600 h-3" />
-                                        <span className="hidden text-green-600 font-semibold sm:inline">View</span>
-                                      </button>
+                                      <div className="flex gap-1">
+                                        <button 
+                                          onClick={() => navigate(`view/${result.id}`)}
+                                          className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
+                                        >
+                                          <FaFileAlt className="w-3 text-green-600 h-3" />
+                                          <span className="hidden text-green-600 font-semibold sm:inline">View</span>
+                                        </button>
+                                        <button 
+                                          onClick={() => handleForward(result.id)}
+                                          className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
+                                        >
+                                          <FaArrowRight className="w-3 text-blue-600 h-3" />
+                                          <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
+                                        </button>
+                                      </div>
                                     </td>
                                   </tr>
                                 ))
@@ -862,6 +997,14 @@ const SearchReports = () => {
           </div>
         </div>
       </div>
+
+      {/* Forward Modal */}
+      <ForwardModal
+        isOpen={isForwardModalOpen}
+        onClose={() => setIsForwardModalOpen(false)}
+        complaintId={selectedComplaintId}
+        onSubmit={handleForwardSubmit}
+      />
     </div>
   );
 };

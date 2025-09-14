@@ -153,7 +153,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/get-file-preview/{id}',[OperatorReportController::class,'getFilePreview']);
         Route::get('/edit-complaint/{id}',[OperatorComplaintsController::class,'editComplain']);
         Route::post('/update-complaint/{id}',[OperatorComplaintsController::class,'updateComplain']);
-        Route::get('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
+        Route::post('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
         // Route::post('/check-duplicate-store',[OperatorComplaintsController::class,'checkduplicateStoreComplain']);
         Route::post('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
         // Route::get('//{complainId}',[OperatorComplaintsController::class,'']);
