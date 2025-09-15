@@ -345,19 +345,19 @@ class OperatorComplaintsController extends Controller
     {
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'mobile' => 'required|digits_between:10,15',
-            'district_id' => 'required|exists:district_master,district_code',
-            'email' => 'required',
             'title' => 'required|string',
+            // 'mobile' => 'required|digits_between:10,15',
+            // 'district_id' => 'required|exists:district_master,district_code',
+            // 'email' => 'required',
         ], [
             'name.required' => 'Name is required.',
-            'mobile.required' => 'Mobile number is required.',
-            'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
-            'district_id.required' => 'District is required.',
-            'district_id.exists' => 'District does not exist.',
-            'email.required' => 'Email is required.',
-
             'title.required' => 'Letter Subject is Required',
+            // 'mobile.required' => 'Mobile number is required.',
+            // 'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
+            // 'district_id.required' => 'District is required.',
+            // 'district_id.exists' => 'District does not exist.',
+            // 'email.required' => 'Email is required.',
+
         ]);
 
         if ($validation->fails()) {

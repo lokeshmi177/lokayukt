@@ -16,6 +16,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -47,9 +48,11 @@ const Complaints = () => {
     category: '',
     subject: '',        
     nature: '',
-    description: ''
+    description: '',
+    complaint_id: '' // ✅ Added duplicate ID field
   });
 
+  const navigate = useNavigate()
   const [districts, setDistricts] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
@@ -58,11 +61,15 @@ const Complaints = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ File upload progress states
+  // File upload progress states
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
+
+  // Duplicate check states
+  const [duplicate, setDuplicate] = useState(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
 
   // Fetch all required data on component mount
   useEffect(() => {
@@ -130,9 +137,63 @@ const Complaints = () => {
     }
   };
 
-  // ✅ Enhanced file upload with progress
+  // Check Duplicate function
+  const handleCheckDuplicate = async () => {
+    if (!formData.name.trim() || !formData.title.trim()) {
+      toast.error('Please enter both Name and Title to check duplicates.');
+      return;
+    }
+    
+    setCheckingDuplicate(true);
+    setDuplicate(null);
+    
+    try {
+      const response = await api.post('/operator/check-duplicate', {
+        name: formData.name,
+        title: formData.title
+      });
+      
+      if (response.data.complaint) {
+        setDuplicate(response.data.complaint);
+      } else {
+        toast.info('No duplicate found');
+        setDuplicate(null);
+      }
+    } catch (error) {
+      console.error('Duplicate check error:', error);
+      toast.info('No duplicate found');
+      setDuplicate(null);
+    } finally {
+      setCheckingDuplicate(false);
+    }
+  };
+
+  // ✅ Updated Handle merge action with duplicate ID storage
+  const handleMergeDuplicate = () => {
+    if (duplicate && duplicate.id) {
+      // Update form data with BOTH description AND duplicate ID
+      setFormData(prev => ({
+        ...prev,
+        description: duplicate.description || '',
+        complaint_id: duplicate.id.toString() // ✅ Store duplicate ID
+      }));
+      
+      toast.success(`Description merged! Duplicate ID: ${duplicate.id} stored`);
+      setDuplicate(null); // Hide duplicate box
+    } else {
+      toast.warning('No duplicate data found to merge');
+    }
+  };
+
+  // Get subject name by ID
+  const getSubjectName = (subjectId) => {
+    const subject = subjects.find(s => String(s.id) === String(subjectId));
+    return subject ? `${subject.name} (${subject.name_h})` : subjectId;
+  };
+
+  // Enhanced file upload with progress
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files;
     
     if (!file) return;
 
@@ -154,7 +215,7 @@ const Complaints = () => {
     setUploadSuccess(false);
     setUploadError('');
 
-    // ✅ Alternative: Simulate upload progress (if no API endpoint yet)
+    // Alternative: Simulate upload progress (if no API endpoint yet)
     const simulateUpload = () => {
       let progress = 0;
       const interval = setInterval(() => {
@@ -186,7 +247,7 @@ const Complaints = () => {
     }
   };
 
-  // ✅ Remove uploaded file
+  // Remove uploaded file
   const handleRemoveFile = () => {
     setFormData(prev => ({
       ...prev,
@@ -198,80 +259,77 @@ const Complaints = () => {
     setUploadError('');
   };
 
-  // ✅ Fixed submit handler with FormData for file upload
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setErrors({});
+  // Fixed submit handler with FormData for file upload
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
 
-  try {
-    // Create FormData for file upload
-    const submitFormData = new FormData();
+    try {
+      // Create FormData for file upload
+      const submitFormData = new FormData();
 
-    // Add all form fields to FormData
-    Object.keys(formData).forEach((key) => {
-      if (key === 'file' && formData.file) {
-        submitFormData.append('file', formData.file);
-      } else if (formData[key] !== null && formData[key] !== '') {
-        submitFormData.append(key, formData[key]);
+      // Add all form fields to FormData
+      Object.keys(formData).forEach((key) => {
+        if (key === 'file' && formData.file) {
+          submitFormData.append('file', formData.file);
+        } else if (formData[key] !== null && formData[key] !== '') {
+          submitFormData.append(key, formData[key]);
+        }
+      });
+
+      // Use api instance for the POST request
+      const response = await api.post('/operator/add-complaint', submitFormData);
+      // ⬆️ headers section completely removed
+
+      if (response.data.status === true) {
+        toast.success(response.data.message || 'Complaint registered successfully!');
+
+        // Reset form after successful submission
+        setFormData({
+          name: '',
+          mobile: '',
+          address: '',
+          district_id: '',
+          email: '',
+          fee_exempted: true,
+          amount: '',
+          challan_no: '',
+          title: '',
+          file: null,
+          dob: '',
+          department: '',
+          officer_name: '',
+          designation: '',
+          category: '',
+          subject: '',
+          nature: '',
+          description: '',
+          complaint_id: '' // ✅ Reset duplicate ID
+        });
+
+        // Reset file upload states
+        setUploadProgress(0);
+        setIsUploading(false);
+        setUploadSuccess(false);
+        setUploadError('');
       }
-    });
-
-    // Use api instance for the POST request
-    const response = await api.post('/operator/add-complaint', submitFormData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
-    if (response.data.status === true) {
-      toast.success(response.data.message || 'Complaint registered successfully!');
-
-      // Reset form after successful submission
-      setFormData({
-        name: '',
-        mobile: '',
-        address: '',
-        district_id: '',
-        email: '',
-        fee_exempted: true,
-        amount: '',
-        challan_no: '',
-        title: '',
-        file: null,
-        dob: '',
-        department: '',
-        officer_name: '',
-        designation: '',
-        category: '',
-        subject: '',
-        nature: '',
-        description: ''
-      });
-
-      // Reset file upload states
-      setUploadProgress(0);
-      setIsUploading(false);
-      setUploadSuccess(false);
-      setUploadError('');
+    } catch (error) {
+      if (error.response?.data?.status === false && error.response?.data?.errors) {
+        // Handle validation errors
+        const backendErrors = {};
+        Object.keys(error.response.data.errors).forEach((field) => {
+          backendErrors[field] = error.response.data.errors[field];
+        });
+        setErrors(backendErrors);
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
+      console.error('Submit error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    if (error.response?.data?.status === false && error.response?.data?.errors) {
-      // Handle validation errors
-      const backendErrors = {};
-      Object.keys(error.response.data.errors).forEach((field) => {
-        backendErrors[field] = error.response.data.errors[field][0];
-      });
-      setErrors(backendErrors);
-    } else {
-      toast.error('Something went wrong. Please try again.');
-    }
-    console.error('Submit error:', error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+  };
 
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -297,21 +355,71 @@ const Complaints = () => {
             <p className="text-xs sm:text-sm text-gray-600">शिकायत प्रविष्टि फॉर्म</p>
           </div>
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
-              <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Check Duplicates</span>
-              <span className="xs:hidden">Check Duplicates</span>
-            </button> */}
-            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
-              <FaSave className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Save Draft</span>
-              <span className="xs:hidden">Save</span>
-            </button> */}
+            <button 
+              onClick={handleCheckDuplicate}
+              disabled={checkingDuplicate}
+              className={`px-4 py-2 bg-blue-600 text-white rounded-md font-medium transition-all ${
+                checkingDuplicate 
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'hover:bg-blue-700'
+              }`}
+            >
+              {checkingDuplicate ? (
+                <>
+                  <FaSpinner className="inline w-4 h-4 mr-2 animate-spin" />
+                  Checking...
+                </>
+              ) : (
+                <>
+                  <FaSearch className="inline w-4 h-4 mr-2" />
+                  Check Duplicates
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
+      {/* Duplicate Found Alert Box */}
+      {duplicate && (
+        <div className="mb-6 border border-yellow-300 bg-yellow-100 p-4 rounded-lg">
+          <div className="flex items-start gap-3">
+            <div className="text-yellow-600 mt-1">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+
+            <div className="flex-1">
+              <h3 className="font-semibold text-yellow-800 mb-2">Potential Duplicates Found</h3>
+
+              <div className="text-sm text-yellow-700 space-y-1">
+                <div><strong>Complaint No:</strong> {duplicate.complain_no}</div>
+                <div><strong>Complaint ID:</strong> {duplicate.id}</div> {/* ✅ Show ID */}
+                <div><strong>Name:</strong> {duplicate.name}</div>
+                <div><strong>Subject:</strong> {getSubjectName(duplicate.subject_id)}</div>
+                {duplicate.description && (
+                  <div><strong>Description:</strong> {duplicate.description.substring(0, 100)}...</div>
+                )}
+              </div>
+
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={handleMergeDuplicate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Merge Description
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
+        {/* ✅ Hidden Input Field for Duplicate Complaint ID [6][12][7] */}
+       
+
         {/* Form Layout */}
         <div className="space-y-4 sm:space-y-6">
           {/* Top Row: Complainant Details + Security Fee */}
@@ -351,6 +459,14 @@ const Complaints = () => {
                       {errors.name}
                     </p>
                   )}
+
+                  {/*  */}
+                   <input
+          type="hidden"
+          name="complaint_id"
+          value={formData.complaint_id}
+          onChange={handleInputChange}
+        />
                 </div>
 
                 {/* Mobile */}
@@ -558,7 +674,7 @@ const Complaints = () => {
                   </div>
                 </div>
 
-                {/* ✅ Title Field */}
+                {/* Title Field */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Title / शीर्षक *
@@ -576,7 +692,7 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/* ✅ File Upload with Progress */}
+                {/* File Upload with Progress */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Choose File / फ़ाइल चुनें *
@@ -622,7 +738,7 @@ const Complaints = () => {
                         </button>
                       </div>
 
-                      {/* ✅ Progress Bar */}
+                      {/* Progress Bar */}
                       {(isUploading || uploadProgress > 0) && (
                         <div className="mb-2">
                           <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
