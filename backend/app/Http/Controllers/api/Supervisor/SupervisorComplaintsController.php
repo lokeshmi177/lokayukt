@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\Supervisor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Complaint;
+use App\Models\ComplaintAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class SupervisorComplaintsController extends Controller
         ->leftJoin('designations as ds', 'complaints.designation_id', '=', 'ds.id')
         ->leftJoin('complaintype as ct', 'complaints.complaintype_id', '=', 'ct.id')
         ->leftJoin('subjects as sub', 'complaints.subject_id', '=', 'sub.id')
-        ->leftJoin('report as rep', 'complaints.id', '=', 'rep.complaint_id')
+        ->leftJoin('forward_reports as rep', 'complaints.id', '=', 'rep.complain_id')
         ->select(
             'complaints.*',
             'dd.district_name as district_name',
@@ -31,7 +32,20 @@ class SupervisorComplaintsController extends Controller
             'ds.name as designation_name',
             'ct.name as complaintype_name',
             'sub.name as subject_name',
-            'rep.',
+            // 'rep.*',
+            'rep.forward_to_so_us as forward_so',
+            'rep.forward_to_ds_js as forward_ds',
+            'rep.forward_to_sec as forward_sec',
+            'rep.forward_to_cio_io as forward_cio',
+            'rep.forward_to_lokayukt as forward_lokayukt',
+            'rep.forward_to_uplokayukt as forward_uplokayukt',
+            'rep.forward_by_so_us as by_so',
+            'rep.forward_by_ds_js as by_ds',
+            'rep.forward_by_sec as by_sec',
+            'rep.forward_by_cio_io as by_cio',
+            'rep.forward_by_lokayukt as by_lokayukt',
+            'rep.forward_by_uplokayukt as by_uplokayukt',
+
         );
         // ->where('form_status', 1)
         // ->where('approved_by_ro', 1);
@@ -39,6 +53,7 @@ class SupervisorComplaintsController extends Controller
     switch ($userSubrole) {
         case "so-us":
             $query->where('form_status', 1)
+                  ->where('approved_by_ro', 1)
                   ->where('approved_by_ro', 1);
             // $query->where('complaints.added_by', $user);
             break;
@@ -46,7 +61,7 @@ class SupervisorComplaintsController extends Controller
         case "ds-js":
           $query->where('form_status', 1)
                   ->where('approved_by_ro', 1)
-                  ->where('forward_to_lokayukt', 1)
+                  ->where('forward_so', 1)
                   ->whereOr('forward_to_uplokayukt', 1);
             break;
 
@@ -117,16 +132,19 @@ class SupervisorComplaintsController extends Controller
 
 
     public function forwardbySO(Request $request,$complainId){
-         $validation = Validator::make($request->all(), [
-            'forward_by' => 'required|exists:users,id',
-            'forward_to_d_a' => 'required|exists:users,id',
+    //    dd($request->all());
+        $validation = Validator::make($request->all(), [
+            'action_taken_by' => 'required|exists:users,id',
+            'forwarded_to' => 'required|exists:users,id',
+            // 'remark' => 'required',
          
           
         ], [
-            'forward_by.required' => 'Forward by Supervisor is required.',
-            'forward_by.exists' => 'Forward by Supervisor does not exist.',
-            'forward_to_d_a.required' => 'Forward to Dealing Assistant is required.',
-            'forward_to_d_a.exists' => 'Forward to Dealing Assistant does not exist.',
+            'action_taken_by.required' => 'Forward by Supervisor is required.',
+            'action_taken_by.exists' => 'Forward by user does not exist.',
+            'forwarded_to.required' => 'Forward to user is required.',
+            'forwarded_to.exists' => 'Forward to user does not exist.',
+            // 'remark.required' => 'Remark is required.',
            
         ]);
 
@@ -138,11 +156,21 @@ class SupervisorComplaintsController extends Controller
         }
         if(isset($complainId) && $request->isMethod('post')){
 
-            $cmp =  Complaint::findOrFail($complainId);
-            $cmp->forward_by = $request->forward_by;
-            $cmp->forward_to_d_a = $request->forward_to_d_a;
-            $cmp->sup_status = 1;
-            $cmp->save();
+             $cmp =  Complaint::findOrFail($complainId);
+
+            if($cmp){
+                $cmpAction =new ComplaintAction();
+                $cmpAction->complaint_id = $complainId;
+                $cmpAction->action_taken_by = $request->action_taken_by;
+                $cmpAction->forwarded_to = $request->forwarded_to;
+                $cmpAction->action_type = "Forwarded";
+                $cmpAction->remarks = $request->remarks;
+                $cmpAction->save();
+            }
+            // $cmp->forward_by = $request->forward_by;
+            // $cmp->forward_to_d_a = $request->forward_to_d_a;
+            // $cmp->sup_status = 1;
+            // $cmp->save();
     
              return response()->json([
                     'status' => true,

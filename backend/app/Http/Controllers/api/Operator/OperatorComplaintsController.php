@@ -18,7 +18,7 @@ class OperatorComplaintsController extends Controller
         // $user = $request->user()->id;
         $added_by = Auth::user()->id;
         $validation = Validator::make($request->all(), [
-            'y' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
             'address' => 'required|string|max:255',
             'district_id' => 'required|exists:district_master,district_code',
@@ -64,8 +64,52 @@ class OperatorComplaintsController extends Controller
             ], 422);
         }
 
-     
-        $complaint = new Complaint();
+        if(isset($request->complaint_id)){
+            $compUpdate = Complaint::findOrFail($request->complaint_id);
+            
+                $compUpdate->name = $request->name;
+                $compUpdate->complain_no = $compUpdateNo ?? null;
+                $compUpdate->mobile = $request->mobile;
+                $compUpdate->address = $request->address;
+                $compUpdate->district_id = $request->district_id;
+                $compUpdate->email = $request->email;
+                $compUpdate->amount = $request->amount;
+                $compUpdate->challan_no = $request->challan_no;
+                $compUpdate->dob = $request->dob;
+                $compUpdate->fee_exempted = $request->fee_exempted ? 1 : 0;
+                $compUpdate->department_id = $request->department;
+                $compUpdate->officer_name = $request->officer_name;
+                $compUpdate->designation_id = $request->designation;
+                $compUpdate->category = $request->category;
+                $compUpdate->added_by = $added_by;
+                $compUpdate->subject_id = $request->subject;
+                $compUpdate->complaintype_id = $request->nature;
+                $compUpdate->description = $request->description;
+                $compUpdate->title = $request->title;
+                
+                $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
+                $filePath = $request->file('file')->storeAs('letters', $file, 'public');
+                $compUpdate->file = $file;
+                
+                $compUpdate->save();
+                $year = date('Y');
+                if($request->nature){
+                $com_type = ComplainType::find($request->nature);
+                $str = strtoupper(substr($com_type->name, 0, 3));
+
+                }
+        
+                $complaintNo = 'UP'.$year.$str.str_pad($compUpdate->id,8, '0',STR_PAD_LEFT);
+                $compUpdate->where('id',$compUpdate->id)->update(['complain_no' => $complaintNo]);
+            
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Complaint Update successfully.',
+                    'data' => $compUpdate
+                ], 201);
+        }else{
+              $complaint = new Complaint();
         $complaint->name = $request->name;
         $complaint->complain_no = $complaintNo ?? null;
         $complaint->mobile = $request->mobile;
@@ -109,6 +153,9 @@ class OperatorComplaintsController extends Controller
             'message' => 'Complaint registered successfully.',
             'data' => $complaint
         ], 201);
+        }
+     
+      
     }
 
     public function checkduplicateStoreComplain(Request $request)
