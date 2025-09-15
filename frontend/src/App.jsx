@@ -2,6 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
+// Admin
 import AdminLayout from './components/Admin/Layout';
 import AdminDashboard from './components/Admin/Dashboard';
 import AdminComplaints from './components/Admin/Complaints';
@@ -13,6 +14,7 @@ import AdminAddUserManagement from './components/Admin/AddUserManagement';
 import AdminEditUserManagment from './components/Admin/EditUserManagment';
 import AdminViewComplaints from './components/Admin/ViewComplaints';
 
+// Operator
 import OperatorLayout from './components/Operator/Layout';
 import OperatorDashboard from './components/Operator/Dashboard';
 import OperatorComplaints from './components/Operator/Complaints';
@@ -21,20 +23,29 @@ import OperatorSearchReports from './components/Operator/SearchReports';
 import OperatorViewComplaints from './components/Operator/ViewComplaints';
 import OperatorEditComplaints from './components/Operator/EditComplaints';
 import OperatorAllComplaits from './components/Operator/AllComplaits';
-// import OperatorAllComplaits from './components/Operator/AllComplaits';
 import OperatorPendingComplaints from './components/Operator/PendingComplaints/';
 import OperatorApprovedComplaints from './components/Operator/ApprovedComplaints';
-// import Cheekdublicate from './components/Operator/Cheekdublicate';
 
-
+// Supervisor
 import SupervisorLayout from './components/Supervisor/Layout';
 import SupervisorDashboard from './components/Supervisor/Dashboard';
 import SupervisorComplaints from './components/Supervisor/Complaints';
 import SupervisorProgressRegister from './components/Supervisor/ProgressRegister';
 import SupervisorSearchReports from './components/Supervisor/SearchReports';
 
-// import SupervisorViewComplaints from './components/Supervisor/ViewComplaints';
-// import SupervisorEditComplaints from './components/Supervisor/EditComplaints';
+//Lok-ayukt
+import LokayuktLayout from './components/Supervisor/Layout';
+import LokayuktDashboard from './components/Supervisor/Dashboard';
+import LokayuktComplaints from './components/Supervisor/Complaints';
+import LokayuktProgressRegister from './components/Supervisor/ProgressRegister';
+import LokayuktSearchReports from './components/Supervisor/SearchReports';
+
+//Uplokayukt
+import UplokayuktLayout from './components/Supervisor/Layout';
+import UplokayuktDashboard from './components/Supervisor/Dashboard';
+import UplokayuktComplaints from './components/Supervisor/Complaints';
+import UplokayuktProgressRegister from './components/Supervisor/ProgressRegister';
+import UplokayuktSearchReports from './components/Supervisor/SearchReports';
 
 
 import Login from './components/Login';
@@ -48,7 +59,7 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
 
-      {/* ✅ Admin Routes - /admin/... */}
+      {/*  Admin Routes */}
       {role === 'admin' && (
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -63,7 +74,7 @@ function App() {
         </Route>
       )}
 
-      {/* ✅ Operator Routes - /operator/... */}
+      {/*  Operator Routes */}
       {role === 'operator' && (
         <Route path="/operator" element={<OperatorLayout />}>
           <Route path="dashboard" element={<OperatorDashboard />} />
@@ -80,6 +91,7 @@ function App() {
         </Route>
       )}
       
+       {/* Supervisor  Routes */}
       {role === 'supervisor' && (
         <Route path="/supervisor" element={<SupervisorLayout />}>
           <Route path="dashboard" element={<SupervisorDashboard />} />
@@ -90,8 +102,28 @@ function App() {
         </Route>
       )}
 
-      {/* Default redirect */}
-      {/* <Route path="*" element={<Navigate to="/login" replace />} /> */}
+        {/* Lok-ayukt  Routes */}
+      {role === 'lok-ayukt' && (
+        <Route path="/lok-ayukt" element={<LokayuktLayout />}>
+          <Route path="dashboard" element={<LokayuktDashboard />} />
+          <Route path="complaints" element={<LokayuktComplaints />} />
+          <Route path="progress-register" element={<LokayuktProgressRegister />} />
+          <Route path="search-reports" element={<LokayuktSearchReports />} />
+         
+        </Route>
+      )}
+
+        {/* UPLok-ayukt  Routes */}
+      {role === 'uplokayukt' && (
+        <Route path="/uplokayukt" element={<UplokayuktLayout />}>
+          <Route path="dashboard" element={<UplokayuktDashboard />} />
+          <Route path="complaints" element={<UplokayuktComplaints />} />
+          <Route path="progress-register" element={<UplokayuktProgressRegister />} />
+          <Route path="search-reports" element={<UplokayuktSearchReports />} />
+         
+        </Route>
+      )}
+
     </Routes>
   );
 }

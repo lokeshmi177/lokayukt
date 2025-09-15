@@ -56,15 +56,8 @@ const Login = () => {
         localStorage.setItem('access_token', response.data.data.access_token);
         localStorage.setItem('user', JSON.stringify(response.data.data.user));
         localStorage.setItem('role', response.data.data.user.role.name);
-        
-        
-        // Get user role from nested object
         const userRole = response.data.data.user.role.name;
-        
-        // Show success toast first
         toast.success("Login Successful!");
-        
-        // Navigate based on user role after showing toast
         setTimeout(() => {
           if (userRole === "admin") {
             window.open("/admin/dashboard", "_self");
@@ -77,7 +70,12 @@ const Login = () => {
             localStorage.setItem('subrole', response.data.data.user.subrole.name);
             window.open("/supervisor/dashboard", "_self");
           }
-          
+          else if (userRole === "lok-ayuk") {
+            window.open("/lok-ayuk/dashboard", "_self");
+          }
+          else if (userRole === "uplokayukt") {
+            window.open("/uplokayukt/dashboard", "_self");
+          }
           else {
             toast.error("Unauthorized role.");
             navigate("/login");
@@ -138,7 +136,7 @@ const Login = () => {
           setGeneralError(error.response.data.message || 'Login failed');
         }
       }
-      // Handle different HTTP status codes
+ 
       else if (error.response?.status === 401) {
         setGeneralError('Invalid credentials');
       }
@@ -264,7 +262,7 @@ const Login = () => {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            © 2025 LokAyukta Office, Madhya Pradesh
+            © 2025 LokAyukta Office, Uttar Pradesh
           </p>
         </div>
 

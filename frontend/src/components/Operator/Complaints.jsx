@@ -168,7 +168,7 @@ const Complaints = () => {
     }
   };
 
-  //  Updated Handle merge action - Preserves existing description with line break
+  // ✅ Updated Handle merge action - Preserves existing description with line break
   const handleMergeDuplicate = () => {
     if (duplicate && duplicate.id) {
       // Get existing description from form
@@ -177,7 +177,7 @@ const Complaints = () => {
       
       let mergedDescription = '';
       
-      //  If user already typed description, preserve it and add duplicate above with line break
+      // ✅ If user already typed description, preserve it and add duplicate above with line break
       if (existingDescription) {
         // Put duplicate description first, then newline, then existing user description
         mergedDescription = duplicateDescription + '\n' + existingDescription;
@@ -206,7 +206,7 @@ const Complaints = () => {
     return subject ? `${subject.name} (${subject.name_h})` : subjectId;
   };
 
-  //  Enhanced file upload - Now accepts ALL file types
+  // ✅ Enhanced file upload - Now accepts ALL file types
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     
@@ -312,7 +312,7 @@ const Complaints = () => {
           subject: '',
           nature: '',
           description: '',
-          complaint_id: '' //  Reset duplicate ID
+          complaint_id: '' // ✅ Reset duplicate ID
         });
 
         // Reset file upload states
@@ -460,7 +460,7 @@ const Complaints = () => {
                     </p>
                   )}
 
-                  {/*  Hidden Input Field for Duplicate Complaint ID */}
+                  {/* ✅ Hidden Input Field for Duplicate Complaint ID */}
                   <input
                     type="hidden"
                     name="complaint_id"
@@ -692,7 +692,7 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/*  File Upload - Now accepts ANY file type */}
+                {/* ✅ File Upload - Now accepts ANY file type */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Choose File / फ़ाइल चुनें *
@@ -706,7 +706,7 @@ const Complaints = () => {
                         <span className="text-sm text-gray-700">Choose any file</span>
                         <input
                           type="file"
-                          //  Removed accept attribute - Now accepts ALL file types
+                          // ✅ Removed accept attribute - Now accepts ALL file types
                           onChange={handleFileChange}
                           className="hidden"
                         /> 
@@ -776,7 +776,7 @@ const Complaints = () => {
                     </div>
                   )}
 
-                  {/*  Updated help text */}
+                  {/* ✅ Updated help text */}
                   <p className="mt-1 text-xs text-gray-500">All file types allowed</p>
                   {errors.file && (
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
@@ -952,7 +952,7 @@ const Complaints = () => {
                 </div>
               </div>
 
-              {/*  Detailed Description with proper line break support */}
+              {/* ✅ Detailed Description with proper line break support */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Detailed Description / विस्तृत विवरण *
@@ -964,7 +964,7 @@ const Complaints = () => {
                   rows={6}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   placeholder="Enter detailed complaint description..."
-                  style={{ whiteSpace: 'pre-wrap' }} //  CSS for preserving line breaks
+                  style={{ whiteSpace: 'pre-wrap' }} // ✅ CSS for preserving line breaks
                 />
                 {errors.description && (
                   <p className="mt-1 text-sm text-red-600">

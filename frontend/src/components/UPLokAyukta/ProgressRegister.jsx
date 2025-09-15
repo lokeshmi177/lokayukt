@@ -10,7 +10,7 @@ import {
   FaDownload,
   FaCalendarAlt,
 } from "react-icons/fa";
-import Pagination from "../../Pagination"; // ✅ Import Pagination component
+import Pagination from "../Pagination"; // ✅ Import Pagination component
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -38,7 +38,7 @@ const ProgressRegister = () => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const response = await api.get("/lokayukt/complain-report");
+        const response = await api.get("/uplokayukt/complain-report");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
         } else {
@@ -92,7 +92,7 @@ const ProgressRegister = () => {
 
   const getToRole = (status) => {
     if (status === "In Progress") return "Section Officer";
-    if (status === "Disposed - Accepted") return "LokAyukta";
+    if (status === "Disposed - Accepted") return "uplokayukta";
     if (status === "Rejected") return "Archive";
     return "RO";
   };
