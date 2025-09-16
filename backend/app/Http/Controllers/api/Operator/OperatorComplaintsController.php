@@ -517,7 +517,7 @@ class OperatorComplaintsController extends Controller
                     'sub.name as subject_name'
                 )
                 ->where('form_status',0)
-                ->where('approved_by_ro',0)
+                ->where('approved_rejected_by_ro',0)
                 ->get();
         // dd($deadpersondetails);
 
@@ -545,7 +545,7 @@ class OperatorComplaintsController extends Controller
                     'sub.name as subject_name'
                 )
                 ->where('form_status',1)
-                ->where('approved_by_ro',1)
+                ->where('approved_rejected_by_ro',1)
                 ->get();
         // dd($deadpersondetails);
 

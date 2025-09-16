@@ -63,7 +63,8 @@ class SupervisorComplaintsController extends Controller
         case "ds-js":
           $query->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                  ->where('forward_so', 1)
+                  ->where('approved_rejected_by_so', 1)
+                //   ->where('forward_so', 1)
                   ->whereOr('forward_to_uplokayukt', 1);
             break;
 
