@@ -451,7 +451,12 @@ class OperatorReportController extends Controller
             )
             // ->groupBy('complaints.id','u.id','srole.name')
             ->get();
-            dd($records);
+              return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' => $records,
+            ]);
+            // dd($records);
     }
 
      public function current_report(){
@@ -480,7 +485,12 @@ class OperatorReportController extends Controller
             )
             // ->groupBy('complaints.id','u.id','srole.name')
             ->get();
-            dd($records);
+              return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' => $records,
+            ]);
+            // dd($records);
     }
 
 }
