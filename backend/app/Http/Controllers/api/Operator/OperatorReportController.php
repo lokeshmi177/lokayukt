@@ -486,7 +486,7 @@ class OperatorReportController extends Controller
             )
             // ->groupBy('complaints.id','u.id','srole.name')
             ->get();
-               dd($records);
+            //    dd($records);
               return response()->json([
                 'status' => true,
                 'message' => 'Records Fetch successfully',
