@@ -28,17 +28,19 @@ const ProgressRegister = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("movements");
   const [complaintsData, setComplaintsData] = useState([]);
+  const [currentReportData, setCurrentReportData] = useState([]); // ✅ State for current report data
+  const [analyticsData, setAnalyticsData] = useState(null); // ✅ NEW: State for analytics data
   const [error, setError] = useState(null);
 
   // ✅ Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Fetch complaints data from API
+  // Fetch complaints data from API for movements tab
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const response = await api.get("/supervisor/complain-report");
+        const response = await api.get("/supervisor/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
         } else {
@@ -53,64 +55,192 @@ const ProgressRegister = () => {
     fetchComplaints();
   }, []);
 
-  // Transform API data to file movements format
-  const transformToFileMovements = (data) => {
-    return data.map((complaint, index) => ({
-      id: complaint.id.toString(),
-      complaintNo: complaint.complain_no,
-      complainant: complaint.name,
-      fromRole: getFromRole(complaint.status),
-      toRole: getToRole(complaint.status),
-      note: `${complaint.complaintype_name} - ${complaint.subject_name}`,
-      timestamp: formatDate(complaint.created_at),
-      status: getMovementStatus(complaint.status),
-    }));
-  };
-
-  // Transform API data to complaint status format
-  const transformToComplaintStatus = (data) => {
-    return data.map((complaint) => ({
-      complaintNo: complaint.complain_no,
-      complainant: complaint.name,
-      subject: `${complaint.complaintype_name} - ${complaint.subject_name}`,
-      currentStage: getCurrentStage(complaint.status),
-      assignedTo: `${complaint.department_name} - ${complaint.officer_name}`,
-      receivedDate: formatDateOnly(complaint.created_at),
-      targetDate: getTargetDate(complaint.created_at),
-      status: getStatusType(complaint.status),
-      daysElapsed: getDaysElapsed(complaint.created_at),
-    }));
-  };
-
-  // Helper functions
-  const getFromRole = (status) => {
-    if (status === "In Progress") return "RO";
-    if (status === "Disposed - Accepted") return "Section Officer";
-    if (status === "Rejected") return "DS";
-    return "Initial";
-  };
-
-  const getToRole = (status) => {
-    if (status === "In Progress") return "Section Officer";
-    if (status === "Disposed - Accepted") return "LokAyukta";
-    if (status === "Rejected") return "Archive";
-    return "RO";
-  };
-
-  const getMovementStatus = (status) => {
-    if (status === "In Progress") return "pending";
-    if (status === "Disposed - Accepted") return "completed";
-    if (status === "Rejected") return "overdue";
-    return "pending";
-  };
-
-  const getCurrentStage = (status) => {
-    const stages = {
-      "In Progress": "Under Investigation",
-      "Disposed - Accepted": "Disposal Complete",
-      Rejected: "Case Rejected",
+  // ✅ Fetch current report data for status tab
+  useEffect(() => {
+    const fetchCurrentReport = async () => {
+      try {
+        const response = await api.get("/supervisor/current-report");
+        console.log("Current Report API Response:", response.data);
+        
+        if (response.data.status && response.data.data) {
+          setCurrentReportData(response.data.data);
+        } else {
+          console.log("No current report data available");
+          setCurrentReportData([]);
+        }
+      } catch (err) {
+        console.error("Current Report API Error:", err);
+        setCurrentReportData([]);
+      }
     };
-    return stages[status] || "Verification";
+
+    fetchCurrentReport();
+  }, []);
+
+  // ✅ NEW: Fetch analytics data for analytics tab
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await api.get("/supervisor/analytic-report");
+        console.log("Analytics API Response:", response.data);
+        
+        if (response.data.status && response.data.data) {
+          setAnalyticsData(response.data.data);
+        } else {
+          console.log("No analytics data available");
+          setAnalyticsData(null);
+        }
+      } catch (err) {
+        console.error("Analytics API Error:", err);
+        setAnalyticsData(null);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
+
+  // ✅ Function to determine movement flow based on API data
+  const getMovementFlow = (complaint) => {
+    // RO to Section Officer
+    if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
+      return {
+        from: "RO",
+        to: "Section Officer", 
+        status: "pending",
+        icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
+      };
+    }
+    
+    // Section Officer to DS/JS
+    if (complaint.approved_rejected_by_so_us == 1 && complaint.approved_rejected_by_ds_js == 0) {
+      return {
+        from: "Section Officer",
+        to: "DS/JS",
+        status: "pending", 
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+
+    // DS/JS to Secretary
+    if (complaint.approved_rejected_by_ds_js == 1 && complaint.status_sec == 0) {
+      return {
+        from: "DS/JS",
+        to: "Secretary",
+        status: "pending",
+        icon: <FaArrowRight className="w-3 h-3 text-yellow-600" />
+      };
+    }
+
+    // Forwarded to Lokayukt
+    if (complaint.forward_to_lokayukt == 1 && complaint.status_lokayukt == 1) {
+      return {
+        from: "System",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-purple-600" />
+      };
+    }
+
+    // Forwarded to Up-Lokayukt  
+    if (complaint.forward_to_uplokayukt == 1 && complaint.status_uplokayukt == 1) {
+      return {
+        from: "System", 
+        to: "Up-Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-indigo-600" />
+      };
+    }
+
+    // Case Rejected
+    if (complaint.status === "Rejected") {
+      return {
+        from: "Officer",
+        to: "Rejected",
+        status: "overdue", 
+        icon: <FaArrowRight className="w-3 h-3 text-red-600" />
+      };
+    }
+
+    // Default case
+    return {
+      from: "Initial",
+      to: "Processing",
+      status: "pending",
+      icon: <FaArrowRight className="w-3 h-3 text-gray-600" />
+    };
+  };
+
+  // ✅ UPDATED: Transform API data to file movements format - show API status directly
+  const transformToFileMovements = (data) => {
+    return data.map((complaint, index) => {
+      const movement = getMovementFlow(complaint);
+      return {
+        id: complaint.id.toString(),
+        complaintNo: complaint.complain_no,
+        complainant: complaint.name,
+        fromRole: movement.from,
+        toRole: movement.to,
+        movementIcon: movement.icon,
+        note: complaint.remarks || complaint.description || 'N/A',
+        timestamp: formatDate(complaint.created_at),
+        status: complaint.status || 'N/A', // ✅ CHANGED: Direct API status
+      };
+    });
+  };
+
+  // ✅ Transform current report data - show API status directly in currentStage
+  const transformCurrentReportToStatus = (data) => {
+    if (!data || data.length === 0) return [];
+    
+    return data.map((report) => {
+      // Calculate days - use API days field or calculate from created_at
+      const daysElapsed = report.days || getDaysElapsed(report.created_at);
+      
+      return {
+        complaintNo: report.complain_no || 'N/A',
+        complainant: report.name || 'N/A',
+        subject: report.description || report.title || 'No subject provided',
+        currentStage: report.status || 'N/A', // ✅ Direct API status
+        assignedTo: report.officer_name || 'Not Assigned',
+        receivedDate: formatDateOnly(report.created_at),
+        targetDate: report.target_date ? formatDateOnly(report.target_date) : getTargetDate(report.created_at),
+        status: getStatusFromDays(daysElapsed), // ✅ Status based on days
+        daysElapsed: daysElapsed,
+        originalStatus: report.status, // Keep original status for reference
+      };
+    });
+  };
+
+  // ✅ Get status based on days (15+ days = critical, otherwise on-track)
+  const getStatusFromDays = (days) => {
+    if (days > 15) {
+      return "critical";
+    } else {
+      return "on-track";
+    }
+  };
+
+  // ✅ Helper function to get current stage based on API data (for backward compatibility)
+  const getCurrentStage = (complaint) => {
+    if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
+      return "At Section Officer";
+    }
+    if (complaint.approved_rejected_by_so_us == 1 && complaint.approved_rejected_by_ds_js == 0) {
+      return "At DS/JS";
+    }
+    if (complaint.forward_to_lokayukt == 1) {
+      return "At Lokayukt";
+    }
+    if (complaint.forward_to_uplokayukt == 1) {
+      return "At Up-Lokayukt";
+    }
+    if (complaint.status === "Rejected") {
+      return "Case Rejected";
+    }
+    if (complaint.status === "In Progress") {
+      return "Under Investigation";
+    }
+    return "Verification";
   };
 
   const getStatusType = (status) => {
@@ -120,34 +250,103 @@ const ProgressRegister = () => {
     return "delayed";
   };
 
+  // ✅ Helper function to get readable status text
+  const getStatusText = (status) => {
+    switch (status) {
+      case "on-track":
+        return "On Track";
+      case "delayed":
+        return "Delayed";
+      case "critical":
+        return "Critical";
+      case "overdue":
+        return "Overdue";
+      case "completed":
+        return "Completed";
+      case "pending":
+        return "Pending";
+      default:
+        return status;
+    }
+  };
+
+  // ✅ Get stage color based on API status
+  const getStageColor = (status) => {
+    switch (status) {
+      case "In Progress":
+        return "bg-blue-50 text-blue-800 border border-blue-200";
+      case "Rejected":
+        return "bg-red-50 text-red-800 border border-red-200";
+      case "Disposed - Accepted":
+        return "bg-green-50 text-green-800 border border-green-200";
+      default:
+        return "bg-gray-50 text-gray-800 border border-gray-200";
+    }
+  };
+
+  // ✅ UPDATED: Get status color for file movements (API status based)
+  const getFileMovementStatusColor = (status) => {
+    switch (status) {
+      case "In Progress":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "Rejected":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Disposed - Accepted":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("en-IN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString("en-IN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   const formatDateOnly = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-CA"); // YYYY-MM-DD format
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-CA"); // YYYY-MM-DD format
+    } catch (error) {
+      return 'Invalid Date';
+    }
   };
 
   const getTargetDate = (createdDate) => {
-    const date = new Date(createdDate);
-    date.setDate(date.getDate() + 30); // Add 30 days as target
-    return date.toLocaleDateString("en-CA");
+    if (!createdDate) return 'N/A';
+    try {
+      const date = new Date(createdDate);
+      date.setDate(date.getDate() + 30); // Add 30 days as target
+      return date.toLocaleDateString("en-CA");
+    } catch (error) {
+      return 'N/A';
+    }
   };
 
+  // ✅ Calculate days elapsed with better error handling
   const getDaysElapsed = (createdDate) => {
-    const created = new Date(createdDate);
-    const today = new Date();
-    const diffTime = Math.abs(today - created);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (!createdDate) return 0;
+    try {
+      const created = new Date(createdDate);
+      const today = new Date();
+      const diffTime = Math.abs(today - created);
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } catch (error) {
+      return 0;
+    }
   };
 
   const getStatusColor = (status) => {
@@ -166,28 +365,11 @@ const ProgressRegister = () => {
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case "completed":
-        return "Completed";
-      case "pending":
-        return "Pending";
-      case "overdue":
-        return "Overdue";
-      case "on-track":
-        return "On Track";
-      case "delayed":
-        return "Delayed";
-      case "critical":
-        return "Critical";
-      default:
-        return status;
-    }
-  };
-
   // Get transformed data
   const fileMovements = transformToFileMovements(complaintsData);
-  const complaintStatus = transformToComplaintStatus(complaintsData);
+  
+  // ✅ Use current report data for status tab
+  const complaintStatus = transformCurrentReportToStatus(currentReportData);
 
   // Filter data based on search term
   const filteredMovements = fileMovements.filter(
@@ -221,24 +403,6 @@ const ProgressRegister = () => {
     startIndex,
     startIndex + ITEMS_PER_PAGE
   );
-
-  // Calculate analytics
-  const analytics = {
-    avgProcessingTime:
-      complaintsData.length > 0
-        ? Math.round(
-            complaintsData.reduce(
-              (acc, complaint) => acc + getDaysElapsed(complaint.created_at),
-              0
-            ) / complaintsData.length
-          )
-        : 0,
-    filesInTransit: complaintsData.filter((c) => c.status === "In Progress")
-      .length,
-    overdueFiles: complaintsData.filter(
-      (c) => getDaysElapsed(c.created_at) > 30
-    ).length,
-  };
 
   if (error) {
     return (
@@ -306,7 +470,7 @@ const ProgressRegister = () => {
           </div>
         </div>
 
-        {/* ✅ FIXED Tabs Component - Consistent text sizes */}
+        {/* Tabs Component */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="space-y-6">
             <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
@@ -346,25 +510,23 @@ const ProgressRegister = () => {
 
             {/* Tab Content */}
             <div className="p-3 sm:p-6 overflow-hidden">
-              {/* File Movements Tab */}
+              {/* ✅ UPDATED: File Movements Tab - shows API status directly */}
               {activeTab === "movements" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
                       <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Recent File Movements
+                        Recent File Movements ({complaintsData.length} records)
                       </h3>
                     </div>
 
                     <div className="flow-root">
                       <div className="overflow-x-auto">
                         <div className="inline-block min-w-full align-middle">
-                          {/* ✅ FIXED: Consistent text size */}
                           <table className="min-w-full table-auto text-[11px] sm:text-xs">
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
-                                {/* ✅ FIXED: Consistent padding */}
                                 <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Complaint No.
                                 </th>
@@ -392,7 +554,6 @@ const ProgressRegister = () => {
                                     key={movement.id}
                                     className="hover:bg-gray-50"
                                   >
-                                    {/* ✅ FIXED: Consistent padding with headers */}
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                       {movement.complaintNo}
                                     </td>
@@ -400,7 +561,11 @@ const ProgressRegister = () => {
                                       {movement.complainant}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3">
-                                      NA
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-gray-700 text-xs">{movement.fromRole}</span>
+                                        {movement.movementIcon}
+                                        <span className="text-gray-700 text-xs">{movement.toRole}</span>
+                                      </div>
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[14rem] truncate hidden lg:table-cell">
                                       {movement.note}
@@ -409,12 +574,13 @@ const ProgressRegister = () => {
                                       {movement.timestamp}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
+                                      {/* ✅ UPDATED: Show API status with proper colors */}
                                       <span
-                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getStatusColor(
+                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
                                           movement.status
                                         )}`}
                                       >
-                                        {getStatusText(movement.status)}
+                                        {movement.status}
                                       </span>
                                     </td>
                                   </tr>
@@ -452,24 +618,22 @@ const ProgressRegister = () => {
                 </div>
               )}
 
-              {/* Current Status Tab */}
+              {/* Current Status Tab - shows API status directly */}
               {activeTab === "status" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2 mb-4">
                       <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Current Complaint Status
+                        Current Complaint Status ({currentReportData.length} records)
                       </h3>
                     </div>
 
                     <div className="overflow-x-auto">
                       <div className="min-w-full">
-                        {/* ✅ FIXED: Same text size as File Movements */}
                         <table className="w-full text-[11px] sm:text-xs">
                           <thead className="bg-gray-50">
                             <tr className="border-b border-gray-200">
-                              {/* ✅ FIXED: Consistent padding */}
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                 Complaint No.
                               </th>
@@ -479,11 +643,8 @@ const ProgressRegister = () => {
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                 Current Stage
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden xl:table-cell">
-                                Assigned To
-                              </th>
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
-                                Days
+                                Days Elapsed
                               </th>
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">
                                 Target Date
@@ -495,26 +656,26 @@ const ProgressRegister = () => {
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-100">
                             {paginatedData.length > 0 ? (
-                              paginatedData.map((complaint) => (
+                              paginatedData.map((complaint, index) => (
                                 <tr
-                                  key={complaint.complaintNo}
+                                  key={`${complaint.complaintNo}-${index}`}
                                   className="border-b border-gray-100 hover:bg-gray-50"
                                 >
-                                  {/* ✅ FIXED: Consistent padding with headers */}
-                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900">
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-blue-600">
                                     {complaint.complaintNo}
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
                                     {complaint.complainant}
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
-                                    {complaint.currentStage}
-                                  </td>
-                                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 hidden xl:table-cell">
-                                    {complaint.assignedTo}
+                                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStageColor(complaint.currentStage)}`}>
+                                      {complaint.currentStage}
+                                    </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600">
-                                    {complaint.daysElapsed}
+                                    <span className={`font-semibold ${complaint.daysElapsed > 15 ? 'text-red-600' : 'text-green-600'}`}>
+                                      {complaint.daysElapsed} days
+                                    </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600 hidden lg:table-cell">
                                     {complaint.targetDate}
@@ -533,10 +694,13 @@ const ProgressRegister = () => {
                             ) : (
                               <tr>
                                 <td
-                                  colSpan="7"
+                                  colSpan="6"
                                   className="py-8 text-center text-gray-500"
                                 >
-                                  No complaint status found.
+                                  {currentReportData.length === 0 
+                                    ? "No current report data available from API." 
+                                    : "No complaint status found matching search criteria."
+                                  }
                                 </td>
                               </tr>
                             )}
@@ -562,56 +726,64 @@ const ProgressRegister = () => {
                 </div>
               )}
 
-              {/* Analytics Tab */}
+              {/* ✅ UPDATED: Analytics Tab with API data */}
               {activeTab === "analytics" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                            Average Processing Time
-                          </h3>
+                    {analyticsData ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                            <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
+                              Average Processing Time
+                            </h3>
+                          </div>
+                          <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                            {parseFloat(analyticsData.avg_processing_time || 0).toFixed(1)} days
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            From entry to current stage
+                          </p>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
-                          {analytics.avgProcessingTime} days
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          From entry to disposal
-                        </p>
-                      </div>
 
-                      <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-lg border border-yellow-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
-                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                            Files in Transit
-                          </h3>
+                        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-lg border border-yellow-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+                            <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
+                              Files in Progress
+                            </h3>
+                          </div>
+                          <div className="text-2xl sm:text-3xl font-bold text-yellow-700 mb-1">
+                            {analyticsData.files_in_transit || 0}
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Currently under investigation
+                          </p>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-yellow-700 mb-1">
-                          {analytics.filesInTransit}
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Currently moving between roles
-                        </p>
-                      </div>
 
-                      <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg border border-red-200 sm:col-span-2 lg:col-span-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
-                          <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                            Overdue Files
-                          </h3>
+                        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg border border-red-200 sm:col-span-2 lg:col-span-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                            <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
+                              Overdue Cases
+                            </h3>
+                          </div>
+                          <div className="text-2xl sm:text-3xl font-bold text-red-700 mb-1">
+                            {analyticsData.overdue_files || 0}
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Past deadline
+                          </p>
                         </div>
-                        <div className="text-2xl sm:text-3xl font-bold text-red-700 mb-1">
-                          {analytics.overdueFiles}
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600">
-                          Past target date
-                        </p>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500">
+                          Loading analytics data...
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

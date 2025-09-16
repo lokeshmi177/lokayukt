@@ -339,7 +339,7 @@ const ForwardModal = ({
                     setFormData(prev => ({ ...prev, forwardTo: value }))
                   }}
                   options={dropdownOptions}
-                  placeholder="Select Department/Officer"
+                  placeholder="Select"
                   required
                 />
               )}

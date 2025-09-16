@@ -604,18 +604,18 @@ const Dashboard = ({ userRole = "operator" }) => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        {/* <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="workload">Workload</TabsTrigger>
           <TabsTrigger value="compliance">Compliance</TabsTrigger>
-        </TabsList>
+        </TabsList> */}
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Monthly Trends Chart */}
-            <Card className="cursor-pointer">
+       
+            {/* <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Monthly Complaint Trends</CardTitle>
               </CardHeader>
@@ -654,10 +654,10 @@ const Dashboard = ({ userRole = "operator" }) => {
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
-            </Card>
+            </Card> */}
 
-            {/* Status Distribution Pie Chart */}
-            <Card className="cursor-pointer">
+         
+            {/* <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Current Status Distribution</CardTitle>
               </CardHeader>
@@ -682,11 +682,11 @@ const Dashboard = ({ userRole = "operator" }) => {
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Department-wise Bar Chart */}
+          {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Department-wise Complaints</CardTitle>
@@ -704,7 +704,7 @@ const Dashboard = ({ userRole = "operator" }) => {
               </CardContent>
             </Card>
 
-            {/* District-wise Stacked Bar Chart */}
+        
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>District-wise Allegations vs Grievances</CardTitle>
@@ -723,12 +723,12 @@ const Dashboard = ({ userRole = "operator" }) => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </div>
+          </div> */}
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/*  UPDATED: Weekly Activity Area Chart with API Data (Total Removed) */}
+           
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Weekly Activity Trends</CardTitle>
@@ -790,7 +790,7 @@ const Dashboard = ({ userRole = "operator" }) => {
               </CardContent>
             </Card>
 
-            {/* Processing Time vs Target */}
+        
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Processing Time vs Target (Days)</CardTitle>
@@ -813,7 +813,7 @@ const Dashboard = ({ userRole = "operator" }) => {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
-          {/* SLA Compliance Metrics */}
+   
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {slaCompliance.map((item, index) => (
               <Card key={index} className="cursor-pointer">
@@ -844,8 +844,8 @@ const Dashboard = ({ userRole = "operator" }) => {
           </div>
         </TabsContent>
 
-        <TabsContent value="workload" className="space-y-6">
-          {/* Role-wise Workload */}
+        {/* <TabsContent value="workload" className="space-y-6">
+      
           <Card className="cursor-pointer">
             <CardHeader>
               <CardTitle>Role-wise Workload Distribution</CardTitle>
@@ -864,9 +864,9 @@ const Dashboard = ({ userRole = "operator" }) => {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="compliance" className="space-y-6">
+        {/* <TabsContent value="compliance" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="cursor-pointer">
               <CardHeader>
@@ -913,7 +913,7 @@ const Dashboard = ({ userRole = "operator" }) => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );

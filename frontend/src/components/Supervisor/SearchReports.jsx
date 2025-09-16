@@ -913,13 +913,7 @@ const SearchReports = () => {
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
-                                        <button 
-                                          onClick={() => handleForward(result.id)}
-                                          className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
-                                        >
-                                          <FaArrowRight className="w-3 text-blue-600 h-3" />
-                                          <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
-                                        </button>
+                                       
                                       </div>
                                     </td>
                                   </tr>

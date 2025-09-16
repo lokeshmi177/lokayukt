@@ -88,6 +88,7 @@ function App() {
           <Route path="search-reports/view/:id" element={<OperatorViewComplaints />} />
              <Route path="search-reports/edit/:id" element={<OperatorEditComplaints />} />
              <Route path="all-complaints" element={<OperatorAllComplaits />} />
+            <Route path="all-complaints/view/:id" element={<OperatorViewComplaints />} />
              <Route path="pending-complaints" element={<OperatorPendingComplaints />} />
              <Route path="approved-complaints" element={<OperatorApprovedComplaints />} />
              {/* <Route path="/operator/complaints/Cheekdublicate" element={<Cheekdublicate />} /> */}

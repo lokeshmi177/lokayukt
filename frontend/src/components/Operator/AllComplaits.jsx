@@ -50,7 +50,7 @@ const AllComplaints = () => {
   //  Handle view details with navigation - Only button click
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation(); // Prevent any parent event
-    navigate(`/operator/search-reports/view/${complaintId}`);
+    navigate(`view/${complaintId}`);
   };
 
   //  Handle modal view - Only for modal
