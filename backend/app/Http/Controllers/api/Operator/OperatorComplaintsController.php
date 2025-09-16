@@ -454,7 +454,7 @@ class OperatorComplaintsController extends Controller
 
             $apc = Complaint::findOrFail($id);
                 $apc->form_status = 1;
-                $apc->approved_by_ro = 1;
+                $apc->approved_rejected_by_ro = 1;
                 $apc->approved_by_ro_id =  $userId;
                 $apc->save();
     

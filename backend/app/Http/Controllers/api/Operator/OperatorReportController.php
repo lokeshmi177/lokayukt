@@ -477,6 +477,7 @@ class OperatorReportController extends Controller
                 'u.id as user_id',
                 'srole.name as subrole_name',
                 'ca.*',
+                DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
                 // 'ds.name as designation_name',
@@ -485,12 +486,13 @@ class OperatorReportController extends Controller
             )
             // ->groupBy('complaints.id','u.id','srole.name')
             ->get();
+               dd($records);
               return response()->json([
                 'status' => true,
                 'message' => 'Records Fetch successfully',
                 'data' => $records,
             ]);
-            // dd($records);
+         
     }
 
 }
