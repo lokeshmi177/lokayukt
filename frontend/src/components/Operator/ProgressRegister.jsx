@@ -175,17 +175,13 @@ const ProgressRegister = () => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
       return {
-        id: complaint.id,
+        id: complaint.id.toString(),
         complaintNo: complaint.complain_no,
         complainant: complaint.name,
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-<<<<<<< HEAD
         note: complaint.remarks || complaint.description || 'N/A',
-=======
-        note: complaint.remarks || `N/A`,
->>>>>>> b1dd3f29e4bf67921b639ac7d5f0f07b3f592000
         timestamp: formatDate(complaint.created_at),
         status: complaint.status || 'N/A', // ✅ CHANGED: Direct API status
       };
