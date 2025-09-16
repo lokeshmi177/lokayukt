@@ -158,7 +158,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
         // Route::get('//{complainId}',[OperatorComplaintsController::class,'']);
 
-        Route::get('/progress-register',[OperatorComplaintsController::class,'progress_report']);
+        Route::get('/progress-register',[OperatorReportController::class,'progress_report']);
         Route::get('/complain-report',[OperatorReportController::class,'complainReports']);
         // Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
 

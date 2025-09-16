@@ -162,9 +162,13 @@ class SupervisorComplaintsController extends Controller
        
    }
    public function getDealingAssistantUsers(){
-    $usersBySubRole = User::with('role','subrole')
-        ->get();
-        // ->groupBy(fn ($user) => $user->subrole->name);
+    // $usersBySubRole = User::with('role','subrole')
+    //     ->get()
+    //     ->groupBy(fn ($user) => $user->subrole->name);
+    $usersBySubRole = User::with('role', 'subrole')
+    ->whereNotNull('sub_role_id') // only users with subrole
+    ->get()
+    ->groupBy(fn ($user) => $user->subrole->name);
         // dd($usersBySubRole);
          if(!empty($usersBySubRole['dea-assis'])){
 

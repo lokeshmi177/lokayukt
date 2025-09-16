@@ -425,4 +425,30 @@ class OperatorReportController extends Controller
 
     }
    
+    public function progress_report(){
+        $userSubroleRole = Auth::user()->subrole->name;
+        
+         $records = DB::table('complaints')
+            // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+            // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
+            // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
+            // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
+            // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+            ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+            ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+            
+            ->select(
+                'complaints.*',
+                'u.id as user_id',
+                'srole.name as subrole_name',
+                // 'dd.district_name as district_name',
+                // 'dp.name as department_name',
+                // 'ds.name as designation_name',
+                // 'ct.name as complaintype_name',
+                // 'sub.name as subject_name',
+            )
+            ->groupBy('complaints.id','u.id','srole.name')
+            ->get();
+            dd($userSubroleRole,$records);
+    }
 }
