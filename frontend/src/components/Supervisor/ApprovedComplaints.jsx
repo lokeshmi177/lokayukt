@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
-const subRole = localStorage.getItem("subrole");
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -17,21 +16,21 @@ const api = axios.create({
   },
 });
 
-const AllComplaints = () => {
+const ApprovedComplaints = () => {
   const navigate = useNavigate();
   const [complaintsData, setComplaintsData] = useState([]);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [complaintToApprove, setComplaintToApprove] = useState(null);
-  const [isApproving, setIsApproving] = useState(false);
+  const [complaintToForward, setComplaintToForward] = useState(null);
+  const [isForwarding, setIsForwarding] = useState(false);
 
-  //  Fetch complaints data from API
+  // ✅ Fetch complaints data from API
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const response = await api.get("/operator/all-complaints");
+        const response = await api.get("/operator/all-approved-complaints");
         
         if (response.data.status === true) {
           setComplaintsData(response.data.data);
@@ -47,37 +46,38 @@ const AllComplaints = () => {
     fetchComplaints();
   }, []);
 
-  //  Handle view details with navigation - Only button click
+  // ✅ Handle view details with navigation - Only button click
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation(); // Prevent any parent event
     navigate(`/operator/search-reports/view/${complaintId}`);
   };
 
-  //  Handle modal view - Only for modal
+  // ✅ Handle modal view - Only for modal
   const handleModalView = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
   };
 
-  //  Handle approve button click - Show confirmation
-  const handleApproveClick = (e, complaint) => {
+  // ✅ Handle forward button click - Show confirmation
+  const handleForwardClick = (e, complaint) => {
     e.stopPropagation();
-    setComplaintToApprove(complaint);
+    setComplaintToForward(complaint);
     setIsConfirmModalOpen(true);
   };
 
-  //  Handle approval confirmation with react-toastify
-  const handleConfirmApproval = async () => {
-    if (!complaintToApprove) return;
+  // ✅ Handle forward confirmation with react-toastify
+  const handleConfirmForward = async () => {
+    if (!complaintToForward) return;
     
-    setIsApproving(true);
+    setIsForwarding(true);
     
     try {
-      const response = await api.post(`/operator/approved-by-ro/${complaintToApprove.id}`);
+      // Replace with your actual forward API endpoint
+      const response = await api.post(`/operator/forward-complaint/${complaintToForward.id}`);
       
       if (response.data.success || response.status === 200) {
-        // Show success toast using react-toastify
-        toast.success("Approved Successfully!", {
+        // Show success toast
+        toast.success("Complaint Forwarded Successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -86,16 +86,16 @@ const AllComplaints = () => {
           draggable: true,
         });
         
-        // Update complaint approved_by_ro status in local state
+        // Update complaint forward status in local state
         setComplaintsData(prevData => 
           prevData.map(complaint => 
-            complaint.id === complaintToApprove.id 
-              ? { ...complaint, approved_by_ro: 1 }
+            complaint.id === complaintToForward.id 
+              ? { ...complaint, forward_by: 1, status: 'Forwarded' }
               : complaint
           )
         );
       } else {
-        toast.error("Failed to approve complaint", {
+        toast.error("Failed to forward complaint", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -105,8 +105,8 @@ const AllComplaints = () => {
         });
       }
     } catch (error) {
-      console.error("Approval Error:", error);
-      toast.error("Failed to approve complaint", {
+      console.error("Forward Error:", error);
+      toast.error("Failed to forward complaint", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -115,19 +115,19 @@ const AllComplaints = () => {
         draggable: true,
       });
     } finally {
-      setIsApproving(false);
+      setIsForwarding(false);
       setIsConfirmModalOpen(false);
-      setComplaintToApprove(null);
+      setComplaintToForward(null);
     }
   };
 
-  //  Cancel approval
-  const handleCancelApproval = () => {
+  // ✅ Cancel forward
+  const handleCancelForward = () => {
     setIsConfirmModalOpen(false);
-    setComplaintToApprove(null);
+    setComplaintToForward(null);
   };
 
-  //  Format date
+  // ✅ Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', {
@@ -137,7 +137,7 @@ const AllComplaints = () => {
     });
   };
 
-  //  Get status color
+  // ✅ Get status color
   const getStatusTextColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'in progress':
@@ -146,14 +146,21 @@ const AllComplaints = () => {
         return 'text-red-600 border-red-300 bg-red-50';
       case 'approved':
         return 'text-green-600 border-green-300 bg-green-50';
+      case 'forwarded':
+        return 'text-blue-600 border-blue-300 bg-blue-50';
       default:
         return 'text-gray-600 border-gray-300 bg-gray-50';
     }
   };
 
-  //  Check if complaint is approved by RO (Regional Officer)
+  // ✅ Check if complaint is forwarded
+  const isForwarded = (complaint) => {
+    return complaint.forward_by && complaint.forward_by !== null;
+  };
+
+  // ✅ Check if complaint is approved by RO
   const isApprovedByRO = (complaint) => {
-    return complaint.approved_rejected_by_ro === 1;
+    return complaint.approved_by_ro === 1;
   };
 
   if (error) {
@@ -166,9 +173,11 @@ const AllComplaints = () => {
     );
   }
 
+  
+
   return (
     <>
-      {/*  React-Toastify Container - Same as Complaints component */}
+      {/* ✅ React-Toastify Container */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -184,22 +193,22 @@ const AllComplaints = () => {
       />
 
       <div className="min-h-screen p-2 sm:p-4">
-        {/*  Header - Responsive */}
+        {/* ✅ Header - Responsive */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">All Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Approved Complaints</h1>
         </div>
 
-        {/*  Mobile-First Responsive Card Layout */}
+        {/* ✅ Mobile-First Responsive Card Layout */}
         <div className="space-y-3 sm:space-y-4">
           {complaintsData.map((complaint) => (
             <div
               key={complaint.id}
               className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
             >
-              {/*  Row 1 - Only Complaint No is bold */}
+              {/* ✅ Row 1 - Only Complaint No is bold */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
+                  <span className="font-semibold text-blue-600 text-xs sm:text-sm mb-1 sm:mb-0">
                     Complaint No:
                   </span>
                   <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
@@ -216,7 +225,7 @@ const AllComplaints = () => {
                 </div>
               </div>
 
-              {/*  Row 2 - All labels normal (not bold) */}
+              {/* ✅ Row 2 - All labels normal (not bold) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
@@ -231,24 +240,23 @@ const AllComplaints = () => {
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusTextColor(complaint.status)} self-start sm:self-center`}>
                     {complaint.status}
                   </span> */}
-                  
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
+                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
                   <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                
                 </div>
               </div>
 
-              {/*  Row 3 - All labels normal (not bold) */}
+              {/* ✅ Row 3 - All labels normal (not bold) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
                   <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
                 </div>
-               
+                 
+            
                 <div className="hidden sm:block"></div>
               </div>
 
-              {/*  Row 4 - Action Buttons with conditional rendering based on approved_by_ro */}
+              {/* ✅ Row 4 - Action Buttons with conditional rendering */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                   <button
@@ -258,74 +266,88 @@ const AllComplaints = () => {
                     View Details
                   </button>
                   
-                  {/*  Conditional rendering based on approved_by_ro field */}
-                { subRole === "entry-operator" ? null : (
-  isApprovedByRO(complaint) ? (
-    <button
-      disabled
-      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-    >
-      ✓ Verified
-    </button>
-  ) : (
-    <button
-      onClick={(e) => handleApproveClick(e, complaint)}
-      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-    >
-      Verify
-    </button>
-  )
-)}
-
+                    {/*  Conditional rendering based on approved_by_ro field */}
+                  {isApprovedByRO(complaint) ? (
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+                    >
+                      ✓ Verified
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleApproveClick(e, complaint)}
+                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Verify
+                    </button>
+                  )}
+                  
+                  {/* ✅ Conditional forward button based on forward status */}
+                  {/* {isForwarded(complaint) ? (
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-blue-500 text-white border border-blue-500 cursor-not-allowed"
+                    >
+                      ✓ Forwarded
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleForwardClick(e, complaint)}
+                      className="w-full sm:w-auto border border-orange-500 text-orange-500 hover:text-white hover:bg-orange-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Forward
+                    </button>
+                  )} */}
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/*  Empty State */}
+        {/* ✅ Empty State */}
         {complaintsData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">No approved complaints found</p>
           </div>
         )}
       </div>
 
-      {/*  Confirmation Modal */}
+      {/* ✅ Forward Confirmation Modal */}
       {isConfirmModalOpen && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center mb-4">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Confirm Approval</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Confirm Forward</h3>
                   <p className="text-sm text-gray-500">
-                    Are you sure you want to approve this complaint?
+                    Are you sure you want to forward this complaint?
                   </p>
                 </div>
               </div>
 
               <div className="flex gap-3">
                 <button
-                  onClick={handleCancelApproval}
-                  disabled={isApproving}
+                  onClick={handleCancelForward}
+                  disabled={isForwarding}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleConfirmApproval}
-                  disabled={isApproving}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleConfirmForward}
+                  disabled={isForwarding}
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isApproving ? "Approving..." : "Yes, Approve"}
+                  {isForwarding ? "Forwarding..." : "Yes, Forward"}
                 </button>
               </div>
             </div>
@@ -333,7 +355,7 @@ const AllComplaints = () => {
         </div>
       )}
 
-      {/*  Details Modal (existing) */}
+      {/* ✅ Mobile Responsive Modal */}
       {isModalOpen && selectedComplaint && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4">
           <div className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-lg sm:rounded-2xl bg-white mt-2 sm:mt-0">
@@ -370,4 +392,4 @@ const AllComplaints = () => {
   );
 };
 
-export default AllComplaints;
+export default ApprovedComplaints;

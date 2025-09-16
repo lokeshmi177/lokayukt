@@ -32,20 +32,24 @@ import SupervisorDashboard from './components/Supervisor/Dashboard';
 import SupervisorComplaints from './components/Supervisor/Complaints';
 import SupervisorProgressRegister from './components/Supervisor/ProgressRegister';
 import SupervisorSearchReports from './components/Supervisor/SearchReports';
+import SupervisorAllComplaits from './components/Supervisor/AllComplaits';
+import SupervisorViewComplaints from './components/Supervisor/ViewComplaints';
+import SupervisorPendingComplaints from './components/Supervisor/PendingComplaints/';
+import SupervisorApprovedComplaints from './components/Supervisor/ApprovedComplaints';
 
-//Lok-ayukt
-import LokayuktLayout from './components/Supervisor/Layout';
-import LokayuktDashboard from './components/Supervisor/Dashboard';
-import LokayuktComplaints from './components/Supervisor/Complaints';
-import LokayuktProgressRegister from './components/Supervisor/ProgressRegister';
-import LokayuktSearchReports from './components/Supervisor/SearchReports';
+// //Lok-ayukt
+// import LokayuktLayout from './components/Supervisor/Layout';
+// import LokayuktDashboard from './components/Supervisor/Dashboard';
+// import LokayuktComplaints from './components/Supervisor/Complaints';
+// import LokayuktProgressRegister from './components/Supervisor/ProgressRegister';
+// import LokayuktSearchReports from './components/Supervisor/SearchReports';
 
-//Uplokayukt
-import UplokayuktLayout from './components/Supervisor/Layout';
-import UplokayuktDashboard from './components/Supervisor/Dashboard';
-import UplokayuktComplaints from './components/Supervisor/Complaints';
-import UplokayuktProgressRegister from './components/Supervisor/ProgressRegister';
-import UplokayuktSearchReports from './components/Supervisor/SearchReports';
+// //Uplokayukt
+// import UplokayuktLayout from './components/Supervisor/Layout';
+// import UplokayuktDashboard from './components/Supervisor/Dashboard';
+// import UplokayuktComplaints from './components/Supervisor/Complaints';
+// import UplokayuktProgressRegister from './components/Supervisor/ProgressRegister';
+// import UplokayuktSearchReports from './components/Supervisor/SearchReports';
 
 
 import Login from './components/Login';
@@ -98,12 +102,15 @@ function App() {
           <Route path="complaints" element={<SupervisorComplaints />} />
           <Route path="progress-register" element={<SupervisorProgressRegister />} />
           <Route path="search-reports" element={<SupervisorSearchReports />} />
-         
+          <Route path="all-complaints" element={<SupervisorAllComplaits />} />
+          <Route path="search-reports/view/:id" element={<SupervisorViewComplaints />} />
+          <Route path="pending-complaints" element={<SupervisorPendingComplaints />} />
+          <Route path="approved-complaints" element={<SupervisorApprovedComplaints />} />    
         </Route>
       )}
 
         {/* Lok-ayukt  Routes */}
-      {role === 'lok-ayukt' && (
+      {/* {role === 'lok-ayukt' && (
         <Route path="/lok-ayukt" element={<LokayuktLayout />}>
           <Route path="dashboard" element={<LokayuktDashboard />} />
           <Route path="complaints" element={<LokayuktComplaints />} />
@@ -111,10 +118,10 @@ function App() {
           <Route path="search-reports" element={<LokayuktSearchReports />} />
          
         </Route>
-      )}
+      )} */}
 
         {/* UPLok-ayukt  Routes */}
-      {role === 'uplokayukt' && (
+      {/* {role === 'uplokayukt' && (
         <Route path="/uplokayukt" element={<UplokayuktLayout />}>
           <Route path="dashboard" element={<UplokayuktDashboard />} />
           <Route path="complaints" element={<UplokayuktComplaints />} />
@@ -122,7 +129,7 @@ function App() {
           <Route path="search-reports" element={<UplokayuktSearchReports />} />
          
         </Route>
-      )}
+      )} */}
 
     </Routes>
   );

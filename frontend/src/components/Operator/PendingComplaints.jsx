@@ -153,7 +153,7 @@ const PendingComplaints = () => {
 
   // ✅ Check if complaint is approved by RO (Regional Officer)
   const isApprovedByRO = (complaint) => {
-    return complaint.approved_by_ro === 1;
+    return complaint.approved_rejected_by_ro === 1;
   };
 
   if (error) {
@@ -263,14 +263,14 @@ const PendingComplaints = () => {
                       disabled
                       className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
                     >
-                      ✓ Approved
+                      ✓ Verified
                     </button>
                   ) : (
                     <button
                       onClick={(e) => handleApproveClick(e, complaint)}
                       className="w-full sm:w-auto border border-green-500 text-green-500 hover:text-white hover:bg-green-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
                     >
-                      Approve
+                      Verify
                     </button>
                   )}
                 </div>

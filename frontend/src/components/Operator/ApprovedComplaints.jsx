@@ -160,7 +160,7 @@ const ApprovedComplaints = () => {
 
   // ✅ Check if complaint is approved by RO
   const isApprovedByRO = (complaint) => {
-    return complaint.approved_by_ro === 1;
+    return complaint.approved_rejected_by_ro === 1;
   };
 
   if (error) {
@@ -172,6 +172,8 @@ const ApprovedComplaints = () => {
       </div>
     );
   }
+
+  
 
   return (
     <>
@@ -264,13 +266,22 @@ const ApprovedComplaints = () => {
                     View Details
                   </button>
                   
-                  {/* ✅ Show approved status (always visible for approved complaints) */}
-                  <button
-                    disabled
-                    className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-                  >
-                    ✓ Approved
-                  </button>
+                    {/*  Conditional rendering based on approved_by_ro field */}
+                  {isApprovedByRO(complaint) ? (
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+                    >
+                      ✓ Verified
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleApproveClick(e, complaint)}
+                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Verify
+                    </button>
+                  )}
                   
                   {/* ✅ Conditional forward button based on forward status */}
                   {/* {isForwarded(complaint) ? (

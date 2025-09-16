@@ -61,7 +61,7 @@ const ViewComplaints = () => {
 
         // Fetch complaint data
         const complaintResponse = await api.get(
-          `/operator/view-complaint/${id}`
+          `/supervisor/view-complaint/${id}`
         );
 
         if (complaintResponse.data.status === true) {
@@ -70,7 +70,7 @@ const ViewComplaints = () => {
           // Fetch file preview data
           try {
             const fileResponse = await api.get(
-              `/operator/get-file-preview/${id}`
+              `/supervisor/get-file-preview/${id}`
             );
             if (fileResponse.data.status === true) {
               setFilePreviewData(fileResponse.data.data);
@@ -165,10 +165,10 @@ const ViewComplaints = () => {
       console.log("Complaint data:", complaintData);
 
       // Method 1: Using URL parameter (Recommended)
-      navigate(`/operator/search-reports/edit/${id}`);
+      navigate(`/supervisor/search-reports/edit/${id}`);
 
       // Method 2: Using state (Alternative)
-      // navigate('/operator/search-reports/edit', {
+      // navigate('/supervisor/search-reports/edit', {
       //   state: {
       //     complaintId: id,
       //     complaintData: complaintData
@@ -247,7 +247,7 @@ const ViewComplaints = () => {
           </div>
 
           {/* FIXED EDIT BUTTON */}
-          {subRole === "review-operator" && (
+          {subRole === "review-supervisor" && (
             <button
               onClick={handleEditNavigation}
               className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
@@ -260,7 +260,7 @@ const ViewComplaints = () => {
           
           <div className="flex gap-4">
             <button
-              onClick={() => navigate("/operator/search-reports")}
+              onClick={() => navigate("/supervisor/search-reports")}
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
               <IoMdArrowBack className="mr-2 text-lg" />

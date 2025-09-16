@@ -924,3 +924,12 @@ const SearchReports = () => {
 };
 
 export default SearchReports;
+
+
+
+
+// if (approved_rejected_by_ro == "1" && approved_rejected_by_so ==""){
+//     print('RO -> section officer')
+// }elseif(){
+
+// }
