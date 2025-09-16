@@ -15,6 +15,7 @@ use App\Http\Controllers\api\Operator\OperatorComplaintsController;
 // use App\Http\Controllers\api\OperatorCommonController;
 // use App\Http\Controllers\api\OperatorComplaintsController;
 use App\Http\Controllers\api\Supervisor\SupervisorComplaintsController;
+use App\Http\Controllers\api\Supervisor\SupervisorReportController;
 use App\Http\Controllers\api\UserManagement;
 use Illuminate\Support\Facades\Route;
 // use App\Http\Middleware\AuthMiddleware;
@@ -160,6 +161,7 @@ Route::middleware('auth:sanctum')->group(function(){
 
         Route::get('/progress-register',[OperatorReportController::class,'progress_report']);
         Route::get('/current-report',[OperatorReportController::class,'current_report']);
+        Route::get('/analytic-report',[OperatorReportController::class,'analytics']);
         Route::get('/complain-report',[OperatorReportController::class,'complainReports']);
         // Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
 
@@ -190,9 +192,10 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
         Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
         Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);
-        // Route::get('/progress-register',[SupervisorComplaintsController::class,'progress_report']);
-        // Route::get('/complain-report',[AdminReportController::class,'complainReports']);
-
+        Route::get('/progress-register',[SupervisorComplaintsController::class,'progress_report']);
+        Route::get('/complain-report',[SupervisorReportController::class,'complainReports']);
+        Route::get('/current-report',[SupervisorReportController::class,'current_report']);
+        Route::get('/analytic-report',[SupervisorReportController::class,'analytics']);
         // Route::get('/detail-by-complaintype',[AdminReportController::class,'complainComplaintypeWise']);
 
         // Route::get('/district-wise-complaint',[AdminReportController::class,'complainDistrictWise']);
