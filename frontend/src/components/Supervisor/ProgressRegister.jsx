@@ -175,7 +175,7 @@ const ProgressRegister = () => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
       return {
-        id: complaint.id.toString(),
+        id: complaint.id,
         complaintNo: complaint.complain_no,
         complainant: complaint.name,
         fromRole: movement.from,

@@ -14,6 +14,7 @@ use App\Http\Controllers\api\Operator\OperatorCommonController;
 use App\Http\Controllers\api\Operator\OperatorComplaintsController;
 // use App\Http\Controllers\api\OperatorCommonController;
 // use App\Http\Controllers\api\OperatorComplaintsController;
+use App\Http\Controllers\api\Supervisor\SupervisorCommonController;
 use App\Http\Controllers\api\Supervisor\SupervisorComplaintsController;
 use App\Http\Controllers\api\Supervisor\SupervisorReportController;
 use App\Http\Controllers\api\UserManagement;
@@ -183,7 +184,7 @@ Route::middleware('auth:sanctum')->group(function(){
 
     Route::middleware('role:supervisor:so-us|ds-js|sec|cio-io|dea-assis')->prefix('supervisor')->group(function () {
         
-        // Route::get('/all-district',[CommonController::class,'fetch_district']);
+        Route::get('/all-district',[SupervisorCommonController::class,'fetch_district']);
         Route::get('/all-complaints',[SupervisorComplaintsController::class,'allComplains']);
         Route::get('/view-complaint/{id}',[SupervisorComplaintsController::class,'viewComplaint']);
         Route::post('/forward-by-so/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbySO']);
@@ -192,7 +193,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
         Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
         Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);
-        Route::get('/progress-register',[SupervisorComplaintsController::class,'progress_report']);
+        Route::get('/progress-register',[SupervisorReportController::class,'progress_report']);
         Route::get('/complain-report',[SupervisorReportController::class,'complainReports']);
         Route::get('/current-report',[SupervisorReportController::class,'current_report']);
         Route::get('/analytic-report',[SupervisorReportController::class,'analytics']);
