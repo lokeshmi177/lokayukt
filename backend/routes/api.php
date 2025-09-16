@@ -160,6 +160,7 @@ Route::middleware('auth:sanctum')->group(function(){
 
         Route::get('/progress-register',[OperatorReportController::class,'progress_report']);
         Route::get('/current-report',[OperatorReportController::class,'current_report']);
+        Route::get('/analytic-report',[OperatorReportController::class,'analytics']);
         Route::get('/complain-report',[OperatorReportController::class,'complainReports']);
         // Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
 

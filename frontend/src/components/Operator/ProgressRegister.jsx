@@ -150,13 +150,13 @@ const ProgressRegister = () => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
       return {
-        id: complaint.id.toString(),
+        id: complaint.id,
         complaintNo: complaint.complain_no,
         complainant: complaint.name,
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-        note: complaint.remarks || ` 'N/A'`,
+        note: complaint.remarks || `N/A`,
         timestamp: formatDate(complaint.created_at),
         status: movement.status,
       };

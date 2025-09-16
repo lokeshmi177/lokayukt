@@ -495,4 +495,20 @@ class OperatorReportController extends Controller
          
     }
 
+    public function analytics(){
+        $stats = DB::table('complaints')
+    ->leftJoin('complaint_actions as ca', 'complaints.id', '=', 'ca.complaint_id')
+    ->selectRaw('
+        AVG(DATEDIFF(IFNULL(ca.created_at, NOW()), complaints.created_at)) as avg_processing_time,
+        SUM(CASE WHEN complaints.form_status = "1" THEN 1 ELSE 0 END) as files_in_transit,
+        SUM(CASE WHEN ca.target_date < NOW()  THEN 1 ELSE 0 END) as overdue_files
+    ')
+    ->first();
+              return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' =>  $stats,
+            ]);
+    }
+
 }
