@@ -49,7 +49,7 @@ const Complaints = () => {
     subject: '',        
     nature: '',
     description: '',
-    complaint_id: '' // ✅ Added duplicate ID field
+    complaint_id: '' //  Added duplicate ID field
   });
 
   const navigate = useNavigate()
@@ -168,17 +168,32 @@ const Complaints = () => {
     }
   };
 
-  // ✅ Updated Handle merge action with duplicate ID storage
+  // ✅ Updated Handle merge action - Preserves existing description with line break
   const handleMergeDuplicate = () => {
     if (duplicate && duplicate.id) {
-      // Update form data with BOTH description AND duplicate ID
+      // Get existing description from form
+      const existingDescription = formData.description.trim();
+      const duplicateDescription = duplicate.description || '';
+      
+      let mergedDescription = '';
+      
+      // ✅ If user already typed description, preserve it and add duplicate above with line break
+      if (existingDescription) {
+        // Put duplicate description first, then newline, then existing user description
+        mergedDescription = duplicateDescription + '\n' + existingDescription;
+      } else {
+        // If no existing description, just use duplicate description
+        mergedDescription = duplicateDescription;
+      }
+      
+      // Update form data with merged description AND duplicate ID
       setFormData(prev => ({
         ...prev,
-        description: duplicate.description || '',
-        complaint_id: duplicate.id.toString() // ✅ Store duplicate ID
+        description: mergedDescription,
+        complaint_id: duplicate.id.toString() //  Store duplicate ID
       }));
       
-      toast.success(`Description merged! Duplicate ID: ${duplicate.id} stored`);
+      toast.success(`Data merged!`);
       setDuplicate(null); // Hide duplicate box
     } else {
       toast.warning('No duplicate data found to merge');
@@ -191,23 +206,15 @@ const Complaints = () => {
     return subject ? `${subject.name} (${subject.name_h})` : subjectId;
   };
 
-  // Enhanced file upload with progress
+  // ✅ Enhanced file upload - Now accepts ALL file types
   const handleFileChange = (e) => {
-    const file = e.target.files;
+    const file = e.target.files[0];
     
     if (!file) return;
 
-    // Validate file type (only PDF allowed)
-    if (file.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size should not exceed 5MB');
-      return;
-    }
+    // ❌ Removed ALL file validation - Accept any file type
+    // No file type restriction
+    // No file size restriction on frontend (let backend handle)
 
     // Reset upload states
     setUploadProgress(0);
@@ -395,12 +402,8 @@ const Complaints = () => {
 
               <div className="text-sm text-yellow-700 space-y-1">
                 <div><strong>Complaint No:</strong> {duplicate.complain_no}</div>
-                <div><strong>Complaint ID:</strong> {duplicate.id}</div> {/* ✅ Show ID */}
                 <div><strong>Name:</strong> {duplicate.name}</div>
                 <div><strong>Subject:</strong> {getSubjectName(duplicate.subject_id)}</div>
-                {duplicate.description && (
-                  <div><strong>Description:</strong> {duplicate.description.substring(0, 100)}...</div>
-                )}
               </div>
 
               <div className="mt-3 flex justify-end">
@@ -408,7 +411,7 @@ const Complaints = () => {
                   onClick={handleMergeDuplicate}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
                 >
-                  Merge Description
+                  Merge 
                 </button>
               </div>
             </div>
@@ -417,9 +420,6 @@ const Complaints = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        {/* ✅ Hidden Input Field for Duplicate Complaint ID [6][12][7] */}
-       
-
         {/* Form Layout */}
         <div className="space-y-4 sm:space-y-6">
           {/* Top Row: Complainant Details + Security Fee */}
@@ -460,13 +460,13 @@ const Complaints = () => {
                     </p>
                   )}
 
-                  {/*  */}
-                   <input
-          type="hidden"
-          name="complaint_id"
-          value={formData.complaint_id}
-          onChange={handleInputChange}
-        />
+                  {/* ✅ Hidden Input Field for Duplicate Complaint ID */}
+                  <input
+                    type="hidden"
+                    name="complaint_id"
+                    value={formData.complaint_id}
+                    onChange={handleInputChange}
+                  />
                 </div>
 
                 {/* Mobile */}
@@ -692,7 +692,7 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/* File Upload with Progress */}
+                {/* ✅ File Upload - Now accepts ANY file type */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Choose File / फ़ाइल चुनें *
@@ -703,10 +703,10 @@ const Complaints = () => {
                     <div className="flex items-center space-x-2">
                       <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                         <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                        <span className="text-sm text-gray-700">Choose PDF file</span>
+                        <span className="text-sm text-gray-700">Choose any file</span>
                         <input
                           type="file"
-                          accept=".pdf"
+                          // ✅ Removed accept attribute - Now accepts ALL file types
                           onChange={handleFileChange}
                           className="hidden"
                         /> 
@@ -717,7 +717,7 @@ const Complaints = () => {
                     <div className="border border-gray-300 rounded-md p-3">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <FaFileAlt className="w-4 h-4 text-red-600" />
+                          <FaFileAlt className="w-4 h-4 text-blue-600" />
                           <span className="text-sm font-medium text-gray-700">
                             {formData.file.name}
                           </span>
@@ -776,7 +776,8 @@ const Complaints = () => {
                     </div>
                   )}
 
-                  <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
+                  {/* ✅ Updated help text */}
+                  <p className="mt-1 text-xs text-gray-500">All file types allowed</p>
                   {errors.file && (
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
                   )}
@@ -951,7 +952,7 @@ const Complaints = () => {
                 </div>
               </div>
 
-              {/* Detailed Description */}
+              {/* ✅ Detailed Description with proper line break support */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Detailed Description / विस्तृत विवरण *
@@ -963,6 +964,7 @@ const Complaints = () => {
                   rows={6}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   placeholder="Enter detailed complaint description..."
+                  style={{ whiteSpace: 'pre-wrap' }} // ✅ CSS for preserving line breaks
                 />
                 {errors.description && (
                   <p className="mt-1 text-sm text-red-600">

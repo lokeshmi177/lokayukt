@@ -23,24 +23,24 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
   // Simple translation object
   const translations = {
     english: {
-      title: "LokAyukta",
+      title: "uplokayukta",
       subtitle: "CRMS",
       description: "Complaint Management",
-      Lokayukt: "lokayukt",
+      UPlokayukt: "uplokayukt",
       dashboard: "Dashboard",
       complaints: "Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",
       masterData: "Master Data",
-      copyright: "© 2025 LokAyukta Office",
+      copyright: "© 2025 uplokayukta Office",
       version: "v1.0.0"
     },
     hindi: {
       title: "लोकायुक्त",
       subtitle: "CRMS",
       description: "शिकायत प्रबंधन",
-      Lokayukt: "व्यवस्थापक",
+      UPlokayukt: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
       complaints: "शिकायतें",
       progressRegister: "प्रगति रजिस्टर",
@@ -75,9 +75,9 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     setIsHindi(!isHindi);
   };
 
-  // ✅ Simple isActive function for lokayukt routes
+  // ✅ Simple isActive function for uplokayukt routes
   const isActive = (href) => {
-    const fullPath = `/lokayukt${href}`;
+    const fullPath = `/uplokayukt${href}`;
     
     if (href === '/dashboard') {
       return location.pathname === fullPath;
@@ -161,11 +161,11 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             )}
           </div>
           
-          {/* ✅ lokayukt Badge (Fixed) */}
+          {/* ✅ uplokayukt Badge (Fixed) */}
           {(isMobile || !isCollapsed) && (
             <div className="mb-3 transition-all duration-300">
               <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                {t.lokayukt}
+                {t.uplokayukt}
               </span>
             </div>
           )}
@@ -204,7 +204,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           )}
         </div>
 
-        {/* ✅ Navigation Menu - Only lokayukt Routes */}
+        {/* ✅ Navigation Menu - Only uplokayukt Routes */}
         <nav className={`flex-1 transition-all duration-300 overflow-y-auto ${
           (!isMobile && isCollapsed) ? 'py-4' : 'py-6'
         }`}>
@@ -212,7 +212,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Dashboard */}
             <li>
               <Link
-                to="/lokayukt/dashboard"
+                to="/uplokayukt/dashboard"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/dashboard')
@@ -233,7 +233,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Complaints */}
             <li>
               <Link
-                to="/lokayukt/complaints"
+                to="/uplokayukt/complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/complaints')
@@ -254,7 +254,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Progress Register */}
             <li>
               <Link
-                to="/lokayukt/progress-register"
+                to="/uplokayukt/progress-register"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/progress-register')
@@ -275,7 +275,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             {/* Search & Reports */}
             <li>
               <Link
-                to="/lokayukt/search-reports"
+                to="/uplokayukt/search-reports"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/search-reports')

@@ -236,68 +236,108 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 // Main Dashboard Component
-const Dashboard = ({ userRole = "operator" }) => {
-  //  API State Management + Date Picker State
+const Dashboard = ({ userRole = "uplokayuktistrator" }) => {
+  // ✅ API State Management + Date Picker State
   const [dashboardData, setDashboardData] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [departmentData, setDepartmentData] = useState([]);
   const [districtData, setDistrictData] = useState([]);
-  const [weeklyData, setWeeklyData] = useState([]); //  Weekly data state
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [workloadData, setWorkloadData] = useState([]); // ✅ NEW: API data for workload
   const [showMonthlyTab, setShowMonthlyTab] = useState(false);
   
-  //  Date Picker State
+  // ✅ Date Picker State
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
 
-  //  NEW: Fetch Weekly Graph Data
+  // ✅ NEW: Fetch Weekly Graph Data
   const fetchWeeklyData = async () => {
     try {
-      console.log('Fetching weekly graph data...');
-      const response = await api.get('/admin/getWeeklyGraph');
-      console.log('Weekly API Response:', response.data);
+      console.log('🔄 Fetching weekly graph data...');
+      const response = await api.get('/uplokayukt/getWeeklyGraph');
+      console.log('📊 Weekly API Response:', response.data);
       
       if (response.data && response.data.labels) {
         const { labels, progress, disposed, ui } = response.data;
         
-        //  Transform API data to chart format (without total)
+        // ✅ Transform API data to chart format (WITHOUT total)
         const weeklyChartData = labels.map((label, index) => ({
           day: label,
-          progress: progress[index] || 0,
-          disposed: disposed[index] || 0,
-          underInvestigation: ui[index] || 0
+          progress: progress[index] || 0,      // ✅ In progress
+          disposed: disposed[index] || 0,      // ✅ Disposed
+          underInvestigation: ui[index] || 0   // ✅ Under investigation
         }));
         
-        console.log('Transformed weekly data:', weeklyChartData);
-        setWeeklyData(weeklyChartData);
+        console.log('🔄 Transformed weekly data:', weeklyChartData);
+        
+        // ✅ Force state update
+        setWeeklyData([...weeklyChartData]);
+        
+        console.log('✅ WeeklyData state updated successfully');
+      } else {
+        console.error('❌ Invalid API response structure:', response.data);
       }
     } catch (error) {
-      console.error('Error fetching weekly data:', error);
-      // Fallback data if API fails
-      setWeeklyData([
-        { day: 'Mon', progress: 0, disposed: 0, underInvestigation: 0 },
-        { day: 'Tue', progress: 0, disposed: 0, underInvestigation: 0 },
-        { day: 'Wed', progress: 0, disposed: 0, underInvestigation: 0 },
-        { day: 'Thu', progress: 0, disposed: 0, underInvestigation: 0 },
-        { day: 'Fri', progress: 0, disposed: 0, underInvestigation: 0 },
-        { day: 'Sat', progress: 0, disposed: 0, underInvestigation: 0 },
-        { day: 'Sun', progress: 0, disposed: 0, underInvestigation: 0 }
-      ]);
+      console.error('💥 Error fetching weekly data:', error);
+      console.error('💥 Error details:', error.response?.data);
     }
   };
 
-  //  API Data Fetching Function
+  // ✅ NEW: Fetch Role-wise Workload Data
+  const fetchWorkloadData = async () => {
+    try {
+      console.log('🔄 Fetching role-wise workload data...');
+      const response = await api.get('/uplokayukt/role-wise-reports');
+      console.log('📊 Workload API Response:', response.data);
+      
+      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // ✅ Transform API data to chart format
+        const workloadChartData = response.data.data.map((role) => ({
+          role: role.sub_role_name || 'Unknown Role',
+          pending: parseInt(role.total_pending_complains) || 0,   // ✅ Pending complaints
+          completed: parseInt(role.total_approved_complains) || 0  // ✅ Approved/Completed complaints
+        }));
+        
+        console.log('🔄 Transformed workload data:', workloadChartData);
+        
+        // ✅ Set workload data
+        setWorkloadData(workloadChartData);
+        
+        console.log('✅ WorkloadData state updated successfully');
+      } else {
+        console.error('❌ Invalid workload API response structure:', response.data);
+      }
+    } catch (error) {
+      console.error('💥 Error fetching workload data:', error);
+      console.error('💥 Error details:', error.response?.data);
+      
+      // ✅ Fallback to empty array if API fails
+      setWorkloadData([]);
+    }
+  };
+
+  // ✅ Add useEffect to log state changes
+  useEffect(() => {
+    console.log('🔄 WeeklyData state changed:', weeklyData);
+  }, [weeklyData]);
+
+  useEffect(() => {
+    console.log('🔄 WorkloadData state changed:', workloadData);
+  }, [workloadData]);
+
+  // ✅ API Data Fetching Function
   const fetchDashboardData = async (monthParam) => {
     try {
       // 1. Dashboard Stats API
-      const dashResponse = await api.get(`/operator/dashboard/${monthParam}`);
+      const dashResponse = await api.get(`/uplokayukt/dashboard/${monthParam}`);
       if (dashResponse.data.status) {
         setDashboardData(dashResponse.data.dataDashboard);
       }
 
       // 2. Monthly Complaint API
-      const monthlyResponse = await api.get('/operator/montly-complaint');
+      const monthlyResponse = await api.get('/uplokayukt/montly-complaint');
       if (monthlyResponse.data) {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyTrends = months.map((month, index) => ({
@@ -310,7 +350,7 @@ const Dashboard = ({ userRole = "operator" }) => {
       }
 
       // 3. Status Distribution API
-      const statusResponse = await api.get('/operator/status-distribution');
+      const statusResponse = await api.get('/uplokayukt/status-distribution');
       if (statusResponse.data && statusResponse.data.data) {
         const statusInfo = statusResponse.data.data;
         const statusDistribution = [
@@ -339,7 +379,7 @@ const Dashboard = ({ userRole = "operator" }) => {
       }
 
       // 4. Department-wise API
-      const deptResponse = await api.get('/operator/department-wise-complaint');
+      const deptResponse = await api.get('/uplokayukt/department-wise-complaint');
       if (deptResponse.data.status) {
         const deptData = Object.entries(deptResponse.data.data).map(([department, complaints]) => ({
           department,
@@ -350,7 +390,7 @@ const Dashboard = ({ userRole = "operator" }) => {
       }
 
       // 5. District-wise API
-      const districtResponse = await api.get('/operator/district-wise-company-type');
+      const districtResponse = await api.get('/uplokayukt/district-wise-company-type');
       if (districtResponse.data) {
         const { district, total, allegations, grievances } = districtResponse.data;
         const districtFormatted = district.map((districtName, index) => ({
@@ -362,20 +402,23 @@ const Dashboard = ({ userRole = "operator" }) => {
         setDistrictData(districtFormatted);
       }
 
-      //  6. Fetch Weekly Data
+      // ✅ 6. Fetch Weekly Data
       await fetchWeeklyData();
+
+      // ✅ 7. NEW: Fetch Workload Data
+      await fetchWorkloadData();
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
   };
 
-  //  Initial Data Fetch
+  // ✅ Initial Data Fetch
   useEffect(() => {
     fetchDashboardData(currentMonth);
   }, [currentMonth]);
 
-  //  Handle Date Picker Change
+  // ✅ Handle Date Picker Change
   const handleDateChange = (date) => {
     setSelectedDate(date);
     setShowDatePicker(false);
@@ -384,7 +427,7 @@ const Dashboard = ({ userRole = "operator" }) => {
     fetchDashboardData(newMonth);
   };
 
-  //  Refresh to Current Month
+  // ✅ Refresh to Current Month
   const handleRefresh = () => {
     const now = new Date();
     setSelectedDate(now);
@@ -401,15 +444,6 @@ const Dashboard = ({ userRole = "operator" }) => {
     { stage: 'Assignment to Investigation', avg: 12.5, target: 15 },
     { stage: 'Investigation to Decision', avg: 18.7, target: 20 },
     { stage: 'Decision to Disposal', avg: 3.2, target: 5 }
-  ];
-
-  const workloadData = [
-    { role: 'RO/ARO', pending: 23, completed: 156 },
-    { role: 'Section Officer', pending: 18, completed: 134 },
-    { role: 'DS/JS', pending: 12, completed: 98 },
-    { role: 'Secretary', pending: 8, completed: 87 },
-    { role: 'CIO/IO', pending: 15, completed: 45 },
-    { role: 'LokAyukta', pending: 6, completed: 78 }
   ];
 
   const slaCompliance = [
@@ -447,7 +481,7 @@ const Dashboard = ({ userRole = "operator" }) => {
           </p>
         </div>
         <div className="flex gap-2 relative">
-          {/*  Month-Year Picker Button */}
+          {/* ✅ Month-Year Picker Button */}
           <Button 
             variant="outline" 
             size="sm"
@@ -457,7 +491,7 @@ const Dashboard = ({ userRole = "operator" }) => {
             {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
           </Button>
 
-          {/*  Date Picker Dropdown */}
+          {/* ✅ Date Picker Dropdown */}
           {showDatePicker && (
             <div className="absolute top-full right-0 mt-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4">
               <DatePicker
@@ -474,7 +508,7 @@ const Dashboard = ({ userRole = "operator" }) => {
             </div>
           )}
 
-          {/*  Refresh Button */}
+          {/* ✅ Refresh Button */}
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <FaChartLine className="h-4 w-4 mr-2" />
             Refresh
@@ -728,14 +762,17 @@ const Dashboard = ({ userRole = "operator" }) => {
 
         <TabsContent value="trends" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/*  UPDATED: Weekly Activity Area Chart with API Data (Total Removed) */}
+            {/* ✅ Weekly Activity Area Chart with API Data (WITHOUT Total) */}
             <Card className="cursor-pointer">
               <CardHeader>
                 <CardTitle>Weekly Activity Trends</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                  <AreaChart data={weeklyData}>
+                  <AreaChart 
+                    data={weeklyData} 
+                    key={JSON.stringify(weeklyData)} // ✅ Force re-render when data changes
+                  >
                     <defs>
                       <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
@@ -845,14 +882,19 @@ const Dashboard = ({ userRole = "operator" }) => {
         </TabsContent>
 
         <TabsContent value="workload" className="space-y-6">
-          {/* Role-wise Workload */}
+          {/* ✅ UPDATED: Role-wise Workload with API Data */}
           <Card className="cursor-pointer">
             <CardHeader>
               <CardTitle>Role-wise Workload Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={workloadData} layout="vertical" margin={{ left: 100 }}>
+                <BarChart 
+                  data={workloadData} 
+                  layout="vertical" 
+                  margin={{ left: 100 }}
+                  key={JSON.stringify(workloadData)} // ✅ Force re-render when data changes
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis type="number" stroke="#6b7280" />
                   <YAxis dataKey="role" type="category" width={100} stroke="#6b7280" />
@@ -920,5 +962,3 @@ const Dashboard = ({ userRole = "operator" }) => {
 };
 
 export default Dashboard;
-
-

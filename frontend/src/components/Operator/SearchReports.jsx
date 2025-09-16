@@ -7,6 +7,12 @@ import {
   FaChartBar,
   FaSpinner,
   FaArrowRight, // Added Forward icon
+  FaChevronDown,
+  FaUser,
+  FaUserTie,
+  FaCrown,
+  FaUsers,
+  FaTimes
 } from "react-icons/fa";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
@@ -28,7 +34,151 @@ const api = axios.create({
   },
 });
 
-// Forward Modal Component
+//  Custom Searchable Dropdown Component [2][3]
+const CustomSearchableDropdown = ({ 
+  value, 
+  onChange, 
+  options = [], 
+  placeholder = "Select option...",
+  required = false 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Flatten options for searching [11]
+  const flattenOptions = (options) => {
+    const flattened = [];
+    options.forEach(group => {
+      group.items.forEach(item => {
+        flattened.push({
+          ...item,
+          groupLabel: group.label,
+          groupIcon: group.icon
+        });
+      });
+    });
+    return flattened;
+  };
+
+  // Filter options based on search [2][20]
+  const filteredOptions = () => {
+    if (!searchTerm.trim()) return options;
+    
+    const flatOptions = flattenOptions(options);
+    const filtered = flatOptions.filter(option => 
+      option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      option.groupLabel.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Group filtered options back [11]
+    const groupedFiltered = {};
+    filtered.forEach(option => {
+      if (!groupedFiltered[option.groupLabel]) {
+        const originalGroup = options.find(g => g.label === option.groupLabel);
+        groupedFiltered[option.groupLabel] = {
+          label: option.groupLabel,
+          icon: originalGroup?.icon,
+          items: []
+        };
+      }
+      groupedFiltered[option.groupLabel].items.push(option);
+    });
+
+    return Object.values(groupedFiltered);
+  };
+
+  const selectedOption = flattenOptions(options).find(opt => opt.value === value);
+
+  const handleSelect = (optionValue) => {
+    onChange(optionValue);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  return (
+    <div className="relative">
+      {/* Dropdown Button */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between"
+        required={required}
+      >
+        <span className="flex items-center">
+          {selectedOption ? (
+            <>
+              {selectedOption.icon}
+              <span className="ml-2">{selectedOption.label}</span>
+            </>
+          ) : (
+            <>
+              <FaUsers className="w-4 h-4 text-gray-400" />
+              <span className="ml-2 text-gray-500">{placeholder}</span>
+            </>
+          )}
+        </span>
+        <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {/* Dropdown Menu */}
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
+          {/* Search Input [2] */}
+          <div className="p-2 border-b">
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search options..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+
+          {/* Options List */}
+          <div className="max-h-60 overflow-y-auto">
+            {filteredOptions().length > 0 ? (
+              filteredOptions().map((group) => (
+                <div key={group.label}>
+                  {/* Group Header [18] */}
+                  <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
+                    {group.icon}
+                    <span className="ml-2">{group.label}</span>
+                  </div>
+                  
+                  {/* Group Items */}
+                  {group.items.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => handleSelect(item.value)}
+                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-sm border-b border-gray-100 last:border-b-0"
+                    >
+                      {item.icon}
+                      <span className="ml-2">{item.label}</span>
+                      {value === item.value && (
+                        <FaUsers className="ml-auto w-4 h-4 text-blue-600" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                {searchTerm ? 'No options found' : 'No options available'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+//  Updated Forward Modal Component with Custom Dropdown
 const ForwardModal = ({ 
   isOpen, 
   onClose, 
@@ -40,6 +190,47 @@ const ForwardModal = ({
     remarks: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  //  Dropdown Options with Search Support [2]
+  const dropdownOptions = [
+    {
+      label: "Assistant",
+      icon: <FaUsers className="w-4 h-4 text-blue-500" />,
+      items: [
+        { 
+          value: "assistant_1", 
+          label: "Assistant Level 1", 
+          icon: <FaUser className="w-4 h-4 text-blue-500" /> 
+        },
+        { 
+          value: "assistant_2", 
+          label: "Assistant Level 2", 
+          icon: <FaUser className="w-4 h-4 text-green-500" /> 
+        },
+        { 
+          value: "assistant_3", 
+          label: "Assistant Level 3", 
+          icon: <FaUser className="w-4 h-4 text-purple-500" /> 
+        }
+      ]
+    },
+    {
+      label: "Lokaukt",
+      icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
+      items: [
+        { 
+          value: "lok", 
+          label: "Lok", 
+          icon: <FaUserTie className="w-4 h-4 text-yellow-500" /> 
+        },
+        { 
+          value: "uployut", 
+          label: "Uployut", 
+          icon: <FaCrown className="w-4 h-4 text-red-500" /> 
+        }
+      ]
+    }
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -66,36 +257,50 @@ const ForwardModal = ({
     }
   };
 
+  // Close modal when clicking outside
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      onClick={handleBackdropClick}
+    >
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
-        <div className="px-4 py-3 border-b text-lg font-semibold">
-          Forward Complaint
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Forward Complaint</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FaTimes className="w-5 h-5" />
+          </button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="p-4 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Forward To *
+                Forward To / भेजें
               </label>
-              <select
-                name="forwardTo"
+              {/*  Custom Searchable Dropdown [2][3] */}
+              <CustomSearchableDropdown
                 value={formData.forwardTo}
-                onChange={(e) => setFormData(prev => ({ ...prev, forwardTo: e.target.value }))}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onChange={(value) => setFormData(prev => ({ ...prev, forwardTo: value }))}
+                options={dropdownOptions}
+                placeholder="Select Department/Officer"
                 required
-              >
-                <option value="">Select Department/Officer</option>
-                <option value="admin">Admin</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="department_head">Department Head</option>
-              </select>
+              />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Remarks
+                Remarks / टिप्पणी
               </label>
               <textarea
                 name="remarks"
@@ -118,9 +323,9 @@ const ForwardModal = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !formData.forwardTo}
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
-                isSubmitting 
+                isSubmitting || !formData.forwardTo
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
@@ -131,7 +336,10 @@ const ForwardModal = ({
                   Forwarding...
                 </>
               ) : (
-                'Forward'
+                <>
+                  <FaArrowRight className="w-4 h-4" />
+                  Forward
+                </>
               )}
             </button>
           </div>
@@ -149,12 +357,12 @@ const SearchReports = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
   
-  // ✅ EXISTING API STATES
+  //  EXISTING API STATES
   const [overallStats, setOverallStats] = useState(null);
   const [districtWiseStats, setDistrictWiseStats] = useState(null);
   const [departmentWiseStats, setDepartmentWiseStats] = useState(null);
   
-  // ✅ NEW API STATES
+  //  NEW API STATES
   const [monthlyTrends, setMonthlyTrends] = useState(null);
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
@@ -202,7 +410,7 @@ const SearchReports = () => {
           setSearchResults(dataArray);
         }
 
-        // ✅ EXISTING API CALLS
+        //  EXISTING API CALLS
         // Fetch overall stats
         try {
           const overallResponse = await api.get("/operator/all-complains");
@@ -233,7 +441,7 @@ const SearchReports = () => {
           console.error("Error fetching department-wise stats:", error);
         }
 
-        // ✅ NEW API CALLS
+        //  NEW API CALLS
         // Fetch monthly trends
         try {
           const monthlyTrendsResponse = await api.get("/operator/montly-trends");
@@ -254,7 +462,7 @@ const SearchReports = () => {
           console.error("Error fetching compliance report:", error);
         }
 
-        // ✅ NEW: Fetch average processing time by complaint type
+        //  NEW: Fetch average processing time by complaint type
         try {
           const avgProcessingResponse = await api.get("/operator/detail-by-complaintype");
           if (avgProcessingResponse.data.status === true) {
@@ -307,7 +515,7 @@ const SearchReports = () => {
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  // ✅ CORRECTED FILTERING LOGIC - Fixed district matching
+  //  CORRECTED FILTERING LOGIC - Fixed district matching
   const filteredResults = ensureArray(searchResults).filter((result) => {
     // Search filter
     const matchesSearch = 
@@ -325,7 +533,7 @@ const SearchReports = () => {
       (result.district_name && 
         result.district_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // ✅ FIXED: District filtering - Properly scoped variable
+    //  FIXED: District filtering - Properly scoped variable
     let matchesDistrict = true;
     if (selectedDistrict !== "all") {
       const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
@@ -352,7 +560,7 @@ const SearchReports = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedResults = filteredResults.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // ✅ UPDATED Report stats calculation using new API data
+  //  UPDATED Report stats calculation using new API data
   const reportStats = {
     total: overallStats?.total_complaints || ensureArray(searchResults).length,
     disposed: ensureArray(searchResults).filter(
@@ -367,7 +575,7 @@ const SearchReports = () => {
     ).length,
   };
 
-  // ✅ Calculate overall average from avgProcessingTimes data
+  //  Calculate overall average from avgProcessingTimes data
   const calculateOverallAverage = () => {
     if (!avgProcessingTimes || !Array.isArray(avgProcessingTimes)) return "N/A";
     
@@ -403,9 +611,7 @@ const SearchReports = () => {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
               Search & Reports / खोज और रिपोर्ट
             </h1>
-           
           </div>
-         
         </div>
 
         {/* Tabs Component */}
@@ -519,7 +725,7 @@ const SearchReports = () => {
                             </select>
                           </div>
 
-                          {/* ✅ Buttons Side by Side with Same Blue Color */}
+                          {/*  Buttons Side by Side with Same Blue Color */}
                           <div className="flex gap-3 flex-shrink-0">
                             <button
                               onClick={handleSearch}
@@ -543,7 +749,7 @@ const SearchReports = () => {
                               )}
                             </button>
 
-                            {/* ✅ Export Button - Same Blue Color & Icon */}
+                            {/*  Export Button - Same Blue Color & Icon */}
                             <button
                               onClick={() => {
                                 try {
@@ -790,7 +996,7 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* ✅ NEW REPORTS USING NEW API DATA */}
+                    {/*  NEW REPORTS USING NEW API DATA */}
                     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       {/* District-wise Report using new API */}
                       <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
@@ -846,7 +1052,7 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED Statistical Reports Tab with Monthly Trends API */}
+              {/*  UPDATED Statistical Reports Tab with Monthly Trends API */}
               {activeTab === "statistical" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 overflow-hidden">
@@ -889,7 +1095,7 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* ✅ UPDATED Average Processing Time Section with Dynamic API Data */}
+                    {/*  UPDATED Average Processing Time Section with Dynamic API Data */}
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
                         Average Processing Time
@@ -936,7 +1142,7 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED Compliance Reports Tab with Compliance Report API */}
+              {/*  UPDATED Compliance Reports Tab with Compliance Report API */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-4 sm:space-y-6 overflow-hidden">
@@ -998,7 +1204,7 @@ const SearchReports = () => {
         </div>
       </div>
 
-      {/* Forward Modal */}
+      {/*  Updated Forward Modal with Custom Searchable Dropdown */}
       <ForwardModal
         isOpen={isForwardModalOpen}
         onClose={() => setIsForwardModalOpen(false)}
@@ -1010,3 +1216,4 @@ const SearchReports = () => {
 };
 
 export default SearchReports;
+ 

@@ -69,31 +69,31 @@ const Complaints = () => {
     const fetchAllData = async () => {
       try {
         // Fetch districts
-        const districtsResponse = await api.get(`/lokayukt/all-district`);
+        const districtsResponse = await api.get(`/uplokayukt/all-district`);
         if (districtsResponse.data.status === 'success') {
           setDistricts(districtsResponse.data.data);
         }
 
         // Fetch departments
-        const departmentsResponse = await api.get(`/lokayukt/department`);
+        const departmentsResponse = await api.get(`/uplokayukt/department`);
         if (departmentsResponse.data.status === 'success') {
           setDepartments(departmentsResponse.data.data);
         }
 
         // Fetch designations
-        const designationsResponse = await api.get(`/lokayukt/designation`);
+        const designationsResponse = await api.get(`/uplokayukt/designation`);
         if (designationsResponse.data.status === 'success') {
           setDesignations(designationsResponse.data.data);
         }
 
         // Fetch subjects
-        const subjectsResponse = await api.get(`/lokayukt/subjects`);
+        const subjectsResponse = await api.get(`/uplokayukt/subjects`);
         if (subjectsResponse.data.status === 'success') {
           setSubjects(subjectsResponse.data.data);
         }
 
         // Fetch complaint types
-        const complaintTypesResponse = await api.get(`/lokayukt/complainstype`);
+        const complaintTypesResponse = await api.get(`/uplokayukt/complainstype`);
         if (complaintTypesResponse.data.status === 'success') {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
@@ -219,7 +219,7 @@ const Complaints = () => {
 
       // ✅ Use FormData with multipart/form-data headers
       const response = await axios.post(
-        `${BASE_URL}/lokayukt/complaints`,
+        `${BASE_URL}/uplokayukt/complaints`,
         submitFormData,
         {
           headers: {
