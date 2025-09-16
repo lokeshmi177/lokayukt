@@ -456,7 +456,6 @@ class OperatorComplaintsController extends Controller
                 $apc->form_status = 1;
                 $apc->approved_by_ro = 1;
                 $apc->approved_by_ro_id =  $userId;
-                $apc->form_status = 1;
                 $apc->save();
     
               return response()->json([

@@ -135,6 +135,7 @@ class SupervisorComplaintsController extends Controller
    public function getLokayuktUsers(){
      
         $usersByRole = User::with('role')
+         ->whereNotNull('role_id')
         ->get()
         ->groupBy(fn ($user) => $user->role->name);
         
@@ -150,6 +151,7 @@ class SupervisorComplaintsController extends Controller
    }
    public function getUpLokayuktUsers(){
     $usersByRole = User::with('role')
+     ->whereNotNull('role_id')
         ->get()
         ->groupBy(fn ($user) => $user->role->name);
         if(!empty($usersByRole['up-lok-ayukt'])){
@@ -213,10 +215,10 @@ class SupervisorComplaintsController extends Controller
                 $cmpAction =new ComplaintAction();
                 $cmpAction->complaint_id = $complainId;
                 $cmpAction->forward_by_so_us = $user;
-                $cmpAction->forward_to_d_a = $request->forward_to; //add supervisor user_id 
+                $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
                 $cmpAction->status_so_us = 1;
                 $cmpAction->action_type = "Forwarded";
-                // $cmpAction->remarks = $request->remarks;
+                $cmpAction->remarks = $request->remarks;
                 $cmpAction->save();
             }
             // $cmp->forward_by = $request->forward_by;
@@ -274,10 +276,10 @@ class SupervisorComplaintsController extends Controller
                 $cmpAction =new ComplaintAction();
                 $cmpAction->complaint_id = $complainId;
                 $cmpAction->forward_by_ds_js = $user;
-                $cmpAction->forward_to_d_a = $request->forward_to; //add supervisor user_id 
+                $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
                 $cmpAction->status_ds_js = 1;
                 $cmpAction->action_type = "Forwarded";
-                // $cmpAction->remarks = $request->remarks;
+                $cmpAction->remarks = $request->remarks;
                 $cmpAction->save();
             }
             // $cmp->forward_by = $request->forward_by;
