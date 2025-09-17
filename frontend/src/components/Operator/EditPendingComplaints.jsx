@@ -1,11 +1,10 @@
-// pages/Complaints.js
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   FaUser, 
   FaBuilding, 
   FaFileAlt, 
-  FaSearch, 
-  FaSave, 
+  FaArrowLeft,
   FaPaperPlane,
   FaRupeeSign,
   FaSpinner,
@@ -13,10 +12,10 @@ import {
   FaCheck,
   FaTimes
 } from 'react-icons/fa';
+import { IoMdArrowBack } from "react-icons/io";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -25,92 +24,143 @@ const token = localStorage.getItem("access_token");
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
+    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
 
-const Complaints = () => {
+const EditPendingComplaints = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
     address: '',
     district_id: '',
     email: '',
-    fee_exempted: true,                     
+    fee_exempted: true,
     amount: '',
     challan_no: '',
-    title: '',          
+    title: '',
     file: null,
     dob: '',
-    department: '',     
+    // ✅ Fixed field names to match backend expectations
+    department: '',        // Changed from department_id
     officer_name: '',
-    designation: '',
+    designation: '',       // Changed from designation_id
     category: '',
-    subject: '',        
-    nature: '',
-    description: '',
-    complaint_id: '' //  Added duplicate ID field
+    subject: '',          // Changed from subject_id
+    nature: '',           // Changed from complaintype_id
+    description: ''
   });
 
-  const navigate = useNavigate()
+  // Dropdown data states
   const [districts, setDistricts] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [complaintTypes, setComplaintTypes] = useState([]);
+  
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
+  
   // File upload progress states
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [existingFile, setExistingFile] = useState(null);
 
-  // Duplicate check states
-  const [duplicate, setDuplicate] = useState(null);
-  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
-
-  // Fetch all required data on component mount
+  // Fetch complaint data and dropdown data on component mount
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchData = async () => {
+      if (!id) {
+        toast.error("No complaint ID provided");
+        navigate("/operator/pending-complaints");
+        return;
+      }
+
       try {
-        // Fetch districts
-        const districtsResponse = await api.get(`/operator/all-district`);
+        setIsLoading(true);
+
+        // Parallel API calls for better performance
+        const [
+          complaintResponse,
+          districtsResponse,
+          departmentsResponse,
+          designationsResponse,
+          subjectsResponse,
+          complaintTypesResponse
+        ] = await Promise.all([
+          api.get(`/operator/edit-complaint/${id}`),
+          api.get(`/operator/all-district`),
+          api.get(`/operator/department`),
+          api.get(`/operator/designation`),
+          api.get(`/operator/subjects`),
+          api.get(`/operator/complainstype`)
+        ]);
+
+        // Set dropdown data
         if (districtsResponse.data.status === 'success') {
           setDistricts(districtsResponse.data.data);
         }
-
-        // Fetch departments
-        const departmentsResponse = await api.get(`/operator/department`);
         if (departmentsResponse.data.status === 'success') {
           setDepartments(departmentsResponse.data.data);
         }
-
-        // Fetch designations
-        const designationsResponse = await api.get(`/operator/designation`);
         if (designationsResponse.data.status === 'success') {
           setDesignations(designationsResponse.data.data);
         }
-
-        // Fetch subjects
-        const subjectsResponse = await api.get(`/operator/subjects`);
         if (subjectsResponse.data.status === 'success') {
           setSubjects(subjectsResponse.data.data);
         }
-
-        // Fetch complaint types
-        const complaintTypesResponse = await api.get(`/operator/complainstype`);
         if (complaintTypesResponse.data.status === 'success') {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
+
+        // ✅ Pre-populate form with complaint data - Fixed mapping
+        if (complaintResponse.data.status === true) {
+          const data = complaintResponse.data.data;
+          setFormData({
+            name: data.name || '',
+            mobile: data.mobile || '',
+            address: data.address || '',
+            district_id: data.district_id || '',
+            email: data.email || '',
+            fee_exempted: data.fee_exempted === 1,
+            amount: data.amount || '',
+            challan_no: data.challan_no || '',
+            title: data.title || '',
+            file: null,
+            dob: data.dob || '',
+            // ✅ Map backend IDs to frontend field names
+            department: data.department_id || '',      // Map department_id to department
+            officer_name: data.officer_name || '',
+            designation: data.designation_id || '',    // Map designation_id to designation
+            category: data.category || '',
+            subject: data.subject_id || '',           // Map subject_id to subject
+            nature: data.complaintype_id || '',       // Map complaintype_id to nature
+            description: data.description || ''
+          });
+          
+          // Store existing file info
+          if (data.file) {
+            setExistingFile(data.file);
+          }
+        } else {
+          toast.error("Failed to load complaint data");
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
+        toast.error("Error loading complaint data");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchAllData();
-  }, []);
+    fetchData();
+  }, [id, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -128,93 +178,40 @@ const Complaints = () => {
       }));
     }
 
-    // Clear error when user starts typing
-    if (errors[name]) {
+    // ✅ Clear error when user starts typing - match backend field names
+    const errorFieldMap = {
+      'department': 'department',
+      'designation': 'designation', 
+      'subject': 'subject',
+      'nature': 'nature'
+    };
+    
+    const errorField = errorFieldMap[name] || name;
+    if (errors[errorField]) {
       setErrors(prev => ({
         ...prev,
-        [name]: ''
+        [errorField]: ''
       }));
     }
   };
 
-  // Check Duplicate function
-  const handleCheckDuplicate = async () => {
-    if (!formData.name.trim() || !formData.title.trim()) {
-      toast.error('Please enter both Name and Title to check duplicates.');
-      return;
-    }
-    
-    setCheckingDuplicate(true);
-    setDuplicate(null);
-    
-    try {
-      const response = await api.post('/operator/check-duplicate', {
-        name: formData.name,
-        title: formData.title
-      });
-      
-      if (response.data.complaint) {
-        setDuplicate(response.data.complaint);
-      } else {
-        toast.info('No duplicate found');
-        setDuplicate(null);
-      }
-    } catch (error) {
-      console.error('Duplicate check error:', error);
-      toast.info('No duplicate found');
-      setDuplicate(null);
-    } finally {
-      setCheckingDuplicate(false);
-    }
-  };
-
-  // ✅ Updated Handle merge action - Preserves existing description with line break
-  const handleMergeDuplicate = () => {
-    if (duplicate && duplicate.id) {
-      // Get existing description from form
-      const existingDescription = formData.description.trim();
-      const duplicateDescription = duplicate.description || '';
-      
-      let mergedDescription = '';
-      
-      // ✅ If user already typed description, preserve it and add duplicate above with line break
-      if (existingDescription) {
-        // Put duplicate description first, then newline, then existing user description
-        mergedDescription = duplicateDescription + '\n' + existingDescription;
-      } else {
-        // If no existing description, just use duplicate description
-        mergedDescription = duplicateDescription;
-      }
-      
-      // Update form data with merged description AND duplicate ID
-      setFormData(prev => ({
-        ...prev,
-        description: mergedDescription,
-        complaint_id: duplicate.id.toString() //  Store duplicate ID
-      }));
-      
-      toast.success(`Data merged!`);
-      setDuplicate(null); // Hide duplicate box
-    } else {
-      toast.warning('No duplicate data found to merge');
-    }
-  };
-
-  // Get subject name by ID
-  const getSubjectName = (subjectId) => {
-    const subject = subjects.find(s => String(s.id) === String(subjectId));
-    return subject ? `${subject.name} (${subject.name_h})` : subjectId;
-  };
-
-  // ✅ Enhanced file upload - Now accepts ALL file types
+  // ✅ FIXED FILE UPLOAD HANDLER - This was the main bug!
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; // ✅ FIXED: Added [0] to get first file from FileList
     
     if (!file) return;
 
-    // ❌ Removed ALL file validation - Accept any file type
-    // No file type restriction
-    // No file size restriction on frontend (let backend handle)
+    // Validate file type (only PDF allowed)
+    if (file.type !== 'application/pdf') {
+      toast.error('Only PDF files are allowed');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size should not exceed 5MB');
+      return;
+    }
 
     // Reset upload states
     setUploadProgress(0);
@@ -222,7 +219,7 @@ const Complaints = () => {
     setUploadSuccess(false);
     setUploadError('');
 
-    // Alternative: Simulate upload progress (if no API endpoint yet)
+    // ✅ Simulate upload progress (exactly same as Complaints.jsx)
     const simulateUpload = () => {
       let progress = 0;
       const interval = setInterval(() => {
@@ -254,7 +251,7 @@ const Complaints = () => {
     }
   };
 
-  // Remove uploaded file
+  // ✅ Remove uploaded file
   const handleRemoveFile = () => {
     setFormData(prev => ({
       ...prev,
@@ -266,7 +263,7 @@ const Complaints = () => {
     setUploadError('');
   };
 
-  // Fixed submit handler with FormData for file upload
+  // ✅ Fixed submit handler with proper boolean conversion
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -275,68 +272,74 @@ const Complaints = () => {
     try {
       // Create FormData for file upload
       const submitFormData = new FormData();
-
-      // Add all form fields to FormData
-      Object.keys(formData).forEach((key) => {
+      
+      // ✅ Add all form fields to FormData with proper conversion
+      Object.keys(formData).forEach(key => {
         if (key === 'file' && formData.file) {
           submitFormData.append('file', formData.file);
+        } else if (key === 'fee_exempted') {
+          // ✅ Convert boolean to integer for database
+          submitFormData.append(key, formData[key] ? '1' : '0');
         } else if (formData[key] !== null && formData[key] !== '') {
           submitFormData.append(key, formData[key]);
         }
       });
 
-      // Use api instance for the POST request
-      const response = await api.post('/operator/add-complaint', submitFormData);
-      // ⬆️ headers section completely removed
+      // Debug: Log what we're sending
+      console.log('FormData being sent:');
+      for (let [key, value] of submitFormData.entries()) {
+        console.log(key, ':', value, typeof value);
+      }
+
+      // Use FormData with multipart/form-data headers for update
+      const response = await axios.post(
+        `${BASE_URL}/operator/update-complaint/${id}`,
+        submitFormData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
 
       if (response.data.status === true) {
-        toast.success(response.data.message || 'Complaint registered successfully!');
-
-        // Reset form after successful submission
-        setFormData({
-          name: '',
-          mobile: '',
-          address: '',
-          district_id: '',
-          email: '',
-          fee_exempted: true,
-          amount: '',
-          challan_no: '',
-          title: '',
-          file: null,
-          dob: '',
-          department: '',
-          officer_name: '',
-          designation: '',
-          category: '',
-          subject: '',
-          nature: '',
-          description: '',
-          complaint_id: '' // ✅ Reset duplicate ID
-        });
-
-        // Reset file upload states
-        setUploadProgress(0);
-        setIsUploading(false);
-        setUploadSuccess(false);
-        setUploadError('');
+        toast.success(response.data.message || 'Complaint updated successfully!');
+        
+        // Navigate back to view page after successful update
+        setTimeout(() => {
+          navigate(`/operator/pending-complaints/view/${id}`);
+        }, 1500);
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
-        // Handle validation errors
+        // ✅ Fixed error handling
         const backendErrors = {};
-        Object.keys(error.response.data.errors).forEach((field) => {
-          backendErrors[field] = error.response.data.errors[field];
+        Object.keys(error.response.data.errors).forEach(field => {
+          backendErrors[field] = error.response.data.errors[field][0]; // ✅ Take first error message
         });
         setErrors(backendErrors);
+        
+        // ✅ Show first error in toast - Fixed array access
+        const firstError = Object.values(error.response.data.errors)[0][0];
+        // toast.error(firstError);
       } else {
         toast.error('Something went wrong. Please try again.');
       }
-      console.error('Submit error:', error);
+      console.error('Update error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Loading statea
+  if (isLoading) {
+    return (
+    <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center text-lg font-medium text-gray-700">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -358,69 +361,24 @@ const Complaints = () => {
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Complaint Entry</h1>
-            <p className="text-xs sm:text-sm text-gray-600">शिकायत प्रविष्टि फॉर्म</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Edit Complaint</h1>
+            <p className="text-xs sm:text-sm text-gray-600">शिकायत संपादन फॉर्म</p>
           </div>
-          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-            <button 
-              onClick={handleCheckDuplicate}
-              disabled={checkingDuplicate}
-              className={`px-4 py-2 bg-blue-600 text-white rounded-md font-medium transition-all ${
-                checkingDuplicate 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'hover:bg-blue-700'
-              }`}
-            >
-              {checkingDuplicate ? (
-                <>
-                  <FaSpinner className="inline w-4 h-4 mr-2 animate-spin" />
-                  Checking...
-                </>
-              ) : (
-                <>
-                  <FaSearch className="inline w-4 h-4 mr-2" />
-                  Check Duplicates
-                </>
-              )}
-            </button>
-          </div>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+  <button 
+    onClick={() => navigate(`/operator/pending-complaints/view/${id}`)}
+    className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+  >
+    <IoMdArrowBack className="text-lg" />
+    <span>Back</span>
+  </button>
+</div>
+
         </div>
       </div>
 
-      {/* Duplicate Found Alert Box */}
-      {duplicate && (
-        <div className="mb-6 border border-yellow-300 bg-yellow-100 p-4 rounded-lg">
-          <div className="flex items-start gap-3">
-            <div className="text-yellow-600 mt-1">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-
-            <div className="flex-1">
-              <h3 className="font-semibold text-yellow-800 mb-2">Potential Duplicates Found</h3>
-
-              <div className="text-sm text-yellow-700 space-y-1">
-                <div><strong>Complaint No:</strong> {duplicate.complain_no}</div>
-                <div><strong>Name:</strong> {duplicate.name}</div>
-                <div><strong>Subject:</strong> {getSubjectName(duplicate.subject_id)}</div>
-              </div>
-
-              <div className="mt-3 flex justify-end">
-                <button
-                  onClick={handleMergeDuplicate}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
-                >
-                  Merge 
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit}>
-        {/* Form Layout */}
+        {/* Form Layout - Same as Complaints.jsx */}
         <div className="space-y-4 sm:space-y-6">
           {/* Top Row: Complainant Details + Security Fee */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
@@ -446,27 +404,18 @@ const Complaints = () => {
                     value={formData.name}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // sirf letters aur spaces allow karo
                       if (/^[A-Za-z\s]*$/.test(value)) {
                         handleInputChange(e);
                       }
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter full name"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.name}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
                   )}
-
-                  {/* ✅ Hidden Input Field for Duplicate Complaint ID */}
-                  <input
-                    type="hidden"
-                    name="complaint_id"
-                    value={formData.complaint_id}
-                    onChange={handleInputChange}
-                  />
                 </div>
 
                 {/* Mobile */}
@@ -480,18 +429,17 @@ const Complaints = () => {
                     value={formData.mobile}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Sirf digits allow + max 10 digits
                       if (/^[0-9]*$/.test(value) && value.length <= 10) {
                         handleInputChange(e);
                       }
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.mobile ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="10-digit mobile number"
                   />
                   {errors.mobile && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.mobile}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
                   )}
                 </div>
 
@@ -505,13 +453,13 @@ const Complaints = () => {
                     value={formData.address}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
+                      errors.address ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter complete address"
                   />
                   {errors.address && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.address}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.address}</p>
                   )}
                 </div>
 
@@ -524,7 +472,9 @@ const Complaints = () => {
                     name="district_id"
                     value={formData.district_id}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                      errors.district_id ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Select District</option>
                     {districts.map(district => (
@@ -534,9 +484,7 @@ const Complaints = () => {
                     ))}
                   </select>
                   {errors.district_id && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.district_id}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.district_id}</p>
                   )}
                 </div>
 
@@ -550,13 +498,13 @@ const Complaints = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="example@email.com"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.email}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                   )}
                 </div>
               </div>
@@ -651,7 +599,7 @@ const Complaints = () => {
                 {!formData.fee_exempted && (
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Date / तिथि
+                      Date of Birth / जन्म तिथि
                     </label>
                     <input
                       type="date"
@@ -684,7 +632,9 @@ const Complaints = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.title ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter complaint title"
                   />
                   {errors.title && (
@@ -692,21 +642,32 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/* ✅ File Upload - Now accepts ANY file type */}
+                {/* ✅ File Upload with Progress - NOW WORKING! */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Choose File / फ़ाइल चुनें *
+                    Choose File / फ़ाइल चुनें
                   </label>
+                  
+                  {/* Show existing file info */}
+                  {existingFile && !formData.file && (
+                    <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-xs text-blue-800">
+                        Current file: {existingFile}
+                      </p>
+                    </div>
+                  )}
                   
                   {/* File Upload Area */}
                   {!formData.file ? (
                     <div className="flex items-center space-x-2">
                       <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                         <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                        <span className="text-sm text-gray-700">Choose any file</span>
+                        <span className="text-sm text-gray-700">
+                          {existingFile ? 'Replace PDF file' : 'Choose PDF file'}
+                        </span>
                         <input
                           type="file"
-                          // ✅ Removed accept attribute - Now accepts ALL file types
+                          accept=".pdf"
                           onChange={handleFileChange}
                           className="hidden"
                         /> 
@@ -717,7 +678,7 @@ const Complaints = () => {
                     <div className="border border-gray-300 rounded-md p-3">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
-                          <FaFileAlt className="w-4 h-4 text-blue-600" />
+                          <FaFileAlt className="w-4 h-4 text-red-600" />
                           <span className="text-sm font-medium text-gray-700">
                             {formData.file.name}
                           </span>
@@ -738,7 +699,7 @@ const Complaints = () => {
                         </button>
                       </div>
 
-                      {/* Progress Bar */}
+                      {/* ✅ Progress Bar */}
                       {(isUploading || uploadProgress > 0) && (
                         <div className="mb-2">
                           <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
@@ -776,8 +737,7 @@ const Complaints = () => {
                     </div>
                   )}
 
-                  {/* ✅ Updated help text */}
-                  <p className="mt-1 text-xs text-gray-500">All file types allowed</p>
+                  <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
                   {errors.file && (
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
                   )}
@@ -796,7 +756,7 @@ const Complaints = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {/* Department */}
+              {/*  Department - Fixed field name */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Department / विभाग *
@@ -805,7 +765,9 @@ const Complaints = () => {
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                    errors.department ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Department</option>
                   {departments.map(department => (
@@ -815,9 +777,7 @@ const Complaints = () => {
                   ))}
                 </select>
                 {errors.department && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.department}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.department}</p>
                 )}
               </div>
 
@@ -831,17 +791,17 @@ const Complaints = () => {
                   name="officer_name"
                   value={formData.officer_name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                    errors.officer_name ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Enter officer name"
                 />
                 {errors.officer_name && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.officer_name}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.officer_name}</p>
                 )}
               </div>
 
-              {/* Designation */}
+              {/* ✅ Designation - Fixed field name */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Designation / पदनाम *
@@ -850,7 +810,9 @@ const Complaints = () => {
                   name="designation"
                   value={formData.designation}
                   onChange={handleInputChange}
-                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                    errors.designation ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Designation</option>
                   {designations.map(designation => (
@@ -860,9 +822,7 @@ const Complaints = () => {
                   ))}
                 </select>
                 {errors.designation && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.designation}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.designation}</p>
                 )}
               </div>
 
@@ -875,16 +835,16 @@ const Complaints = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                    errors.category ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Category</option>
                   <option value="class_1">Class 1</option>
                   <option value="class_2">Class 2</option>
                 </select>
                 {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.category}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
                 )}
               </div>
             </div>
@@ -901,7 +861,7 @@ const Complaints = () => {
             </div>
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                {/* Subject Dropdown */}
+                {/*  Subject - Fixed field name */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Subject / विषय *
@@ -910,7 +870,9 @@ const Complaints = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                      errors.subject ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Select Subject</option>
                     {subjects.map(subject => (
@@ -920,13 +882,11 @@ const Complaints = () => {
                     ))}
                   </select>
                   {errors.subject && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.subject}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
                   )}
                 </div>
 
-                {/* Nature */}
+                {/* ✅ Nature - Fixed field name */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Nature / प्रकृति *
@@ -935,7 +895,9 @@ const Complaints = () => {
                     name="nature"
                     value={formData.nature}
                     onChange={handleInputChange}
-                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                      errors.nature ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Select Nature</option>
                     {complaintTypes.map(complaintType => (
@@ -945,14 +907,12 @@ const Complaints = () => {
                     ))}
                   </select>
                   {errors.nature && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.nature}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.nature}</p>
                   )}
                 </div>
               </div>
 
-              {/* ✅ Detailed Description with proper line break support */}
+              {/* Detailed Description */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Detailed Description / विस्तृत विवरण *
@@ -962,14 +922,13 @@ const Complaints = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={6}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
+                    errors.description ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Enter detailed complaint description..."
-                  style={{ whiteSpace: 'pre-wrap' }} // ✅ CSS for preserving line breaks
                 />
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.description}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
                 )}
               </div>
             </div>
@@ -977,7 +936,8 @@ const Complaints = () => {
 
           {/* Submit Button */}
           <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-3">
+             
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -990,12 +950,12 @@ const Complaints = () => {
                 {isSubmitting ? (
                   <>
                     <FaSpinner className="w-4 h-4 animate-spin" />
-                    Submitting...
+                    Updating...
                   </>
                 ) : (
                   <>
                     <FaPaperPlane className="w-4 h-4" />
-                    Submit Complaint
+                    Update Complaint
                   </>
                 )}
               </button>
@@ -1007,4 +967,4 @@ const Complaints = () => {
   );
 };
 
-export default Complaints;
+export default EditPendingComplaints;

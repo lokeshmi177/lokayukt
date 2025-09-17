@@ -15,10 +15,12 @@ import {
   FaTimes
 } from 'react-icons/fa';
 
+
 const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSidebar }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isHindi, setIsHindi] = useState(false);
+
 
   // Simple translation object
   const translations = {
@@ -52,8 +54,10 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     }
   };
 
+
   // Get current translations
   const t = isHindi ? translations.hindi : translations.english;
+
 
   // Check screen size and set mobile state
   useEffect(() => {
@@ -61,6 +65,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
     };
+
 
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
@@ -70,10 +75,12 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     };
   }, []);
 
+
   // Toggle language function
   const toggleLanguage = () => {
     setIsHindi(!isHindi);
   };
+
 
   // ✅ Simple isActive function for admin routes
   const isActive = (href) => {
@@ -85,15 +92,42 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     return location.pathname.startsWith(fullPath);
   };
 
+
   // Close mobile menu when clicking link
   const handleLinkClick = () => {
     if (isMobile) {
       toggleMobileMenu();
     }
   };
+  
+  // Custom Scrollbar CSS
+  const scrollbarStyles = `
+    .sidebar-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #475569;
+      border-radius: 10px;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #64748b;
+    }
+    /* For Firefox */
+    .sidebar-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #475569 transparent;
+    }
+  `;
+
 
   return (
     <>
+      {/* Custom Scrollbar Styles */}
+      <style>{scrollbarStyles}</style>
+
       {/* Mobile Overlay */}
       {isMobile && isMobileMenuOpen && (
         <div
@@ -101,6 +135,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           onClick={toggleMobileMenu}
         />
       )}
+
 
       {/* Sidebar */}
       <div
@@ -140,6 +175,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             )}
           </button>
         )}
+
 
         {/* Header Section */}
         <div className={`border-b border-slate-700 transition-all duration-300 flex-shrink-0 ${
@@ -204,8 +240,9 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           )}
         </div>
 
-        {/* ✅ Navigation Menu - Only Admin Routes */}
-        <nav className={`flex-1 transition-all duration-300 overflow-y-auto ${
+
+        {/* ✅ Navigation Menu - Updated with sidebar-scrollbar */}
+        <nav className={`flex-1 transition-all duration-300 overflow-y-auto sidebar-scrollbar ${
           (!isMobile && isCollapsed) ? 'py-4' : 'py-6'
         }`}>
           <ul className="space-y-1">
@@ -230,6 +267,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
+
             {/* Complaints */}
             <li>
               <Link
@@ -250,6 +288,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.complaints}</span>}
               </Link>
             </li>
+
 
             {/* Progress Register */}
             <li>
@@ -272,6 +311,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
+
             {/* Search & Reports */}
             <li>
               <Link
@@ -293,6 +333,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
+
             {/* User Management */}
             <li>
               <Link
@@ -313,6 +354,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 {(isMobile || !isCollapsed) && <span className="transition-all duration-300">{t.userManagement}</span>}
               </Link>
             </li>
+
 
             {/* Master Data */}
             <li>
@@ -337,6 +379,7 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           </ul>
         </nav>
 
+
         {/* Footer */}
         {(isMobile || !isCollapsed) && (
           <div className="p-6 border-t border-slate-700 text-center transition-all duration-300 flex-shrink-0 mt-auto">
@@ -348,5 +391,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     </>
   );
 };
+
 
 export default Sidebar;

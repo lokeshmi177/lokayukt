@@ -38,7 +38,7 @@ const Sidebar = ({
       complaints: "New Complaints",
       allComplaints: "All Complaints",
       pendingComplaints: "Pending Complaints",
-      approvedComplaints: "Approved Complaints",
+      approvedComplaints: "Verified Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",
@@ -105,8 +105,33 @@ const Sidebar = ({
     }
   };
 
+  // Custom Scrollbar CSS
+  const scrollbarStyles = `
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #475569;
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #64748b;
+    }
+    /* For Firefox */
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #475569 transparent;
+    }
+  `;
+
   return (
     <>
+      {/* Custom Scrollbar Styles */}
+      <style>{scrollbarStyles}</style>
+
       {/* Mobile Overlay */}
       {isMobile && isMobileMenuOpen && (
         <div
@@ -224,9 +249,9 @@ const Sidebar = ({
           )}
         </div>
 
-        {/* ✅ Navigation Menu - Updated with "Complaints" suffix */}
+        {/* ✅ Navigation Menu - Updated with custom-scrollbar */}
         <nav
-          className={`flex-1 transition-all duration-300 overflow-y-auto ${
+          className={`flex-1 transition-all duration-300 overflow-y-auto custom-scrollbar ${
             !isMobile && isCollapsed ? "py-4" : "py-6"
           }`}
         >

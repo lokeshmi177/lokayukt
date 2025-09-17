@@ -49,7 +49,7 @@ const ApprovedComplaints = () => {
   // ✅ Handle view details with navigation - Only button click
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation(); // Prevent any parent event
-    navigate(`/operator/search-reports/view/${complaintId}`);
+    navigate(`/operator/approved-complaints/view/${complaintId}`);
   };
 
   // ✅ Handle modal view - Only for modal
@@ -195,7 +195,7 @@ const ApprovedComplaints = () => {
       <div className="min-h-screen p-2 sm:p-4">
         {/* ✅ Header - Responsive */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Approved Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Verified Complaints</h1>
         </div>
 
         {/* ✅ Mobile-First Responsive Card Layout */}
