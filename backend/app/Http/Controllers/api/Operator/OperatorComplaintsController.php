@@ -495,29 +495,29 @@ class OperatorComplaintsController extends Controller
     public function allComplainsDashboard(){
        
            $complainDetails = DB::table('complaints as cm')
-                ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+                // ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+                // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+                // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+                // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
-                    'dd.district_name',
-                    'dp.name as department_name',
-                    'ds.name as designation_name',
-                    'ct.name as complaintype_name',
-                    'sub.name as subject_name',
-                    'cd.department_id',
-                    'cd.officer_name',
-                    'cd.designation_id',
-                    'cd.designation_id',
-                    'cd.category',
-                    'cd.title',
-                    'cd.file',
-                    'cd.subject_id',
-                    'cd.complaintype_id',
-                    'cd.description',
+                    // 'dd.district_name',
+                    // 'dp.name as department_name',
+                    // 'ds.name as designation_name',
+                    // 'ct.name as complaintype_name',
+                    // 'sub.name as subject_name',
+                    // 'cd.department_id',
+                    // 'cd.officer_name',
+                    // 'cd.designation_id',
+                    // 'cd.designation_id',
+                    // 'cd.category',
+                    // 'cd.title',
+                    // 'cd.file',
+                    // 'cd.subject_id',
+                    // 'cd.complaintype_id',
+                    // 'cd.description',
                   
                 )
                 ->get();
@@ -533,20 +533,20 @@ class OperatorComplaintsController extends Controller
      public function allComplainspending(){
        
            $complainDetails = DB::table('complaints as cm')
-            ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+            // ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+                // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+                // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+                // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
-                    'dd.district_name',
-                    'dp.name as department_name',
-                    'ds.name as designation_name',
-                    'ct.name as complaintype_name',
-                    'sub.name as subject_name',
-                    'cd.*'
+                    // 'dd.district_name',
+                    // 'dp.name as department_name',
+                    // 'ds.name as designation_name',
+                    // 'ct.name as complaintype_name',
+                    // 'sub.name as subject_name',
+                    // 'cd.*'
                 )
                 ->where('form_status',0)
                 ->where('approved_rejected_by_ro',0)
@@ -563,20 +563,20 @@ class OperatorComplaintsController extends Controller
      public function allComplainsapproved(){
        
            $complainDetails = DB::table('complaints as cm')
-            ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+            // ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+                // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+                // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+                // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
-                    'dd.district_name',
-                    'dp.name as department_name',
-                    'ds.name as designation_name',
-                    'ct.name as complaintype_name',
-                    'sub.name as subject_name',
-                    'cd.*'
+                    // 'dd.district_name',
+                    // 'dp.name as department_name',
+                    // 'ds.name as designation_name',
+                    // 'ct.name as complaintype_name',
+                    // 'sub.name as subject_name',
+                    // 'cd.*'
                 )
                 ->where('form_status',1)
                 ->where('approved_rejected_by_ro',1)

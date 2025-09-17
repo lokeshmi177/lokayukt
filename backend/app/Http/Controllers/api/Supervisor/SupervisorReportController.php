@@ -46,21 +46,43 @@ class SupervisorReportController extends Controller
         //      ->select('name', 'name_hi')
         //     ->orderBy('name')
         //     ->get();
-        $records = DB::table('complaints')
-            ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-            ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-            ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-            ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+        // $records = DB::table('complaints')
+        //     ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+        //     ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+        //     ->leftJoin('departments as dp', DB::raw("cd.department_id"), '=', DB::raw("dp.id"))
+        //     ->leftJoin('designations as ds', DB::raw("cd.designation_id"), '=', DB::raw("ds.id"))
+        //     ->leftJoin('complaintype as ct', DB::raw("cd.complaintype_id"), '=', DB::raw("ct.id"))
+        //     ->leftJoin('subjects as sub', DB::raw("cd.department_id"), '=', DB::raw("sub.id"))
             
-            ->select(
-                'complaints.*',
-                'dd.district_name as district_name',
-                'dp.name as department_name',
-                'ds.name as designation_name',
-                'ct.name as complaintype_name',
-                'sub.name as subject_name',
-            );
+        //     ->select(
+        //         'complaints.*',
+        //         'dd.district_name as district_name',
+        //         'dp.name as department_name',
+        //         'ds.name as designation_name',
+        //         'ct.name as complaintype_name',
+        //         'sub.name as subject_name',
+        //     );
+        $records = DB::table('complaints')
+    ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
+    ->select(
+        'complaints.*',
+        'dd.district_name as district_name'
+    )
+    // ->where('complaints.id', $id)
+    ->first();
+
+   $records->details = DB::table('complaints_details as cd')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'cd.*',
+        'dp.name as department_name',
+        'ds.name as designation_name',
+        'ct.name as complaintype_name',
+        'sub.name as subject_name'
+    );
         if (!empty($districtId)) {
             $records->where('complaints.district_id', $districtId);
         }

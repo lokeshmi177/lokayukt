@@ -21,34 +21,67 @@ class SupervisorComplaintsController extends Controller
    
     if ($userSubrole) {
     $query = DB::table('complaints')
+        //  ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
         ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
-        ->leftJoin('departments as dp', 'complaints.department_id', '=', 'dp.id')
-        ->leftJoin('designations as ds', 'complaints.designation_id', '=', 'ds.id')
-        ->leftJoin('complaintype as ct', 'complaints.complaintype_id', '=', 'ct.id')
-        ->leftJoin('subjects as sub', 'complaints.subject_id', '=', 'sub.id')
-        ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
+        // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+        // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+        // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+        // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+        // ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
         ->select(
             'complaints.*',
-            'dd.district_name as district_name',
-            'dp.name as department_name',
-            'ds.name as designation_name',
-            'ct.name as complaintype_name',
-            'sub.name as subject_name',
-            // 'rep.*',
-            'rep.forward_by_so_us as forward_so',
-            'rep.forward_to_ds_js as forward_ds',
-            'rep.forward_to_sec as forward_sec',
-            'rep.forward_to_cio_io as forward_cio',
-            'rep.forward_to_lokayukt as forward_lokayukt',
-            'rep.forward_to_uplokayukt as forward_uplokayukt',
-            'rep.forward_by_so_us as by_so',
-            'rep.forward_by_ds_js as by_ds',
-            'rep.forward_by_sec as by_sec',
-            'rep.forward_by_cio_io as by_cio',
-            'rep.forward_by_lokayukt as by_lokayukt',
-            'rep.forward_by_uplokayukt as by_uplokayukt',
+            // 'dd.district_name as district_name',
+            // 'dp.name as department_name',
+            // 'ds.name as designation_name',
+            // 'ct.name as complaintype_name',
+            // 'sub.name as subject_name',
+            // // 'rep.*',
+            // 'rep.forward_by_so_us as forward_so',
+            // 'rep.forward_to_ds_js as forward_ds',
+            // 'rep.forward_to_sec as forward_sec',
+            // 'rep.forward_to_cio_io as forward_cio',
+            // 'rep.forward_to_lokayukt as forward_lokayukt',
+            // 'rep.forward_to_uplokayukt as forward_uplokayukt',
+            // 'rep.forward_by_so_us as by_so',
+            // 'rep.forward_by_ds_js as by_ds',
+            // 'rep.forward_by_sec as by_sec',
+            // 'rep.forward_by_cio_io as by_cio',
+            // 'rep.forward_by_lokayukt as by_lokayukt',
+            // 'rep.forward_by_uplokayukt as by_uplokayukt',
+            //  'cd.department_id',
+            //  'cd.officer_name',
+            //   'cd.designation_id',
+            //    'cd.designation_id',
+            //    'cd.category',
+            //     'cd.title',
+            //     'cd.file',
+            //     'cd.subject_id',
+            //     'cd.complaintype_id',
+            //     'cd.description',
+            
 
         );
+//     $query = DB::table('complaints')
+//     ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
+//     ->select(
+//         'complaints.*',
+//         'dd.district_name as district_name'
+//     )
+//     // ->where('complaints.id', $id)
+//     ->first();
+
+// $query->details = DB::table('complaints_details as cd')
+//     ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+//     ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+//     ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+//     ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+//     ->select(
+//         'cd.*',
+//         'dp.name as department_name',
+//         'ds.name as designation_name',
+//         'ct.name as complaintype_name',
+//         'sub.name as subject_name'
+//     );
         // ->where('form_status', 1)
         // ->where('approved_by_ro', 1);
 
