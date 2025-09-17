@@ -490,6 +490,7 @@ const SearchReports = () => {
       
       if (response.data.status === true) {
         const dataArray = ensureArray(response.data.data);
+        console.log(response.data.data)
         setSearchResults(dataArray);
         setCurrentPage(1);
       } else {

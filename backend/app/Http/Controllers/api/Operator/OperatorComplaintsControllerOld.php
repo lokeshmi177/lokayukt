@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\api\Operator;
 
 use App\Http\Controllers\Controller;
-use App\Models\ComplainDetails;
 use App\Models\Complaint;
 use App\Models\ComplainType;
 use Illuminate\Http\Request;
@@ -11,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class OperatorComplaintsController extends Controller
+class OperatorComplaintsControllerOld extends Controller
 {
     public function addComplaint(Request $request)
     {
@@ -45,7 +44,7 @@ class OperatorComplaintsController extends Controller
             'email.required' => 'Email is required.',
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already registered.',
-            'dob.date' => 'Date must be a valid date.',
+            'dob.date' => 'Date of Birth must be a valid date.',
             // 'fee_exempted.required' => 'Please specify if fee is exempted or not.',
             'department.required' => 'Department is required.',
             'officer_name.required' => 'Officer name is required.',
@@ -66,38 +65,33 @@ class OperatorComplaintsController extends Controller
         }
 
         if(isset($request->complaint_id)){
-            // $compUpdate = Complaint::findOrFail($request->complaint_id);
+            $compUpdate = Complaint::findOrFail($request->complaint_id);
             
-                // $compUpdate->name = $request->name;
-                // $compUpdate->complain_no = $compUpdateNo ?? null;
-                // $compUpdate->mobile = $request->mobile;
-                // $compUpdate->address = $request->address;
-                // $compUpdate->district_id = $request->district_id;
-                // $compUpdate->email = $request->email;
-                // $compUpdate->amount = $request->amount;
-                // $compUpdate->challan_no = $request->challan_no;
-                // $compUpdate->dob = $request->dob;
-                // $compUpdate->fee_exempted = $request->fee_exempted ? 1 : 0;
-                // $compUpdate->save();
-                
-                $cmpDetailsUpdate = new ComplainDetails();
-
-                $cmpDetailsUpdate->complain_no = $request->complaint_id;
-                $cmpDetailsUpdate->department_id = $request->department;
-                $cmpDetailsUpdate->officer_name = $request->officer_name;
-                $cmpDetailsUpdate->designation_id = $request->designation;
-                $cmpDetailsUpdate->category = $request->category;
-                $cmpDetailsUpdate->added_by = $added_by;
-                $cmpDetailsUpdate->subject_id = $request->subject;
-                $cmpDetailsUpdate->complaintype_id = $request->nature;
-                $cmpDetailsUpdate->description = $request->description;
-                $cmpDetailsUpdate->title = $request->title;
+                $compUpdate->name = $request->name;
+                $compUpdate->complain_no = $compUpdateNo ?? null;
+                $compUpdate->mobile = $request->mobile;
+                $compUpdate->address = $request->address;
+                $compUpdate->district_id = $request->district_id;
+                $compUpdate->email = $request->email;
+                $compUpdate->amount = $request->amount;
+                $compUpdate->challan_no = $request->challan_no;
+                $compUpdate->dob = $request->dob;
+                $compUpdate->fee_exempted = $request->fee_exempted ? 1 : 0;
+                $compUpdate->department_id = $request->department;
+                $compUpdate->officer_name = $request->officer_name;
+                $compUpdate->designation_id = $request->designation;
+                $compUpdate->category = $request->category;
+                $compUpdate->added_by = $added_by;
+                $compUpdate->subject_id = $request->subject;
+                $compUpdate->complaintype_id = $request->nature;
+                $compUpdate->description = $request->description;
+                $compUpdate->title = $request->title;
                 
                 $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
                 $filePath = $request->file('file')->storeAs('letters', $file, 'public');
-                $cmpDetailsUpdate->file = $file;
+                $compUpdate->file = $file;
                 
-                
+                $compUpdate->save();
                 $year = date('Y');
                 if($request->nature){
                 $com_type = ComplainType::find($request->nature);
@@ -105,14 +99,14 @@ class OperatorComplaintsController extends Controller
 
                 }
         
-                $complaintNo = 'UP'.$year.$str.str_pad($cmpDetailsUpdate->id,8, '0',STR_PAD_LEFT);
-                $cmpDetailsUpdate->where('id',$cmpDetailsUpdate->id)->update(['complain_no' => $complaintNo]);
+                $complaintNo = 'UP'.$year.$str.str_pad($compUpdate->id,8, '0',STR_PAD_LEFT);
+                $compUpdate->where('id',$compUpdate->id)->update(['complain_no' => $complaintNo]);
             
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Complaint Update successfully.',
-                    'data' => $cmpDetailsUpdate
+                    'data' => $compUpdate
                 ], 201);
         }else{
               $complaint = new Complaint();
@@ -126,26 +120,21 @@ class OperatorComplaintsController extends Controller
         $complaint->challan_no = $request->challan_no;
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
-        
-        if($complaint->save()){
-            
-        $cmpDetails = new ComplainDetails();
-        $cmpDetails->complain_no = $complaint->id;
-        $cmpDetails->department_id = $request->department;
-        $cmpDetails->officer_name = $request->officer_name;
-        $cmpDetails->designation_id = $request->designation;
-        $cmpDetails->category = $request->category;
-        $cmpDetails->added_by = $added_by;
-        $cmpDetails->subject_id = $request->subject;
-        $cmpDetails->complaintype_id = $request->nature;
-        $cmpDetails->description = $request->description;
-        $cmpDetails->title = $request->title;
+        $complaint->department_id = $request->department;
+        $complaint->officer_name = $request->officer_name;
+        $complaint->designation_id = $request->designation;
+        $complaint->category = $request->category;
+        $complaint->added_by = $added_by;
+        $complaint->subject_id = $request->subject;
+        $complaint->complaintype_id = $request->nature;
+        $complaint->description = $request->description;
+        $complaint->title = $request->title;
         
         $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
         $filePath = $request->file('file')->storeAs('letters', $file, 'public');
-        $cmpDetails->file = $file;
-        $cmpDetails->save();
-        }
+        $complaint->file = $file;
+        
+        $complaint->save(); // ✅ Insert into DB
 
            // MP2024ALG001
         $year = date('Y');
@@ -378,15 +367,9 @@ class OperatorComplaintsController extends Controller
             ], 422);
         }
 
-        //         $existingComplaint = Complaint::where('title', 'LIKE', "%{$request->title}%")
-        // ->where('name', 'LIKE', "%{$request->name}%")
-        // ->first();
-        $existingComplaint = Complaint::query()
-            ->join('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
-            ->where('complaints.name', 'LIKE', "%{$request->name}%")
-            ->where('cd.title', 'LIKE', "%{$request->title}%")
-            ->select('complaints.*', 'cd.title') // select what you need
-            ->first();
+                $existingComplaint = Complaint::where('title', 'LIKE', "%{$request->title}%")
+        ->where('name', 'LIKE', "%{$request->name}%")
+        ->first();
             // dd($existingComplaint);
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
@@ -494,30 +477,18 @@ class OperatorComplaintsController extends Controller
     public function allComplainsDashboard(){
        
            $complainDetails = DB::table('complaints as cm')
-                ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
                     'dd.district_name',
                     'dp.name as department_name',
                     'ds.name as designation_name',
                     'ct.name as complaintype_name',
-                    'sub.name as subject_name',
-                    'cd.department_id',
-                    'cd.officer_name',
-                    'cd.designation_id',
-                    'cd.designation_id',
-                    'cd.category',
-                    'cd.title',
-                    'cd.file',
-                    'cd.subject_id',
-                    'cd.complaintype_id',
-                    'cd.description',
-                  
+                    'sub.name as subject_name'
                 )
                 ->get();
         // dd($deadpersondetails);
@@ -532,20 +503,18 @@ class OperatorComplaintsController extends Controller
      public function allComplainspending(){
        
            $complainDetails = DB::table('complaints as cm')
-            ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
                     'dd.district_name',
                     'dp.name as department_name',
                     'ds.name as designation_name',
                     'ct.name as complaintype_name',
-                    'sub.name as subject_name',
-                    'cd.*'
+                    'sub.name as subject_name'
                 )
                 ->where('form_status',0)
                 ->where('approved_rejected_by_ro',0)
@@ -562,20 +531,18 @@ class OperatorComplaintsController extends Controller
      public function allComplainsapproved(){
        
            $complainDetails = DB::table('complaints as cm')
-            ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
                     'dd.district_name',
                     'dp.name as department_name',
                     'ds.name as designation_name',
                     'ct.name as complaintype_name',
-                    'sub.name as subject_name',
-                    'cd.*'
+                    'sub.name as subject_name'
                 )
                 ->where('form_status',1)
                 ->where('approved_rejected_by_ro',1)

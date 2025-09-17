@@ -63,28 +63,30 @@ class SupervisorComplaintsController extends Controller
         case "ds-js":
           $query->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_so', 1)
+                  ->whereOr('approved_rejected_by_so', 1);
                 //   ->where('forward_so', 1)
-                  ->whereOr('forward_to_uplokayukt', 1);
+                //   ->whereOr('forward_to_uplokayukt', 1);
             break;
 
         case "sec":
            $query->where('form_status', 1)
-                  ->where('approved_by_ro', 1)
+                  ->where('approved_rejected_by_ro', 1)
                    ->where('forward_to_lokayukt', 1)
                   ->whereOr('forward_to_uplokayukt', 1);
             break;
 
         case "cio-io":
            $query->where('form_status', 1)
-                  ->where('approved_by_ro', 1)
+                  ->where('approved_rejected_by_ro', 1)
                    ->where('forward_to_lokayukt', 1)
                   ->whereOr('forward_to_uplokayukt', 1);
             break;
 
         case "dea-assis":
           $query->where('form_status', 1)
-                  ->where('approved_by_ro', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                   ->where('approved_rejected_by_so', 1)
+                    ->whereOr('approved_rejected_by_ds_js', 1);
             break;
 
         default:
@@ -376,7 +378,7 @@ class SupervisorComplaintsController extends Controller
                 // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
                 
                 $cmpAction->action_type = "Forwarded";
-                // $cmpAction->remarks = $request->remarks;
+                $cmpAction->remarks = $request->remarks;
                 $cmpAction->save();
                   return response()->json([
                     'status' => true,

@@ -51,11 +51,12 @@ class OperatorReportController extends Controller
         //     ->orderBy('name')
         //     ->get();
         $records = DB::table('complaints')
+        ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
             ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-            ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-            ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-            ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+            ->leftJoin('departments as dp', DB::raw("cd.department_id"), '=', DB::raw("dp.id"))
+            ->leftJoin('designations as ds', DB::raw("cd.designation_id"), '=', DB::raw("ds.id"))
+            ->leftJoin('complaintype as ct', DB::raw("cd.complaintype_id"), '=', DB::raw("ct.id"))
+            ->leftJoin('subjects as sub', DB::raw("cd.department_id"), '=', DB::raw("sub.id"))
             
             ->select(
                 'complaints.*',
@@ -64,6 +65,7 @@ class OperatorReportController extends Controller
                 'ds.name as designation_name',
                 'ct.name as complaintype_name',
                 'sub.name as subject_name',
+                // 'cd.*'
             );
         if (!empty($districtId)) {
             $records->where('complaints.district_id', $districtId);
@@ -177,18 +179,20 @@ class OperatorReportController extends Controller
         public function viewComplaint($id)
   {
        $complainDetails = DB::table('complaints as cm')
+       ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
     ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-    ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
-    ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
-    ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
-    ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
     ->select(
         'cm.*',
         'dd.district_name',
         'dp.name as department_name',
         'ds.name as designation_name',
         'ct.name as complaintype_name',
-        'sub.name as subject_name'
+        'sub.name as subject_name',
+        'cd.*'
     )
     ->where('cm.id', $id)
     ->first();
@@ -429,6 +433,7 @@ class OperatorReportController extends Controller
         // $userSubroleRole = Auth::user()->subrole->name;
         
          $records = DB::table('complaints')
+          ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
             // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
             // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
             // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
@@ -443,6 +448,7 @@ class OperatorReportController extends Controller
                 'u.id as user_id',
                 'srole.name as subrole_name',
                 'ca.*',
+                'cd.*'
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
                 // 'ds.name as designation_name',
@@ -463,6 +469,7 @@ class OperatorReportController extends Controller
         // $userSubroleRole = Auth::user()->subrole->name;
         
          $records = DB::table('complaints')
+         ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
             // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
             // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
             // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
@@ -477,6 +484,7 @@ class OperatorReportController extends Controller
                 'u.id as user_id',
                 'srole.name as subrole_name',
                 'ca.*',
+                'cd.*',
                 DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',

@@ -51,11 +51,12 @@ class AdminReportController extends Controller
         //     ->orderBy('name')
         //     ->get();
         $records = DB::table('complaints')
+        ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
             ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-            ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-            ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-            ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+            ->leftJoin('departments as dp', DB::raw("cd.department_id"), '=', DB::raw("dp.id"))
+            ->leftJoin('designations as ds', DB::raw("cd.designation_id"), '=', DB::raw("ds.id"))
+            ->leftJoin('complaintype as ct', DB::raw("cd.complaintype_id"), '=', DB::raw("ct.id"))
+            ->leftJoin('subjects as sub', DB::raw("cd.department_id"), '=', DB::raw("sub.id"))
             
             ->select(
                 'complaints.*',
