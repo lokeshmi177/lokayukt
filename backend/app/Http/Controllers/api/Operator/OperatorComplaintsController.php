@@ -97,16 +97,16 @@ class OperatorComplaintsController extends Controller
                 $filePath = $request->file('file')->storeAs('letters', $file, 'public');
                 $cmpDetailsUpdate->file = $file;
                 
-                
-                $year = date('Y');
-                if($request->nature){
-                $com_type = ComplainType::find($request->nature);
-                $str = strtoupper(substr($com_type->name, 0, 3));
+                $cmpDetailsUpdate->save();
+                // $year = date('Y');
+                // if($request->nature){
+                // $com_type = ComplainType::find($request->nature);
+                // $str = strtoupper(substr($com_type->name, 0, 3));
 
-                }
+                // }
         
-                $complaintNo = 'UP'.$year.$str.str_pad($cmpDetailsUpdate->id,8, '0',STR_PAD_LEFT);
-                $cmpDetailsUpdate->where('id',$cmpDetailsUpdate->id)->update(['complain_no' => $complaintNo]);
+                // $complaintNo = 'UP'.$year.$str.str_pad($cmpDetailsUpdate->id,8, '0',STR_PAD_LEFT);
+                // $cmpDetailsUpdate->where('id',$cmpDetailsUpdate->id)->update(['complain_no' => $complaintNo]);
             
 
                 return response()->json([
