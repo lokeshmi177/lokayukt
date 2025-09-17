@@ -503,7 +503,7 @@ class OperatorComplaintsController extends Controller
                 // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
-                    // 'dd.district_name',
+                    'dd.district_name',
                     // 'dp.name as department_name',
                     // 'ds.name as designation_name',
                     // 'ct.name as complaintype_name',
@@ -541,7 +541,7 @@ class OperatorComplaintsController extends Controller
                 // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
-                    // 'dd.district_name',
+                    'dd.district_name',
                     // 'dp.name as department_name',
                     // 'ds.name as designation_name',
                     // 'ct.name as complaintype_name',
@@ -571,7 +571,7 @@ class OperatorComplaintsController extends Controller
                 // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
-                    // 'dd.district_name',
+                    'dd.district_name',
                     // 'dp.name as department_name',
                     // 'ds.name as designation_name',
                     // 'ct.name as complaintype_name',
