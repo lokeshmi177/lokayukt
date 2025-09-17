@@ -10,7 +10,7 @@ import {
   FaDownload,
   FaCalendarAlt,
 } from "react-icons/fa";
-import Pagination from "../Pagination"; // ✅ Import Pagination component
+import Pagination from "../Pagination"; //  Import Pagination component
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -28,11 +28,11 @@ const ProgressRegister = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("movements");
   const [complaintsData, setComplaintsData] = useState([]);
-  const [currentReportData, setCurrentReportData] = useState([]); // ✅ State for current report data
-  const [analyticsData, setAnalyticsData] = useState(null); // ✅ NEW: State for analytics data
+  const [currentReportData, setCurrentReportData] = useState([]); //  State for current report data
+  const [analyticsData, setAnalyticsData] = useState(null); //  NEW: State for analytics data
   const [error, setError] = useState(null);
 
-  // ✅ Pagination states
+  //  Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
@@ -55,7 +55,7 @@ const ProgressRegister = () => {
     fetchComplaints();
   }, []);
 
-  // ✅ Fetch current report data for status tab
+  //  Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
       try {
@@ -77,7 +77,7 @@ const ProgressRegister = () => {
     fetchCurrentReport();
   }, []);
 
-  // ✅ NEW: Fetch analytics data for analytics tab
+  //  NEW: Fetch analytics data for analytics tab
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
@@ -99,7 +99,7 @@ const ProgressRegister = () => {
     fetchAnalytics();
   }, []);
 
-  // ✅ Function to determine movement flow based on API data
+  //  Function to determine movement flow based on API data
   const getMovementFlow = (complaint) => {
     // RO to Section Officer
     if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
@@ -170,7 +170,7 @@ const ProgressRegister = () => {
     };
   };
 
-  // ✅ UPDATED: Transform API data to file movements format - show API status directly
+  //  UPDATED: Transform API data to file movements format - show API status directly
   const transformToFileMovements = (data) => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
@@ -183,12 +183,12 @@ const ProgressRegister = () => {
         movementIcon: movement.icon,
         note: complaint.remarks || complaint.description || 'N/A',
         timestamp: formatDate(complaint.created_at),
-        status: complaint.status || 'N/A', // ✅ CHANGED: Direct API status
+        status: complaint.status || 'N/A', //  CHANGED: Direct API status
       };
     });
   };
 
-  // ✅ Transform current report data - show API status directly in currentStage
+  //  Transform current report data - show API status directly in currentStage
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
     
@@ -200,18 +200,18 @@ const ProgressRegister = () => {
         complaintNo: report.complain_no || 'N/A',
         complainant: report.name || 'N/A',
         subject: report.description || report.title || 'No subject provided',
-        currentStage: report.status || 'N/A', // ✅ Direct API status
+        currentStage: report.status || 'N/A', //  Direct API status
         assignedTo: report.officer_name || 'Not Assigned',
         receivedDate: formatDateOnly(report.created_at),
         targetDate: report.target_date ? formatDateOnly(report.target_date) : getTargetDate(report.created_at),
-        status: getStatusFromDays(daysElapsed), // ✅ Status based on days
+        status: getStatusFromDays(daysElapsed), //  Status based on days
         daysElapsed: daysElapsed,
         originalStatus: report.status, // Keep original status for reference
       };
     });
   };
 
-  // ✅ Get status based on days (15+ days = critical, otherwise on-track)
+  //  Get status based on days (15+ days = critical, otherwise on-track)
   const getStatusFromDays = (days) => {
     if (days > 15) {
       return "critical";
@@ -220,7 +220,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ Helper function to get current stage based on API data (for backward compatibility)
+  //  Helper function to get current stage based on API data (for backward compatibility)
   const getCurrentStage = (complaint) => {
     if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
       return "At Section Officer";
@@ -250,7 +250,7 @@ const ProgressRegister = () => {
     return "delayed";
   };
 
-  // ✅ Helper function to get readable status text
+  //  Helper function to get readable status text
   const getStatusText = (status) => {
     switch (status) {
       case "on-track":
@@ -270,7 +270,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ Get stage color based on API status
+  //  Get stage color based on API status
   const getStageColor = (status) => {
     switch (status) {
       case "In Progress":
@@ -284,7 +284,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ UPDATED: Get status color for file movements (API status based)
+  //  UPDATED: Get status color for file movements (API status based)
   const getFileMovementStatusColor = (status) => {
     switch (status) {
       case "In Progress":
@@ -336,7 +336,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ Calculate days elapsed with better error handling
+  //  Calculate days elapsed with better error handling
   const getDaysElapsed = (createdDate) => {
     if (!createdDate) return 0;
     try {
@@ -368,7 +368,7 @@ const ProgressRegister = () => {
   // Get transformed data
   const fileMovements = transformToFileMovements(complaintsData);
   
-  // ✅ Use current report data for status tab
+  //  Use current report data for status tab
   const complaintStatus = transformCurrentReportToStatus(currentReportData);
 
   // Filter data based on search term
@@ -384,12 +384,12 @@ const ProgressRegister = () => {
       status.complainant.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ✅ Reset current page when filters change
+  //  Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, activeTab]);
 
-  // ✅ Calculate pagination for current active tab
+  //  Calculate pagination for current active tab
   const getCurrentData = () => {
     if (activeTab === "movements") return filteredMovements;
     if (activeTab === "status") return filteredStatus;
@@ -510,7 +510,7 @@ const ProgressRegister = () => {
 
             {/* Tab Content */}
             <div className="p-3 sm:p-6 overflow-hidden">
-              {/* ✅ UPDATED: File Movements Tab - shows API status directly */}
+              {/*  UPDATED: File Movements Tab - shows API status directly */}
               {activeTab === "movements" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
@@ -574,7 +574,7 @@ const ProgressRegister = () => {
                                       {movement.timestamp}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
-                                      {/* ✅ UPDATED: Show API status with proper colors */}
+                                      {/*  UPDATED: Show API status with proper colors */}
                                       <span
                                         className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
                                           movement.status
@@ -726,7 +726,7 @@ const ProgressRegister = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Analytics Tab with API data */}
+              {/*  UPDATED: Analytics Tab with API data */}
               {activeTab === "analytics" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
