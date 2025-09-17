@@ -268,7 +268,7 @@ const PendingComplaints = () => {
                   ) : (
                     <button
                       onClick={(e) => handleApproveClick(e, complaint)}
-                      className="w-full sm:w-auto border border-green-500 text-green-500 hover:text-white hover:bg-green-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                      className="w-full sm:w-auto border border-green-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
                     >
                       Verify
                     </button>
