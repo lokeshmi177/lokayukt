@@ -107,7 +107,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/complain-report',[AdminReportController::class,'complainReports']);
         Route::get('/all-complains',[AdminReportController::class,'allComplains']);
          Route::get('/view-complaint/{id}',[AdminReportController::class,'viewComplaint']);
-         Route::get('/get-file-preview/{id}',[AdminReportController::class,'getFilePreview']);
+         Route::get('/getFilePreview/{id}',[AdminReportController::class,'getFilePreview']);
         Route::get('/detail-by-complaintype',[AdminReportController::class,'complainComplaintypeWise']);
 
 

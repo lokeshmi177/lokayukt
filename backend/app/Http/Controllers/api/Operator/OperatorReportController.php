@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api\Operator;
 
 use App\Http\Controllers\Controller;
+use App\Models\ComplainDetails;
 use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -178,25 +179,48 @@ class OperatorReportController extends Controller
     }
         public function viewComplaint($id)
   {
-       $complainDetails = DB::table('complaints as cm')
-       ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+    //    $complainDetails = DB::table('complaints as cm')
+    //    ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+    // ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+    // ->select(
+    //     'cm.*',
+    //     'dd.district_name',
+    //     'dp.name as department_name',
+    //     'ds.name as designation_name',
+    //     'ct.name as complaintype_name',
+    //     'sub.name as subject_name',
+    //     // 'cd.*'
+    // )
+    // ->where('cm.id', $id)
+    // ->first();
+
+    $complainDetails = DB::table('complaints as cm')
     ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
     ->select(
         'cm.*',
-        'dd.district_name',
-        'dp.name as department_name',
-        'ds.name as designation_name',
-        'ct.name as complaintype_name',
-        'sub.name as subject_name',
-        'cd.*'
+        'dd.district_name'
     )
     ->where('cm.id', $id)
     ->first();
 
+$complainDetails->details = DB::table('complaints_details as cd')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'cd.*',
+        'dp.name as department_name',
+        'ds.name as designation_name',
+        'ct.name as complaintype_name',
+        'sub.name as subject_name'
+    )
+    ->where('cd.complain_id', $id)
+    ->get();
            
 
           return response()->json([
@@ -208,8 +232,12 @@ class OperatorReportController extends Controller
 
         public function getFilePreview($id){
         $cmp = Complaint::findOrFail($id);
-        $path = Storage::url('letters/' . $cmp->file); 
-        $cmp->filepath = $path;
+        $cmpDetail = ComplainDetails::where('complain_id',$cmp->id)->get();
+        foreach($cmpDetail as $c){
+
+            $path[] = Storage::url('letters/' . $c->file); 
+            $cmp->filepath = $path;
+        }
            return response()->json([
                'status' => true,
                'message' => 'File Fetch successfully',
