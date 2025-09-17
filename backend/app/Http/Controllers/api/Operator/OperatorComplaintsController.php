@@ -130,7 +130,7 @@ class OperatorComplaintsController extends Controller
         if($complaint->save()){
             
         $cmpDetails = new ComplainDetails();
-        $cmpDetails->complain_no = $complaint->id;
+        $cmpDetails->complain_id = $complaint->id;
         $cmpDetails->department_id = $request->department;
         $cmpDetails->officer_name = $request->officer_name;
         $cmpDetails->designation_id = $request->designation;
