@@ -22,15 +22,15 @@ import OperatorProgressRegister from './components/Operator/ProgressRegister';
 import OperatorSearchReports from './components/Operator/SearchReports';
 import OperatorViewComplaints from './components/Operator/ViewComplaints';
 import OperatorEditComplaints from './components/Operator/EditComplaints';
-import OperatorAllComplaits from './components/Operator/AllComplaits';
-import OperatorPendingComplaints from './components/Operator/PendingComplaints/';
-import OperatorApprovedComplaints from './components/Operator/ApprovedComplaints';
-import OperatorViewAllComplaint from './components/Operator/ViewAllComplaint';
-import OperatorAllComplaintsEdit from './components/Operator/AllComplaintsEdit';
-import OperatorViewApprovedComplaints from './components/Operator/ViewApprovedComplaints';
-import OperatorEditApprovedCoplaints from './components/Operator/EditApprovedCoplaints';
-import OperatorViewPendingComplaint from './components/Operator/ViewPendingComplaint';
-import OperatorEditPendingComplaints from './components/Operator/EditPendingComplaints';
+import OperatorAllComplaits from './components/Operator/All-complaints/AllComplaits';
+import OperatorViewAllComplaint from './components/Operator/All-complaints/ViewAllComplaint';
+import OperatorAllComplaintsEdit from './components/Operator/All-complaints/EditAllComplaints';
+import OperatorApprovedComplaints from './components/Operator/Approved-complaints/ApprovedComplaints';
+import OperatorViewApprovedComplaints from './components/Operator/Approved-complaints/ViewApprovedComplaints';
+import OperatorEditApprovedCoplaints from './components/Operator/Approved-complaints/EditApprovedCoplaints';
+import OperatorPendingComplaints from './components/Operator/Pending-complaints/PendingComplaints/';
+import OperatorViewPendingComplaint from './components/Operator/Pending-complaints/ViewPendingComplaint';
+import OperatorEditPendingComplaints from './components/Operator/Pending-complaints/EditPendingComplaints';
 
 
 

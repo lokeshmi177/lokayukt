@@ -70,6 +70,9 @@ const Complaints = () => {
   // Duplicate check states
   const [duplicate, setDuplicate] = useState(null);
   const [checkingDuplicate, setCheckingDuplicate] = useState(false);
+  
+  //  NEW: Store duplicate data separately (hidden until merge)
+  const [duplicateData, setDuplicateData] = useState(null);
 
   // Fetch all required data on component mount
   useEffect(() => {
@@ -137,7 +140,7 @@ const Complaints = () => {
     }
   };
 
-  // Check Duplicate function
+  //  UPDATED: Check Duplicate function - Store data but don't show in form
   const handleCheckDuplicate = async () => {
     if (!formData.name.trim() || !formData.title.trim()) {
       toast.error('Please enter both Name and Title to check duplicates.');
@@ -146,6 +149,7 @@ const Complaints = () => {
     
     setCheckingDuplicate(true);
     setDuplicate(null);
+    setDuplicateData(null); // Reset duplicate data
     
     try {
       const response = await api.post('/operator/check-duplicate', {
@@ -154,47 +158,50 @@ const Complaints = () => {
       });
       
       if (response.data.complaint) {
-        setDuplicate(response.data.complaint);
+        setDuplicate(response.data.complaint); // For showing in alert box
+        
+        //  Store duplicate data separately (hidden until merge)
+        setDuplicateData({
+          name: response.data.complaint.name,
+          mobile: response.data.complaint.mobile,
+          address: response.data.complaint.address,
+          district_id: response.data.complaint.district_id,
+          email: response.data.complaint.email,
+          id: response.data.complaint.id
+        });
+        
+        // toast.info('Duplicate found! Click Merge to auto-fill details.');
       } else {
         toast.info('No duplicate found');
         setDuplicate(null);
+        setDuplicateData(null);
       }
     } catch (error) {
       console.error('Duplicate check error:', error);
       toast.info('No duplicate found');
       setDuplicate(null);
+      setDuplicateData(null);
     } finally {
       setCheckingDuplicate(false);
     }
   };
 
-  // ✅ Updated Handle merge action - Preserves existing description with line break
+  //  UPDATED: Handle merge action - Now auto-fills form with stored duplicate data
   const handleMergeDuplicate = () => {
-    if (duplicate && duplicate.id) {
-      // Get existing description from form
-      const existingDescription = formData.description.trim();
-      const duplicateDescription = duplicate.description || '';
-      
-      let mergedDescription = '';
-      
-      // ✅ If user already typed description, preserve it and add duplicate above with line break
-      if (existingDescription) {
-        // Put duplicate description first, then newline, then existing user description
-        mergedDescription = duplicateDescription + '\n' + existingDescription;
-      } else {
-        // If no existing description, just use duplicate description
-        mergedDescription = duplicateDescription;
-      }
-      
-      // Update form data with merged description AND duplicate ID
+    if (duplicateData) {
       setFormData(prev => ({
         ...prev,
-        description: mergedDescription,
-        complaint_id: duplicate.id.toString() //  Store duplicate ID
+        name: duplicateData.name || '',
+        mobile: duplicateData.mobile || '',
+        address: duplicateData.address || '',
+        district_id: duplicateData.district_id || '',
+        email: duplicateData.email || '',
+        complaint_id: duplicateData.id.toString() 
       }));
       
-      toast.success(`Data merged!`);
-      setDuplicate(null); // Hide duplicate box
+      // toast.success('Data merged successfully! Form auto-filled with existing details.');
+      setDuplicate(null); 
+      setDuplicateData(null); 
     } else {
       toast.warning('No duplicate data found to merge');
     }
@@ -206,7 +213,7 @@ const Complaints = () => {
     return subject ? `${subject.name} (${subject.name_h})` : subjectId;
   };
 
-  // ✅ Enhanced file upload - Now accepts ALL file types
+  //  Enhanced file upload - Now accepts ALL file types
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     
@@ -312,7 +319,7 @@ const Complaints = () => {
           subject: '',
           nature: '',
           description: '',
-          complaint_id: '' // ✅ Reset duplicate ID
+          complaint_id: '' //  Reset duplicate ID
         });
 
         // Reset file upload states
@@ -320,6 +327,10 @@ const Complaints = () => {
         setIsUploading(false);
         setUploadSuccess(false);
         setUploadError('');
+        
+        // Reset duplicate states
+        setDuplicate(null);
+        setDuplicateData(null);
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
@@ -403,7 +414,7 @@ const Complaints = () => {
               <div className="text-sm text-yellow-700 space-y-1">
                 <div><strong>Complaint No:</strong> {duplicate.complain_no}</div>
                 <div><strong>Name:</strong> {duplicate.name}</div>
-                <div><strong>Subject:</strong> {getSubjectName(duplicate.subject_id)}</div>
+                <div><strong>Subjest:</strong> {duplicate.subject}</div>
               </div>
 
               <div className="mt-3 flex justify-end">
@@ -460,7 +471,7 @@ const Complaints = () => {
                     </p>
                   )}
 
-                  {/* ✅ Hidden Input Field for Duplicate Complaint ID */}
+                  {/*  Hidden Input Field for Duplicate Complaint ID */}
                   <input
                     type="hidden"
                     name="complaint_id"
@@ -692,7 +703,7 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/* ✅ File Upload - Now accepts ANY file type */}
+                {/*  File Upload - Now accepts ANY file type */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Choose File / फ़ाइल चुनें *
@@ -706,7 +717,7 @@ const Complaints = () => {
                         <span className="text-sm text-gray-700">Choose any file</span>
                         <input
                           type="file"
-                          // ✅ Removed accept attribute - Now accepts ALL file types
+                          //  Removed accept attribute - Now accepts ALL file types
                           onChange={handleFileChange}
                           className="hidden"
                         /> 
@@ -776,7 +787,7 @@ const Complaints = () => {
                     </div>
                   )}
 
-                  {/* ✅ Updated help text */}
+                  {/*  Updated help text */}
                   <p className="mt-1 text-xs text-gray-500">All file types allowed</p>
                   {errors.file && (
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
@@ -952,7 +963,7 @@ const Complaints = () => {
                 </div>
               </div>
 
-              {/* ✅ Detailed Description with proper line break support */}
+              {/*  Detailed Description with proper line break support */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Detailed Description / विस्तृत विवरण *
@@ -964,7 +975,7 @@ const Complaints = () => {
                   rows={6}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                   placeholder="Enter detailed complaint description..."
-                  style={{ whiteSpace: 'pre-wrap' }} // ✅ CSS for preserving line breaks
+                  style={{ whiteSpace: 'pre-wrap' }} //  CSS for preserving line breaks
                 />
                 {errors.description && (
                   <p className="mt-1 text-sm text-red-600">

@@ -208,7 +208,7 @@ const ApprovedComplaints = () => {
               {/* ✅ Row 1 - Only Complaint No is bold */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="font-semibold text-blue-600 text-xs sm:text-sm mb-1 sm:mb-0">
+                  <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
                     Complaint No:
                   </span>
                   <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
@@ -216,41 +216,35 @@ const ApprovedComplaints = () => {
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Department:</span>
-                  <span className="text-gray-700 text-sm">{complaint.department_name}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Nature:</span>
-                  <span className="text-gray-700 text-sm">{complaint.complaintype_name}</span>
-                </div>
-              </div>
-
-              {/* ✅ Row 2 - All labels normal (not bold) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
                   <span className="text-gray-700 text-sm">{complaint.name}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
                   <span className="text-gray-700 text-sm">{complaint.mobile}</span>
                 </div>
+              </div>
+
+              {/* Row 2 */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
+               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
+                  <span className="text-gray-700 text-sm">{complaint.email}</span>
+                </div>
+               
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  {/* <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Current Stage:</span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusTextColor(complaint.status)} self-start sm:self-center`}>
-                    {complaint.status}
-                  </span> */}
-                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
                   <span className="text-gray-700 text-sm">{complaint.district_name}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
+                  <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
                 </div>
               </div>
 
               {/* ✅ Row 3 - All labels normal (not bold) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 border-b sm:border-b-0 border-gray-100">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
-                  <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
-                </div>
+              
                  
             
                 <div className="hidden sm:block"></div>
