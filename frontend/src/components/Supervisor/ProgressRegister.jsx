@@ -183,12 +183,12 @@ const ProgressRegister = () => {
         movementIcon: movement.icon,
         note: complaint.remarks || complaint.description || 'N/A',
         timestamp: formatDate(complaint.created_at),
-        status: complaint.status || 'N/A', // ✅ CHANGED: Direct API status
+        status: complaint.status || 'N/A', //  CHANGED: Direct API status
       };
     });
   };
 
-  // ✅ Transform current report data - show API status directly in currentStage
+  //  Transform current report data - show API status directly in currentStage
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
     
