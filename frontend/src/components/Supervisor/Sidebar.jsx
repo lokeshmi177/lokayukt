@@ -105,8 +105,33 @@ const Sidebar = ({
     }
   };
 
+  // Custom Scrollbar CSS
+  const scrollbarStyles = `
+    .sidebar-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #475569;
+      border-radius: 10px;
+    }
+    .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #64748b;
+    }
+    /* For Firefox */
+    .sidebar-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #475569 transparent;
+    }
+  `;
+
   return (
     <>
+      {/* Custom Scrollbar Styles */}
+      <style>{scrollbarStyles}</style>
+
       {/* Mobile Overlay */}
       {isMobile && isMobileMenuOpen && (
         <div
@@ -224,9 +249,9 @@ const Sidebar = ({
           )}
         </div>
 
-        {/* ✅ Navigation Menu - Updated with "Complaints" suffix */}
+        {/* ✅ Navigation Menu - Updated with sidebar-scrollbar */}
         <nav
-          className={`flex-1 transition-all duration-300 overflow-y-auto ${
+          className={`flex-1 transition-all duration-300 overflow-y-auto sidebar-scrollbar ${
             !isMobile && isCollapsed ? "py-4" : "py-6"
           }`}
         >

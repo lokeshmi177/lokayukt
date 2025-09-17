@@ -25,6 +25,14 @@ import OperatorEditComplaints from './components/Operator/EditComplaints';
 import OperatorAllComplaits from './components/Operator/AllComplaits';
 import OperatorPendingComplaints from './components/Operator/PendingComplaints/';
 import OperatorApprovedComplaints from './components/Operator/ApprovedComplaints';
+import OperatorViewAllComplaint from './components/Operator/ViewAllComplaint';
+import OperatorAllComplaintsEdit from './components/Operator/AllComplaintsEdit';
+import OperatorViewApprovedComplaints from './components/Operator/ViewApprovedComplaints';
+import OperatorEditApprovedCoplaints from './components/Operator/EditApprovedCoplaints';
+import OperatorViewPendingComplaint from './components/Operator/ViewPendingComplaint';
+import OperatorEditPendingComplaints from './components/Operator/EditPendingComplaints';
+
+
 
 // Supervisor
 import SupervisorLayout from './components/Supervisor/Layout';
@@ -53,6 +61,9 @@ import SupervisorApprovedComplaints from './components/Supervisor/ApprovedCompla
 
 
 import Login from './components/Login';
+
+
+
 
 function App() {
   const role = localStorage.getItem("role");
@@ -87,8 +98,13 @@ function App() {
           <Route path="search-reports" element={<OperatorSearchReports />} />
           <Route path="search-reports/view/:id" element={<OperatorViewComplaints />} />
              <Route path="search-reports/edit/:id" element={<OperatorEditComplaints />} />
+             <Route path="approved-complaints/edit/:id" element={<OperatorEditApprovedCoplaints />} />
+             <Route path="pending-complaints/edit/:id" element={<OperatorEditPendingComplaints />} />
+             <Route path="all-complaints/edit/:id" element={<OperatorAllComplaintsEdit />} />
              <Route path="all-complaints" element={<OperatorAllComplaits />} />
-            <Route path="all-complaints/view/:id" element={<OperatorViewComplaints />} />
+            <Route path="all-complaints/view/:id" element={<OperatorViewAllComplaint />} />
+            <Route path="pending-complaints/view/:id" element={<OperatorViewPendingComplaint />} />
+            <Route path="approved-complaints/view/:id" element={<OperatorViewApprovedComplaints />} />
              <Route path="pending-complaints" element={<OperatorPendingComplaints />} />
              <Route path="approved-complaints" element={<OperatorApprovedComplaints />} />
              {/* <Route path="/operator/complaints/Cheekdublicate" element={<Cheekdublicate />} /> */}

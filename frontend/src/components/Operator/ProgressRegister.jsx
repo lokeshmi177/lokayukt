@@ -43,6 +43,7 @@ const ProgressRegister = () => {
         const response = await api.get("/operator/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
+          console.log(response.data.data)
         } else {
           setError("Failed to fetch data");
         }
@@ -112,59 +113,59 @@ const ProgressRegister = () => {
     }
     
     // Section Officer to DS/JS
-    if (complaint.approved_rejected_by_so_us == 1 && complaint.approved_rejected_by_ds_js == 0) {
-      return {
-        from: "Section Officer",
-        to: "DS/JS",
-        status: "pending", 
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-      };
-    }
+    // if (complaint.approved_rejected_by_so_us == 1 && complaint.approved_rejected_by_ds_js == 0) {
+    //   return {
+    //     from: "Section Officer",
+    //     to: "DS/JS",
+    //     status: "pending", 
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
 
     // DS/JS to Secretary
-    if (complaint.approved_rejected_by_ds_js == 1 && complaint.status_sec == 0) {
-      return {
-        from: "DS/JS",
-        to: "Secretary",
-        status: "pending",
-        icon: <FaArrowRight className="w-3 h-3 text-yellow-600" />
-      };
-    }
+    // if (complaint.approved_rejected_by_ds_js == 1 && complaint.status_sec == 0) {
+    //   return {
+    //     from: "DS/JS",
+    //     to: "Secretary",
+    //     status: "pending",
+    //     icon: <FaArrowRight className="w-3 h-3 text-yellow-600" />
+    //   };
+    // }
 
     // Forwarded to Lokayukt
-    if (complaint.forward_to_lokayukt == 1 && complaint.status_lokayukt == 1) {
-      return {
-        from: "System",
-        to: "Lokayukt",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-purple-600" />
-      };
-    }
+    // if (complaint.forward_to_lokayukt == 1 && complaint.status_lokayukt == 1) {
+    //   return {
+    //     from: "System",
+    //     to: "Lokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-purple-600" />
+    //   };
+    // }
 
     // Forwarded to Up-Lokayukt  
-    if (complaint.forward_to_uplokayukt == 1 && complaint.status_uplokayukt == 1) {
-      return {
-        from: "System", 
-        to: "Up-Lokayukt",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-indigo-600" />
-      };
-    }
+    // if (complaint.forward_to_uplokayukt == 1 && complaint.status_uplokayukt == 1) {
+    //   return {
+    //     from: "System", 
+    //     to: "Up-Lokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-indigo-600" />
+    //   };
+    // }
 
     // Case Rejected
-    if (complaint.status === "Rejected") {
-      return {
-        from: "Officer",
-        to: "Rejected",
-        status: "overdue", 
-        icon: <FaArrowRight className="w-3 h-3 text-red-600" />
-      };
-    }
+    // if (complaint.status === "Rejected") {
+    //   return {
+    //     from: "Officer",
+    //     to: "Rejected",
+    //     status: "overdue", 
+    //     icon: <FaArrowRight className="w-3 h-3 text-red-600" />
+    //   };
+    // }
 
     // Default case
     return {
-      from: "Initial",
-      to: "Processing",
+      from: "RO",
+      to: "Section Officer",
       status: "pending",
       icon: <FaArrowRight className="w-3 h-3 text-gray-600" />
     };
@@ -430,7 +431,7 @@ const ProgressRegister = () => {
               Track complaint progress and file movements
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 flex-shrink-0">
+          {/* <div className="flex flex-wrap gap-2 flex-shrink-0">
             <button className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors">
               <FaFilter className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>Filter</span>
@@ -439,7 +440,7 @@ const ProgressRegister = () => {
               <FaDownload className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>Export</span>
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Search Card */}
