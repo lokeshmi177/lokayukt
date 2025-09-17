@@ -82,7 +82,7 @@ class OperatorComplaintsController extends Controller
                 
                 $cmpDetailsUpdate = new ComplainDetails();
 
-                $cmpDetailsUpdate->complain_no = $request->complaint_id;
+                $cmpDetailsUpdate->complain_id = $request->complaint_id;
                 $cmpDetailsUpdate->department_id = $request->department;
                 $cmpDetailsUpdate->officer_name = $request->officer_name;
                 $cmpDetailsUpdate->designation_id = $request->designation;
