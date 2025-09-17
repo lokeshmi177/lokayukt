@@ -137,7 +137,6 @@ const CustomSearchableDropdown = ({
               />
             </div>
           </div>
-
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions().length > 0 ? (
@@ -265,7 +264,6 @@ const ForwardModal = ({
   };
 
   if (!isOpen) return null;
-
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
@@ -385,7 +383,6 @@ const SearchReports = () => {
     setSelectedComplaintId(complaintId);
     setIsForwardModalOpen(true);
   };
-
   const handleForwardSubmit = () => {
     // Refresh data or update state as needed
     console.log('Complaint forwarded');
@@ -514,7 +511,6 @@ const SearchReports = () => {
       return "bg-blue-100 text-blue-800 border-blue-200";
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
-
   //  CORRECTED FILTERING LOGIC - Fixed district matching
   const filteredResults = ensureArray(searchResults).filter((result) => {
     // Search filter
@@ -662,7 +658,6 @@ const SearchReports = () => {
                 </button>
               </div>
             </div>
-
             {/* Tab Content */}
             <div className="overflow-hidden">
               {/* Advanced Search Tab */}
@@ -707,7 +702,6 @@ const SearchReports = () => {
                               ))}
                             </select>
                           </div>
-
                           <div className="flex-1">
                             <select
                               id="status"
@@ -823,7 +817,6 @@ const SearchReports = () => {
                         </div>
                       </div>
                     </div>
-
                     {/* Search Results */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       {/* Table wrapper */}
@@ -913,7 +906,15 @@ const SearchReports = () => {
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
-                                       
+                                        {/* /// START: ADDED FORWARD BUTTON /// */}
+                                        <button 
+                                          onClick={() => handleForward(result.id)}
+                                          className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
+                                        >
+                                          <FaArrowRight className="w-3 text-blue-600 h-3" />
+                                          <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
+                                        </button>
+                                        {/* /// END: ADDED FORWARD BUTTON /// */}
                                       </div>
                                     </td>
                                   </tr>
@@ -931,7 +932,6 @@ const SearchReports = () => {
                           </table>
                         </div>
                       </div>
-
                       {/* Pagination */}
                       {totalPages > 1 && (
                         <div className="mt-4">
@@ -989,7 +989,6 @@ const SearchReports = () => {
                         </div>
                       </div>
                     </div>
-
                     {/*  NEW REPORTS USING NEW API DATA */}
                     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       {/* District-wise Report using new API */}
@@ -1088,7 +1087,6 @@ const SearchReports = () => {
                         )}
                       </div>
                     </div>
-
                     {/*  UPDATED Average Processing Time Section with Dynamic API Data */}
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
@@ -1135,7 +1133,6 @@ const SearchReports = () => {
                   </div>
                 </div>
               )}
-
               {/*  UPDATED Compliance Reports Tab with Compliance Report API */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
@@ -1210,4 +1207,3 @@ const SearchReports = () => {
 };
 
 export default SearchReports;
- 
