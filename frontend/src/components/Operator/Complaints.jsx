@@ -170,7 +170,7 @@ const Complaints = () => {
           id: response.data.complaint.id
         });
         
-        // toast.info('Duplicate found! Click Merge to auto-fill details.');
+        toast.info('Duplicate found! Click Merge to auto-fill details.');
       } else {
         toast.info('No duplicate found');
         setDuplicate(null);
@@ -414,7 +414,7 @@ const Complaints = () => {
               <div className="text-sm text-yellow-700 space-y-1">
                 <div><strong>Complaint No:</strong> {duplicate.complain_no}</div>
                 <div><strong>Name:</strong> {duplicate.name}</div>
-                <div><strong>Subjest:</strong> {duplicate.subject}</div>
+                <div><strong>Subjest:</strong> {duplicate.data}</div>
               </div>
 
               <div className="mt-3 flex justify-end">

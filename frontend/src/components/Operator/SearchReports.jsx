@@ -702,7 +702,7 @@ const SearchReports = () => {
                             >
                               <option value="all">All Districts ({ensureArray(districts).length} total)</option>
                               {ensureArray(districts).map((district) => (
-                                <option key={district.id} value={district.id.toString()}>
+                                <option key={district.id} value={district.district_code.toString()}>
                                   {district.district_name} - {district.dist_name_hi}
                                 </option>
                               ))}
@@ -875,7 +875,7 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       <span 
                                         className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" 
-                                        title={`District Code: ${result.district_id}`}
+                                        title={`District Code: ${result.district_code}`}
                                       >
                                         {result.district_name || "N/A"}
                                       </span>
