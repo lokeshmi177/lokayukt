@@ -249,7 +249,31 @@ class OperatorComplaintsController extends Controller
 
 
     public function editComplain($id){
-        $cmpedit = Complaint::findOrFail($id);
+        // $cmpedit = Complaint::findOrFail($id);
+
+          $cmpedit = DB::table('complaints as cm')
+    ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    ->select(
+        'cm.*',
+        'dd.district_name'
+    )
+    ->where('cm.id', $id)
+    ->first();
+
+$cmpedit->details = DB::table('complaints_details as cd')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'cd.*',
+        'dp.name as department_name',
+        'ds.name as designation_name',
+        'ct.name as complaintype_name',
+        'sub.name as subject_name'
+    )
+    ->where('cd.complain_id', $id)
+    ->get();
 
         return response()->json([
                 'status' => true,

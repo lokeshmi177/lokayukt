@@ -30,7 +30,7 @@ class SupervisorComplaintsController extends Controller
         // ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
         ->select(
             'complaints.*',
-            // 'dd.district_name as district_name',
+            'dd.district_name as district_name',
             // 'dp.name as department_name',
             // 'ds.name as designation_name',
             // 'ct.name as complaintype_name',
@@ -271,16 +271,23 @@ $complainDetails->details = DB::table('complaints_details as cd')
         if(isset($complainId) && $request->isMethod('post')){
 
              $cmp =  Complaint::findOrFail($complainId);
-
+             
             if($cmp){
-                $cmpAction =new ComplaintAction();
-                $cmpAction->complaint_id = $complainId;
-                $cmpAction->forward_by_so_us = $user;
-                $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
-                $cmpAction->status_so_us = 1;
-                $cmpAction->action_type = "Forwarded";
-                $cmpAction->remarks = $request->remarks;
-                $cmpAction->save();
+                $cmp->approved_rejected_by_so_us = 1;
+                $cmp->forward_to_d_a = $request->forward_to_d_a;
+                $remark ='Remark By Section Officer / Under Secretary';
+                $remark.='\n';
+                $remark.= $request->remarks;
+                $cmp->remark = $remark;
+                $cmp->save();
+                // $cmpAction =new ComplaintAction();
+                // $cmpAction->complaint_id = $complainId;
+                // $cmpAction->forward_by_so_us = $user;
+                // $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
+                // $cmpAction->status_so_us = 1;
+                // $cmpAction->action_type = "Forwarded";
+                // $cmpAction->remarks = $request->remarks;
+                // $cmpAction->save();
             }
             // $cmp->forward_by = $request->forward_by;
             // $cmp->forward_to_d_a = $request->forward_to_d_a;
