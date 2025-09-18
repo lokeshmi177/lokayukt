@@ -192,45 +192,7 @@ const ForwardModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   //  Dropdown Options with Search Support [2]
-  const dropdownOptions = [
-    {
-      label: "Assistant",
-      icon: <FaUsers className="w-4 h-4 text-blue-500" />,
-      items: [
-        { 
-          value: "assistant_1", 
-          label: "Assistant Level 1", 
-          icon: <FaUser className="w-4 h-4 text-blue-500" /> 
-        },
-        { 
-          value: "assistant_2", 
-          label: "Assistant Level 2", 
-          icon: <FaUser className="w-4 h-4 text-green-500" /> 
-        },
-        { 
-          value: "assistant_3", 
-          label: "Assistant Level 3", 
-          icon: <FaUser className="w-4 h-4 text-purple-500" /> 
-        }
-      ]
-    },
-    {
-      label: "Lokaukt",
-      icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
-      items: [
-        { 
-          value: "lok", 
-          label: "Lok", 
-          icon: <FaUserTie className="w-4 h-4 text-yellow-500" /> 
-        },
-        { 
-          value: "uployut", 
-          label: "Uployut", 
-          icon: <FaCrown className="w-4 h-4 text-red-500" /> 
-        }
-      ]
-    }
-  ];
+
 
   useEffect(() => {
     if (isOpen) {
@@ -401,6 +363,8 @@ const SearchReports = () => {
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
+          console.log(districtsArray)
+          console.log(districtsResponse.data)
         }
 
         const reportsResponse = await api.get("/operator/complain-report");
@@ -535,7 +499,7 @@ const SearchReports = () => {
         result.district_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     //  FIXED: District filtering - Properly scoped variable
-    let matchesDistrict = true;
+let matchesDistrict = true;
     if (selectedDistrict !== "all") {
       const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
       if (selectedDistrictObj) {
@@ -702,7 +666,7 @@ const SearchReports = () => {
                             >
                               <option value="all">All Districts ({ensureArray(districts).length} total)</option>
                               {ensureArray(districts).map((district) => (
-                                   <option key={district.id} value={district.id.toString()}>
+                                <option key={district.id} value={district.id.toString()}>
                                   {district.district_name} - {district.dist_name_hi}
                                 </option>
                               ))}
@@ -875,7 +839,7 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       <span 
                                         className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" 
-                                        title={`District Code: ${result.district_code}`}
+                                        title={`District Code: ${result.district_id}`}
                                       >
                                         {result.district_name || "N/A"}
                                       </span>

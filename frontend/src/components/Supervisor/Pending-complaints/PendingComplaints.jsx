@@ -408,7 +408,7 @@ const ForwardModal = ({
   );
 };
 
-const AllComplaints = () => {
+const PendingComplaints = () => {
   const navigate = useNavigate();
   const [complaintsData, setComplaintsData] = useState([]);
   const [error, setError] = useState("");
@@ -423,7 +423,7 @@ const AllComplaints = () => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const response = await api.get("/supervisor/all-complaints");
+        const response = await api.get("/supervisor/all-pending-complaints");
         if (response.data.status === true) {
           setComplaintsData(response.data.data);
         } else {
@@ -441,7 +441,7 @@ const AllComplaints = () => {
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
-    navigate(`/supervisor/search-reports/view/${complaintId}`);
+    navigate(`/supervisor/pending-complaintsview/${complaintId}`);
   };
 
   // Handle modal view
@@ -544,8 +544,7 @@ const AllComplaints = () => {
               key={complaint.id}
               className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
             >
-              {/* Row 1 */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
+               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
                     Complaint No:
@@ -555,38 +554,30 @@ const AllComplaints = () => {
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Department:</span>
-                  <span className="text-gray-700 text-sm">{complaint.department_name}</span>
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
+                  <span className="text-gray-700 text-sm">{complaint.name}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Nature:</span>
-                  <span className="text-gray-700 text-sm">{complaint.complaintype_name}</span>
+                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
+                  <span className="text-gray-700 text-sm">{complaint.mobile}</span>
                 </div>
               </div>
 
               {/* Row 2 */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
-                  <span className="text-gray-700 text-sm">{complaint.name}</span>
+               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
+                  <span className="text-gray-700 text-sm">{complaint.email}</span>
                 </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
-                  <span className="text-gray-700 text-sm">{complaint.mobile}</span>
-                </div>
+               
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
                   <span className="text-gray-700 text-sm">{complaint.district_name}</span>
                 </div>
-              </div>
-
-              {/* Row 3 */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 border-b sm:border-b-0 border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
                   <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
                 </div>
-                <div className="hidden sm:block"></div>
               </div>
 
               {/* Row 4 - Action Buttons */}
@@ -671,4 +662,4 @@ const AllComplaints = () => {
   );
 };
 
-export default AllComplaints;
+export default PendingComplaints;

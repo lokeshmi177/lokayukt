@@ -33,12 +33,12 @@ const Sidebar = ({
       title: "LokAyukta",
       subtitle: "CRMS",
       description: "Complaint Management",
-      supervisor: "supervisor",
+      supervisor: "Supervisor",
       dashboard: "Dashboard",
-      complaints: "New Complaints",
+      // complaints: "New Complaints",
       allComplaints: "All Complaints",
-      // pendingComplaints: "Pending Complaints",
-      // approvedComplaints: "Approved Complaints",
+      pendingComplaints: "Pending Complaints",
+      approvedComplaints: "Aprroved Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",
@@ -54,8 +54,8 @@ const Sidebar = ({
       dashboard: "डैशबोर्ड",
       complaints: "शिकायतें",
       allComplaints: "सभी शिकायतें",
-      // pendingComplaints: "लंबित शिकायतें",
-      // approvedComplaints: "स्वीकृत शिकायतें",
+      pendingComplaints: "लंबित शिकायतें",
+      approvedComplaints: "स्वीकृत शिकायतें",
       progressRegister: "प्रगति रजिस्टर",
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
@@ -107,21 +107,21 @@ const Sidebar = ({
 
   // Custom Scrollbar CSS
   const scrollbarStyles = `
-    .sidebar-scrollbar::-webkit-scrollbar {
+    .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
     }
-    .sidebar-scrollbar::-webkit-scrollbar-track {
+    .custom-scrollbar::-webkit-scrollbar-track {
       background: transparent;
     }
-    .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    .custom-scrollbar::-webkit-scrollbar-thumb {
       background-color: #475569;
       border-radius: 10px;
     }
-    .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background-color: #64748b;
     }
     /* For Firefox */
-    .sidebar-scrollbar {
+    .custom-scrollbar {
       scrollbar-width: thin;
       scrollbar-color: #475569 transparent;
     }
@@ -249,9 +249,9 @@ const Sidebar = ({
           )}
         </div>
 
-        {/* ✅ Navigation Menu - Updated with sidebar-scrollbar */}
+        {/* ✅ Navigation Menu - Updated with custom-scrollbar */}
         <nav
-          className={`flex-1 transition-all duration-300 overflow-y-auto sidebar-scrollbar ${
+          className={`flex-1 transition-all duration-300 overflow-y-auto custom-scrollbar ${
             !isMobile && isCollapsed ? "py-4" : "py-6"
           }`}
         >
@@ -282,7 +282,7 @@ const Sidebar = ({
             </li>
 
             {/* Complaints */}
-            <li>
+            {/* <li>
               <Link
                 to="/supervisor/complaints"
                 onClick={handleLinkClick}
@@ -304,7 +304,7 @@ const Sidebar = ({
                   </span>
                 )}
               </Link>
-            </li>
+            </li> */}
 
             {/* All Complaints */}
             <li>
@@ -332,7 +332,7 @@ const Sidebar = ({
             </li>
 
             {/* ✅ UPDATED: Pending Complaints */}
-            {/* <li>
+            <li>
               <Link
                 to="/supervisor/pending-complaints"
                 onClick={handleLinkClick}
@@ -354,10 +354,10 @@ const Sidebar = ({
                   </span>
                 )}
               </Link>
-            </li> */}
+            </li>
 
             {/* ✅ UPDATED: Approved Complaints */}
-            {/* <li>
+            <li>
               <Link
                 to="/supervisor/approved-complaints"
                 onClick={handleLinkClick}
@@ -379,7 +379,7 @@ const Sidebar = ({
                   </span>
                 )}
               </Link>
-            </li> */}
+            </li>
 
             {/* Progress Register */}
             <li>

@@ -40,10 +40,19 @@ import SupervisorDashboard from './components/Supervisor/Dashboard';
 import SupervisorComplaints from './components/Supervisor/Complaints';
 import SupervisorProgressRegister from './components/Supervisor/ProgressRegister';
 import SupervisorSearchReports from './components/Supervisor/SearchReports';
-import SupervisorAllComplaits from './components/Supervisor/AllComplaits';
 import SupervisorViewComplaints from './components/Supervisor/ViewComplaints';
-import SupervisorPendingComplaints from './components/Supervisor/PendingComplaints/';
-import SupervisorApprovedComplaints from './components/Supervisor/ApprovedComplaints';
+import SupervisorPendingComplaints from './components/Supervisor/Pending-complaints/PendingComplaints';
+import SupervisorEditPendingComplaints from './components/Supervisor/Pending-complaints/EditPendingComplaints';
+import SupervisorViewPendingComplaints from './components/Supervisor/Pending-complaints/ViewPendingComplaints';
+
+import SupervisorApprovedComplaints from './components/Supervisor/Approved-complaints/ApprovedComplaints';
+import SupervisorViewApprovedComplaints from './components/Supervisor/Approved-complaints/ViewApprovedComplaints';
+import SupervisorEditApprovedComplaints from './components/Supervisor/Approved-complaints/EditApprovedComplaints';
+
+import SupervisorAllComplaits from './components/Supervisor/All-complaints/AllComplaits';
+import SupervisorViewAllComplaint from './components/Supervisor/All-complaints/ViewwAllComplaint';
+import SupervisorEditComplaints from './components/Supervisor/All-complaints/EditAllComplaints';
+
 
 // //Lok-ayukt
 // import LokayuktLayout from './components/Supervisor/Layout';
@@ -119,10 +128,19 @@ function App() {
           <Route path="complaints" element={<SupervisorComplaints />} />
           <Route path="progress-register" element={<SupervisorProgressRegister />} />
           <Route path="search-reports" element={<SupervisorSearchReports />} />
-          <Route path="all-complaints" element={<SupervisorAllComplaits />} />
           <Route path="search-reports/view/:id" element={<SupervisorViewComplaints />} />
+
+          <Route path="all-complaints" element={<SupervisorAllComplaits />} />
+          <Route path="all-complaints/view/:id" element={<SupervisorViewAllComplaint />} />
+          <Route path="all-complaints/edit/:id" element={<SupervisorEditComplaints />} />
+
           <Route path="pending-complaints" element={<SupervisorPendingComplaints />} />
-          <Route path="approved-complaints" element={<SupervisorApprovedComplaints />} />    
+          <Route path="pending-complaints/view/:id" element={<SupervisorViewPendingComplaints />} />
+          <Route path="pending-complaints/edit/:id" element={<SupervisorEditPendingComplaints />} />
+
+          <Route path="approved-complaints" element={<SupervisorApprovedComplaints />} />   
+          <Route path="approved-complaints/view/:id" element={<SupervisorViewApprovedComplaints />} />
+          <Route path="approved-complaints/edit/:id" element={<SupervisorEditApprovedComplaints />} /> 
         </Route>
       )}
 
