@@ -18,6 +18,7 @@ class OperatorComplaintsController extends Controller
         // dd($request->all());
         // $user = $request->user()->id;
         $added_by = Auth::user()->id;
+    
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',
@@ -88,7 +89,7 @@ class OperatorComplaintsController extends Controller
                 $cmpDetailsUpdate->officer_name = $request->officer_name;
                 $cmpDetailsUpdate->designation_id = $request->designation;
                 $cmpDetailsUpdate->category = $request->category;
-                $cmpDetailsUpdate->added_by = $added_by;
+                // $cmpDetailsUpdate->added_by = $added_by;
                 $cmpDetailsUpdate->subject_id = $request->subject;
                 $cmpDetailsUpdate->complaintype_id = $request->nature;
                 $cmpDetailsUpdate->description = $request->description;
@@ -124,11 +125,22 @@ class OperatorComplaintsController extends Controller
         $complaint->district_id = $request->district_id;
         $complaint->email = $request->email;
         $complaint->amount = $request->amount;
+        $complaint->added_by = $added_by;
         $complaint->challan_no = $request->challan_no;
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         
         if($complaint->save()){
+
+             $year = date('Y');
+        if($request->nature){
+         $com_type = ComplainType::find($request->nature);
+         $str = strtoupper(substr($com_type->name, 0, 3));
+
+        }
+   
+        $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
+        $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
             
         $cmpDetails = new ComplainDetails();
         $cmpDetails->complain_id = $complaint->id;
@@ -149,21 +161,14 @@ class OperatorComplaintsController extends Controller
         }
 
            // MP2024ALG001
-        $year = date('Y');
-        if($request->nature){
-         $com_type = ComplainType::find($request->nature);
-         $str = strtoupper(substr($com_type->name, 0, 3));
-
-        }
-   
-        $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
-        $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
+       
        
 
         return response()->json([
             'status' => true,
             'message' => 'Complaint registered successfully.',
-            'data' => $complaint
+            'data' => $complaint,
+            'added_by' =>$added_by
         ], 201);
         }
      

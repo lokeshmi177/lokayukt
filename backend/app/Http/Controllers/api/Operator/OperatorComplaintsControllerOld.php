@@ -14,9 +14,10 @@ class OperatorComplaintsControllerOld extends Controller
 {
     public function addComplaint(Request $request)
     {
-        // dd($request->all());
+        dd($request->all());
         // $user = $request->user()->id;
-        $added_by = Auth::user()->id;
+        $added_by = Auth::user();
+        dd($added_by);
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'mobile' => 'required|digits_between:10,15',

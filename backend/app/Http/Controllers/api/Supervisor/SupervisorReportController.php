@@ -62,26 +62,47 @@ class SupervisorReportController extends Controller
         //         'ct.name as complaintype_name',
         //         'sub.name as subject_name',
         //     );
-        $records = DB::table('complaints')
-    ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
-    ->select(
-        'complaints.*',
-        'dd.district_name as district_name'
-    )
-    // ->where('complaints.id', $id)
-    ->first();
+//         $records = DB::table('complaints')
+//     ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
+//     ->select(
+//         'complaints.*',
+//         'dd.district_name as district_name'
+//     )
+//     // ->where('complaints.id', $id)
+//     ->first();
 
-   $records->details = DB::table('complaints_details as cd')
+//    $records->details = DB::table('complaints_details as cd')
+//     ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+//     ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+//     ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+//     ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+//     ->select(
+//         'cd.*',
+//         'dp.name as department_name',
+//         'ds.name as designation_name',
+//         'ct.name as complaintype_name',
+//         'sub.name as subject_name'
+//     );
+  $records = DB::table('complaints')
+    ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+    ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
     ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
     ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
     ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
     ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
     ->select(
-        'cd.*',
-        'dp.name as department_name',
-        'ds.name as designation_name',
-        'ct.name as complaintype_name',
-        'sub.name as subject_name'
+        'complaints.id',
+        'complaints.complain_no',
+        'complaints.name',
+        'complaints.status',
+        'complaints.created_at',
+        'dd.district_name as district_name',
+
+        // Concatenate multiple related fields
+        DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT ds.name SEPARATOR ', ') as designation_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT ct.name SEPARATOR ', ') as complaintype_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT sub.name SEPARATOR ', ') as subject_name")
     );
         if (!empty($districtId)) {
             $records->where('complaints.district_id', $districtId);
@@ -148,7 +169,16 @@ class SupervisorReportController extends Controller
         //     $records->where('complaints.approved_rejected_by_adm', $status);
         // }
         // dd($records->toSql());
-        $records = $records->get();
+        $records = $records
+         ->groupBy(
+        'complaints.id',
+        'complaints.name',
+        'dd.district_name',
+        'complaints.complain_no',
+        'complaints.created_at',
+        'complaints.status'
+    )
+        ->get();
         // return json_encode($records->toSql());
         // $records = $records->paginate(50);
         // $roles = Role::whereNotIn('id', [5, 6])->get();
@@ -170,6 +200,58 @@ class SupervisorReportController extends Controller
       
     }
 
+        public function viewComplaint($id)
+  {
+    //    $complainDetails = DB::table('complaints as cm')
+    //    ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+    // ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+    // ->select(
+    //     'cm.*',
+    //     'dd.district_name',
+    //     'dp.name as department_name',
+    //     'ds.name as designation_name',
+    //     'ct.name as complaintype_name',
+    //     'sub.name as subject_name',
+    //     // 'cd.*'
+    // )
+    // ->where('cm.id', $id)
+    // ->first();
+
+    $complainDetails = DB::table('complaints as cm')
+    ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    ->select(
+        'cm.*',
+        'dd.district_name'
+    )
+    ->where('cm.id', $id)
+    ->first();
+
+$complainDetails->details = DB::table('complaints_details as cd')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'cd.*',
+        'dp.name as department_name',
+        'ds.name as designation_name',
+        'ct.name as complaintype_name',
+        'sub.name as subject_name'
+    )
+    ->where('cd.complain_id', $id)
+    ->get();
+           
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
     
     public function progress_report(){
         // $userSubroleRole = Auth::user()->subrole->name;

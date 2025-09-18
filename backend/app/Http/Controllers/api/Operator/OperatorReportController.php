@@ -529,7 +529,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // $userSubroleRole = Auth::user()->subrole->name;
         
          $records = DB::table('complaints')
-         ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+        //  ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
             // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
             // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
             // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
@@ -543,8 +543,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 'complaints.*',
                 'u.id as user_id',
                 'srole.name as subrole_name',
-                'ca.*',
-                'cd.*',
+                // 'ca.*',
+                // 'cd.*',
                 DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
