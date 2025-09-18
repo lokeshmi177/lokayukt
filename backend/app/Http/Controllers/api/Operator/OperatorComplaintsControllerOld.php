@@ -14,7 +14,7 @@ class OperatorComplaintsControllerOld extends Controller
 {
     public function addComplaint(Request $request)
     {
-        dd($request->all());
+        // dd($request->all());
         // $user = $request->user()->id;
         $added_by = Auth::user();
         dd($added_by);

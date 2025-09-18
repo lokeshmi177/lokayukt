@@ -702,7 +702,7 @@ const SearchReports = () => {
                             >
                               <option value="all">All Districts ({ensureArray(districts).length} total)</option>
                               {ensureArray(districts).map((district) => (
-                                <option key={district.id} value={district.district_code.toString()}>
+                                   <option key={district.id} value={district.id.toString()}>
                                   {district.district_name} - {district.dist_name_hi}
                                 </option>
                               ))}
