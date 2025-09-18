@@ -430,16 +430,7 @@ const ProgressRegister = () => {
               Track complaint progress and file movements
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 flex-shrink-0">
-            <button className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-              <FaFilter className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Filter</span>
-            </button>
-            <button className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-              <FaDownload className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Export</span>
-            </button>
-          </div>
+         
         </div>
 
         {/* Search Card */}
