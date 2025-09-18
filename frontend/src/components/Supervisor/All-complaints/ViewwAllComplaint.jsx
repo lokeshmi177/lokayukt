@@ -291,7 +291,7 @@ const ViewAllComplaint = () => {
           </div>
 
           <div className="flex gap-4">
-            {subRole === "review-supervisor" && (
+           
               <button
                 onClick={handleEditNavigation}
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
@@ -300,7 +300,7 @@ const ViewAllComplaint = () => {
                 <FaRegEdit className="mr-2 text-lg" />
                 Edit
               </button>
-            )}
+            
             
             <button
               onClick={() => navigate("/supervisor/all-complaints")}
