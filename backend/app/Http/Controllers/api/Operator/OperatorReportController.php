@@ -51,23 +51,46 @@ class OperatorReportController extends Controller
         //      ->select('name', 'name_hi')
         //     ->orderBy('name')
         //     ->get();
-        $records = DB::table('complaints')
-        ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
-            ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            ->leftJoin('departments as dp', DB::raw("cd.department_id"), '=', DB::raw("dp.id"))
-            ->leftJoin('designations as ds', DB::raw("cd.designation_id"), '=', DB::raw("ds.id"))
-            ->leftJoin('complaintype as ct', DB::raw("cd.complaintype_id"), '=', DB::raw("ct.id"))
-            ->leftJoin('subjects as sub', DB::raw("cd.department_id"), '=', DB::raw("sub.id"))
+        // $records = DB::table('complaints')
+        // ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+        //     ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+        //     ->leftJoin('departments as dp', DB::raw("cd.department_id"), '=', DB::raw("dp.id"))
+        //     ->leftJoin('designations as ds', DB::raw("cd.designation_id"), '=', DB::raw("ds.id"))
+        //     ->leftJoin('complaintype as ct', DB::raw("cd.complaintype_id"), '=', DB::raw("ct.id"))
+        //     ->leftJoin('subjects as sub', DB::raw("cd.department_id"), '=', DB::raw("sub.id"))
             
-            ->select(
-                'complaints.*',
-                'dd.district_name as district_name',
-                'dp.name as department_name',
-                'ds.name as designation_name',
-                'ct.name as complaintype_name',
-                'sub.name as subject_name',
-                // 'cd.*'
-            );
+        //     ->select(
+        //         'complaints.*',
+        //         'dd.district_name as district_name',
+        //         'dp.name as department_name',
+        //         'ds.name as designation_name',
+        //         'ct.name as complaintype_name',
+        //         'sub.name as subject_name',
+        //         // 'cd.*'
+        //     );
+        $records = DB::table('complaints')
+    ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+    ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'complaints.id',
+        'complaints.complain_no',
+        'complaints.name',
+        'complaints.status',
+        'complaints.created_at',
+        'dd.district_name as district_name',
+
+        // Concatenate multiple related fields
+        DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT ds.name SEPARATOR ', ') as designation_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT ct.name SEPARATOR ', ') as complaintype_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT sub.name SEPARATOR ', ') as subject_name")
+    );
+ 
+
         if (!empty($districtId)) {
             $records->where('complaints.district_id', $districtId);
         }
@@ -80,7 +103,7 @@ class OperatorReportController extends Controller
         
         if (!empty($search)) {
             $records->where(function ($q) use ($search) {
-                $q->where('complaints.application_no', 'like', "%{$search}%")
+                $q->where('complaints.complain_no', 'like', "%{$search}%")
                 ->orWhere('complaints.name', 'like', "%{$search}%")
                 ->orWhere('complaints.mobile', 'like', "%{$search}%");
             });
@@ -133,7 +156,16 @@ class OperatorReportController extends Controller
         //     $records->where('complaints.approved_rejected_by_adm', $status);
         // }
         // dd($records->toSql());
-        $records = $records->get();
+        $records = $records
+           ->groupBy(
+        'complaints.id',
+        'complaints.name',
+        'dd.district_name',
+        'complaints.complain_no',
+        'complaints.created_at',
+        'complaints.status'
+    )
+        ->get();
         // return json_encode($records->toSql());
         // $records = $records->paginate(50);
         // $roles = Role::whereNotIn('id', [5, 6])->get();
@@ -461,22 +493,22 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // $userSubroleRole = Auth::user()->subrole->name;
         
          $records = DB::table('complaints')
-          ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+        //   ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
             // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
             // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
             // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
             // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
             // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-            ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
-            ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-            ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            // ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+            // ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+            // ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
             
             ->select(
                 'complaints.*',
-                'u.id as user_id',
-                'srole.name as subrole_name',
-                'ca.*',
-                'cd.*'
+                // 'u.id as user_id',
+                // 'srole.name as subrole_name',
+                // 'ca.*',
+                // 'cd.*'
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
                 // 'ds.name as designation_name',
