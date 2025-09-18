@@ -460,5 +460,62 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
+      public function allComplainspending(){
+       
+           $complainDetails = DB::table('complaints as cm')
+                ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->select(
+                    'cm.*',
+                    'dd.district_name',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->where('form_status',0)
+                ->where('approved_rejected_by_ro',1)
+                ->where('approved_rejected_by_so_us',0)
+                ->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+
+     public function allComplainsapproved(){
+       
+           $complainDetails = DB::table('complaints as cm')
+                ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+                ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cm.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cm.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->select(
+                    'cm.*',
+                    'dd.district_name',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->where('form_status',1)
+                ->where('approved_rejected_by_ro',1)
+                ->where('approved_rejected_by_so_us',1)
+                ->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 
 }

@@ -186,6 +186,8 @@ Route::middleware('auth:sanctum')->group(function(){
         
         Route::get('/all-district',[SupervisorCommonController::class,'fetch_district']);
         Route::get('/all-complaints',[SupervisorComplaintsController::class,'allComplains']);
+           Route::get('/all-pending-complaints',[SupervisorComplaintsController::class,'allComplainspending']);
+        Route::get('/all-approved-complaints',[SupervisorComplaintsController::class,'allComplainsapproved']);
         Route::get('/view-complaint/{id}',[SupervisorComplaintsController::class,'viewComplaint']);
         Route::post('/forward-by-so/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbySO']);
         Route::post('/forward-by-ds-js/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbyds_js']);

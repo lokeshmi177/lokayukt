@@ -97,6 +97,7 @@ class SupervisorReportController extends Controller
         'complaints.status',
         'complaints.created_at',
         'dd.district_name as district_name',
+        'dd.district_code as district_id',
 
         // Concatenate multiple related fields
         DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
@@ -176,8 +177,10 @@ class SupervisorReportController extends Controller
         'dd.district_name',
         'complaints.complain_no',
         'complaints.created_at',
-        'complaints.status'
+        'complaints.status',
+        'dd.district_code'
     )
+    ->where('approved_rejected_by_ro', 1)
         ->get();
         // return json_encode($records->toSql());
         // $records = $records->paginate(50);
@@ -278,6 +281,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // 'sub.name as subject_name',
             )
             // ->groupBy('complaints.id','u.id','srole.name')
+            ->where('approved_rejected_by_ro', 1)
             ->get();
               return response()->json([
                 'status' => true,
@@ -313,6 +317,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // 'sub.name as subject_name',
             )
             // ->groupBy('complaints.id','u.id','srole.name')
+            ->where('approved_rejected_by_ro', 1)
             ->get();
             //    dd($records);
               return response()->json([
@@ -331,6 +336,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         SUM(CASE WHEN complaints.form_status = "1" THEN 1 ELSE 0 END) as files_in_transit,
         SUM(CASE WHEN ca.target_date < NOW()  THEN 1 ELSE 0 END) as overdue_files
     ')
+    ->where('approved_rejected_by_ro', 1)
     ->first();
               return response()->json([
                 'status' => true,
