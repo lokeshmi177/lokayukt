@@ -37,7 +37,7 @@ const api = axios.create({
   },
 });
 
-const ViewAllComplaint = () => {
+const ViewPendingComplaints = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -615,4 +615,4 @@ const ViewAllComplaint = () => {
   );
 };
 
-export default ViewAllComplaint;
+export default ViewPendingComplaints;
