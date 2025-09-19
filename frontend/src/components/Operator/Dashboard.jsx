@@ -603,7 +603,7 @@ const Dashboard = ({ userRole = "operator" }) => {
 
 
       {/* Key Performance Indicators */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-5 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
 
 
         {/* Total Complaints */}
@@ -655,7 +655,7 @@ const Dashboard = ({ userRole = "operator" }) => {
 
 
         {/* Rejected */}
-        <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        {/* <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaTimesCircle className="text-2xl text-red-600" />
@@ -667,7 +667,7 @@ const Dashboard = ({ userRole = "operator" }) => {
             {dashboardData?.rejectedcomplains || 0}
           </div>
           <div className="text-sm text-red-700">Rejected cases</div>
-        </div>
+        </div> */}
 
 
         {/* Pending */}

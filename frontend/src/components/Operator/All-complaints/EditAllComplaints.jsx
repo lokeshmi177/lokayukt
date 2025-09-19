@@ -815,6 +815,10 @@ const AllComplaintsEdit = () => {
                   <div className="space-y-4">
                     {/* Title and File Upload Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="hidden" 
+                    name="Complaint_id"
+                    value={detail.id}
+                     />
                       {/* Title */}
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -841,29 +845,16 @@ const AllComplaintsEdit = () => {
                           Choose File / फ़ाइल चुनें
                         </label>
                         
-                        {/* Existing file display */}
-                        {correspondingFile && (
-                          <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <FaFileAlt className="w-4 h-4 text-blue-600" />
-                                <p className="text-xs text-blue-800 font-medium">
-                                  Current file: {correspondingFile.split('/').pop()}
-                                </p>
-                              </div>
-                              <div className="flex gap-2">
-                                <button
+                       
+
+                         {/* <button
                                   type="button"
                                   onClick={() => handleFileDownload(correspondingFile)}
                                   className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-xs transition-colors"
                                 >
                                   <FaDownload className="w-3 h-3" />
                                   Download
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                                </button> */}
                         
                         {/* File Upload Area */}
                         {!detail.file ? (
@@ -932,7 +923,18 @@ const AllComplaintsEdit = () => {
                             </p>
                           </div>
                         )}
+                        <div className="flex justify-between">
+
                         <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
+                        <button
+                                  type="button"
+                                  onClick={() => handleFileDownload(correspondingFile)}
+                                  className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 mt-1 hover:bg-green-200 rounded text-xs transition-colors"
+                                >
+                                  <FaDownload className="w-3 h-3" />
+                                  Download
+                                </button>
+                        </div>
                       </div>
                     </div>
 
