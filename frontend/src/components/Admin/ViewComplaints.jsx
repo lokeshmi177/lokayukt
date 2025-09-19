@@ -18,6 +18,7 @@ import {
   FaExpand,
   FaTimes,
 } from "react-icons/fa";
+import { FaRegEdit } from "react-icons/fa";
 import { IoMdArrowBack } from "react-icons/io";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,6 +26,7 @@ import "react-toastify/dist/ReactToastify.css";
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const APP_URL = BASE_URL.replace("/api", "");
 const token = localStorage.getItem("access_token");
+const subRole = localStorage.getItem("subrole");
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -40,8 +42,9 @@ const ViewComplaints = () => {
   const navigate = useNavigate();
 
   const [complaintData, setComplaintData] = useState(null);
-  const [filePreviewData, setFilePreviewData] = useState(null);
+  const [filePreviewData, setFilePreviewData] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [currentPreviewFile, setCurrentPreviewFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -58,20 +61,26 @@ const ViewComplaints = () => {
         setLoading(true);
 
         // Fetch complaint data
-        const complaintResponse = await api.get(`/admin/view-complaint/${id}`);
+        const complaintResponse = await api.get(
+          `/admin/view-complaint/${id}`
+        );
 
         if (complaintResponse.data.status === true) {
           setComplaintData(complaintResponse.data.data);
+          console.log("Complaint Data:", complaintResponse.data.data);
 
           // Fetch file preview data
           try {
-            const fileResponse = await api.get(`/admin/get-file-preview/${id}`);
+            const fileResponse = await api.get(
+              `/admin/get-file-preview/${id}`
+            );
             if (fileResponse.data.status === true) {
-              setFilePreviewData(fileResponse.data.data);
-              console.log(fileResponse.data.data);
+              setFilePreviewData(fileResponse.data.data || []);
+              console.log("File Preview Data:", fileResponse.data.data);
             }
           } catch (fileErr) {
             console.log("File preview not available:", fileErr);
+            setFilePreviewData([]);
           }
         } else {
           setError("Failed to fetch complaint data");
@@ -123,19 +132,22 @@ const ViewComplaints = () => {
     });
   };
 
-  // Handle file download
+  // Handle file download - Updated for specific file
   const handleFileDownload = (filePath) => {
     if (!filePath) {
-      toast.error("No file available");
+      toast.error("No file available for download");
       return;
     }
+    
+    // Open file in new tab for download
     const fileUrl = `${APP_URL}${filePath}`;
     window.open(fileUrl, "_blank");
   };
 
-  // Handle file preview
-  const handleFilePreview = () => {
-    if (filePreviewData) {
+  // Handle file preview - Updated for specific file
+  const handleFilePreview = (filePath) => {
+    if (filePath) {
+      setCurrentPreviewFile(filePath);
       setShowPreview(true);
     } else {
       toast.error("File preview not available");
@@ -152,59 +164,104 @@ const ViewComplaints = () => {
     return filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   };
 
-  // PDF Preview Modal Component
-  const PDFPreviewModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="text-lg font-semibold">File Preview</h3>
-          <button
-            onClick={() => setShowPreview(false)}
-            className="p-2 hover:bg-gray-100 rounded"
-          >
-            <FaTimes className="w-5 h-5" />
-          </button>
-        </div>
+  // Handle edit navigation
+  const handleEditNavigation = () => {
+    if (id && complaintData) {
+      console.log("Navigating to edit with ID:", id);
+      console.log("Complaint data:", complaintData);
+      navigate(`/admin/search-reports/edit/${id}`);
+    } else {
+      toast.error("Unable to edit: Missing complaint data");
+    }
+  };
 
-        <div className="flex-1 p-4">
-          {isPDF(filePreviewData) ? (
-            <iframe
-              src={`${APP_URL}${filePreviewData}`}
-              className="w-full h-full border rounded"
-              title="PDF Preview"
-            />
-          ) : isImage(filePreviewData) ? (
-            <img
-              src={`${APP_URL}${filePreviewData}`}
-              alt="File Preview"
-              className="max-w-full max-h-full mx-auto object-contain"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <FaFileAlt className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  Preview not available for this file type
-                </p>
-                <button
-                  onClick={() => handleFileDownload(filePreviewData)}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Download File
-                </button>
+  // PDF Preview Modal Component
+  const PDFPreviewModal = () => {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b">
+            <h3 className="text-lg font-semibold">File Preview</h3>
+            <button
+              onClick={() => {
+                setShowPreview(false);
+                setCurrentPreviewFile(null);
+              }}
+              className="p-2 hover:bg-gray-100 rounded"
+            >
+              <FaTimes className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 p-4">
+            {currentPreviewFile ? (
+              <>
+                {isPDF(currentPreviewFile) ? (
+                  <iframe
+                    src={`${APP_URL}${currentPreviewFile}`}
+                    className="w-full h-full border rounded"
+                    title="PDF Preview"
+                  />
+                ) : isImage(currentPreviewFile) ? (
+                  <img
+                    src={`${APP_URL}${currentPreviewFile}`}
+                    alt="File Preview"
+                    className="max-w-full max-h-full mx-auto object-contain"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <FaFileAlt className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">Preview not supported for this file type</p>
+                      <button
+                        onClick={() => handleFileDownload(currentPreviewFile)}
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Download File
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <FaFileAlt className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No File Available</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Loading state
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        {/* <div className="text-center text-lg font-medium text-gray-700">Loading...</div> */}
+        <div className="text-center text-lg font-medium text-gray-700">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 font-medium">{error}</p>
+          <button
+            onClick={() => navigate("/admin/all-complaints")}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Back to Complaints
+          </button>
+        </div>
       </div>
     );
   }
@@ -221,20 +278,34 @@ const ViewComplaints = () => {
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
                 Complaint Details
               </h1>
+              {complaintData?.status && (
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                    complaintData.status
+                  )}`}
+                >
+                  {complaintData.status}
+                </span>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-gray-600">
-              Complaint No:{" "}
-              <span className="font-semibold text-gray-900">
-                {complaintData?.complain_no || "N/A"}
-              </span>
-            </p>
           </div>
-          <div
-          onClick={()=>{
-            navigate("/admin/search-reports")
-          }}
-           className="flex flex-wrap gap-4 items-center">
-            <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+
+          <div className="flex gap-4">
+       
+              <button
+                onClick={handleEditNavigation}
+                className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+                disabled={!id || !complaintData}
+              >
+                <FaRegEdit className="mr-2 text-lg" />
+                Edit
+              </button>
+  
+            
+            <button
+              onClick={() => navigate("/admin/search-reports")}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
               <IoMdArrowBack className="mr-2 text-lg" />
               Back
             </button>
@@ -252,7 +323,18 @@ const ViewComplaints = () => {
                   Complainant Details
                 </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              {/* First Row: 4 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Complaint No
+                  </label>
+                  <p className="text-sm text-gray-900 font-medium">
+                    {complaintData?.complain_no || "N/A"}
+                  </p>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name
@@ -261,17 +343,17 @@ const ViewComplaints = () => {
                     {complaintData.name || "N/A"}
                   </p>
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Email
                   </label>
                   <div className="flex items-center gap-2">
                     <FaEnvelope className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-900">
-                      {complaintData.email || "N/A"}
-                    </p>
+                    <p className="text-sm text-gray-900">{complaintData.email || "N/A"}</p>
                   </div>
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Mobile
@@ -283,40 +365,41 @@ const ViewComplaints = () => {
                     </p>
                   </div>
                 </div>
-                <div>
+              </div>
+
+              {/* Second Row: District + Address */}
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     District
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 relative mt-3">
                     <FaMapMarkerAlt className="w-4 h-4 text-gray-400" />
-                    <p className="text-sm text-gray-900">
+                    <p className="text-sm text-gray-900 font-medium">
                       {complaintData.district_name || "N/A"}
                     </p>
                   </div>
                 </div>
 
-                {complaintData.address && (
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {complaintData.address}
-                    </p>
-                  </div>
-                )}
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address
+                  </label>
+                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md border min-h-[60px]">
+                    {complaintData.address || "N/A"}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Security Fee */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
+              {/* Security Fee Section */}
+              <div className="mt-6 flex items-center gap-3 mb-4">
                 <FaRupeeSign className="w-5 h-5 text-green-600" />
                 <h2 className="text-lg font-semibold text-gray-900">
                   Security Fee
                 </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Amount
@@ -324,10 +407,11 @@ const ViewComplaints = () => {
                   <div className="flex items-center gap-2">
                     <FaRupeeSign className="w-4 h-4 text-gray-400" />
                     <p className="text-sm text-gray-900">
-                      {complaintData.amount || "N/A"}
+                      {complaintData.amount || (complaintData.fee_exempted ? "Fee Exempted" : "N/A")}
                     </p>
                   </div>
                 </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Challan No
@@ -339,6 +423,7 @@ const ViewComplaints = () => {
                     </p>
                   </div>
                 </div>
+
                 {complaintData.dob && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -346,151 +431,189 @@ const ViewComplaints = () => {
                     </label>
                     <div className="flex items-center gap-2">
                       <FaCalendarAlt className="w-4 h-4 text-gray-400" />
-                      <p className="text-sm text-gray-900">
-                        {complaintData.dob}
-                      </p>
+                      <p className="text-sm text-gray-900">{complaintData.dob}</p>
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
 
-            {/* Respondent Department */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <FaBuilding className="w-5 h-5 text-green-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Respondent Department
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Department
+                    Submitted Date
                   </label>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {complaintData.department_name || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Officer Name
-                  </label>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {complaintData.officer_name || "N/A"}
-                  </p>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Designation
-                  </label>
-                  <p className="text-sm text-gray-900">
-                    {complaintData.designation_name || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <p className="text-sm text-gray-900 capitalize">
-                    {complaintData.category?.replace("_", " ") || "N/A"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Complaint Details */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <FaFileAlt className="w-5 h-5 text-orange-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Complaint Details
-                </h2>
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Subject
-                    </label>
+                  <div className="flex items-center gap-2">
+                    <FaCalendarAlt className="w-4 h-4 text-gray-400" />
                     <p className="text-sm text-gray-900">
-                      {complaintData.subject_name || "N/A"}
+                      {formatDate(complaintData.created_at)}
                     </p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Complaint Type
-                    </label>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        complaintData.complaintype_name === "Allegation"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {complaintData.complaintype_name || "N/A"}
-                    </span>
-                  </div>
                 </div>
-                {complaintData.description && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
-                    </label>
-                    <div className="bg-gray-50 p-3 rounded border">
-                      <p className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
-                        {complaintData.description}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Outside Correspondence - Updated section */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <FaFileAlt className="w-5 h-5 text-purple-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Outside Correspondence
-                </h2>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {complaintData.title || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    File
-                  </label>
-                  {filePreviewData ? (
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={handleFilePreview}
-                        className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition-colors"
-                      >
-                        <FaEye className="w-4 h-4" />
-                        <span className="text-sm">Preview</span>
-                      </button>
-                      <button
-                        onClick={() => handleFileDownload(filePreviewData)}
-                        className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded transition-colors"
-                      >
-                        <FaDownload className="w-4 h-4" />
-                        <span className="text-sm">Download</span>
-                      </button>
+            {/* Loop through all complaint details */}
+            {complaintData?.details?.length > 0 && (
+              <div className="space-y-6">
+                {complaintData.details.map((detail, index) => {
+                  // Get corresponding file from filePreviewData array
+                  const correspondingFile = filePreviewData[index] || null;
+                  
+                  return (
+                    <div key={detail.id} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                      {/* Header for each complaint detail */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <FaBuilding className="w-5 h-5 text-green-600" />
+                          <h2 className="text-lg font-semibold text-gray-900">
+                            Complaint Detail #{index + 1}
+                          </h2>
+                        </div>
+                       
+                      </div>
+                      
+                      {/* Respondent Department Section */}
+                      <div className="mb-6">
+                        <h3 className="text-md font-medium text-gray-800 mb-3">Respondent Department</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Department
+                            </label>
+                            <p className="text-sm text-gray-900 font-medium">
+                              {detail.department_name || "N/A"}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Officer Name
+                            </label>
+                            <p className="text-sm text-gray-900 font-medium">
+                              {detail.officer_name || "N/A"}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Designation
+                            </label>
+                            <p className="text-sm text-gray-900">
+                              {detail.designation_name || "N/A"}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Category
+                            </label>
+                            <p className="text-sm text-gray-900 capitalize">
+                              {detail.category?.replace("_", " ") || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Complaint Details Section */}
+                      <div className="mb-6">
+                        <div className="flex items-center gap-3 mb-3">
+                          <FaFileAlt className="w-4 h-4 text-orange-600" />
+                          <h3 className="text-md font-medium text-gray-800">Complaint Information</h3>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {/* Subject and Complaint Type */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Subject
+                              </label>
+                              <p className="text-sm text-gray-900">
+                                {detail.subject_name || "N/A"}
+                              </p>
+                            </div>
+                            
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Complaint Type
+                              </label>
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  detail.complaintype_name === "Allegation"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {detail.complaintype_name || "N/A"}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Description */}
+                          {detail.description && (
+                            <div className="grid grid-cols-1">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Description
+                                </label>
+                                <div className="bg-gray-50 p-4 rounded-md border">
+                                  <p className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
+                                    {detail.description}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Outside Correspondence Section */}
+                      <div>
+                        <div className="flex items-center gap-3 mb-3">
+                          <FaFileAlt className="w-4 h-4 text-purple-600" />
+                          <h3 className="text-md font-medium text-gray-800">Outside Correspondence</h3>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Title
+                            </label>
+                            <p className="text-sm text-gray-900 font-medium">
+                              {detail.title || "N/A"}
+                            </p>
+                          </div>
+                          
+                          <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Attached File
+                            </label>
+                            {correspondingFile ? (
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => handleFilePreview(correspondingFile)}
+                                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition-colors text-sm"
+                                >
+                                  <FaEye className="w-4 h-4" />
+                                  <span>Preview</span>
+                                </button>
+                                <button
+                                  onClick={() => handleFileDownload(correspondingFile)}
+                                  className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded transition-colors text-sm"
+                                >
+                                  <FaDownload className="w-4 h-4" />
+                                  <span>Download</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-900">No file attached</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-900">N/A</p>
-                  )}
-                </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

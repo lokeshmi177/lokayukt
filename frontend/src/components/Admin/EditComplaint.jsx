@@ -34,7 +34,7 @@ const api = axios.create({
   },
 });
 
-const AllComplaintsEdit = () => {
+const EditComplaint = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -183,7 +183,7 @@ const AllComplaintsEdit = () => {
     const fetchData = async () => {
       if (!id) {
         toast.error("No complaint ID provided");
-        navigate("/operator/all-complaints");
+        navigate("/admin/all-complaints");
         return;
       }
 
@@ -198,12 +198,12 @@ const AllComplaintsEdit = () => {
           subjectsResponse,
           complaintTypesResponse
         ] = await Promise.all([
-          api.get(`/operator/edit-complaint/${id}`),
-          api.get(`/operator/all-district`),
-          api.get(`/operator/department`),
-          api.get(`/operator/designation`),
-          api.get(`/operator/subjects`),
-          api.get(`/operator/complainstype`)
+          api.get(`/admin/edit-complaint/${id}`),
+          api.get(`/admin/all-district`),
+          api.get(`/admin/department`),
+          api.get(`/admin/designation`),
+          api.get(`/admin/subjects`),
+          api.get(`/admin/complainstype`)
         ]);
 
         // Set dropdown data
@@ -267,7 +267,7 @@ const AllComplaintsEdit = () => {
 
           // File preview data fetching
           try {
-            const fileResponse = await api.get(`/operator/get-file-preview/${id}`);
+            const fileResponse = await api.get(`/admin/get-file-preview/${id}`);
             if (fileResponse.data.status === true) {
               setFilePreviewData(fileResponse.data.data || []);
             }
@@ -446,7 +446,7 @@ const AllComplaintsEdit = () => {
         description: complaintDetails.map(item => item.description),
         
         // IDs array for existing records
-       complaint_details_id: complaintDetails.map(item => item.id).filter(id => id !== null)
+        detail_ids: complaintDetails.map(item => item.id).filter(id => id !== null)
       };
 
       // Use FormData for file uploads
@@ -471,7 +471,7 @@ const AllComplaintsEdit = () => {
       });
 
       // Submit using api.post
-      const response = await api.post(`/operator/update-complaint/${id}`, formDataToSend, {
+      const response = await api.post(`/admin/update-complaint/${id}`, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -480,7 +480,7 @@ const AllComplaintsEdit = () => {
         
         // Navigate back to view page after successful update
         setTimeout(() => {
-          navigate(`/operator/all-complaints/view/${id}`);
+          navigate(`/admin/search-reports/view/${id}`);
         }, 1500);
       }
     } catch (error) {
@@ -547,7 +547,7 @@ const AllComplaintsEdit = () => {
           </div>
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
             <button 
-              onClick={() => navigate(`/operator/all-complaints/view/${id}`)}
+              onClick={() => navigate(`/admin/search-reports/view/${id}`)}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
               <IoMdArrowBack className="text-lg" />
@@ -1139,4 +1139,4 @@ const AllComplaintsEdit = () => {
   );
 };
 
-export default AllComplaintsEdit;
+export default EditComplaint;
