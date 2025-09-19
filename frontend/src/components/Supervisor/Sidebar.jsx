@@ -38,7 +38,7 @@ const Sidebar = ({
       // complaints: "New Complaints",
       allComplaints: "All Complaints",
       pendingComplaints: "Pending Complaints",
-      approvedComplaints: "Aprroved Complaints",
+      approvedComplaints: "Approved Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",

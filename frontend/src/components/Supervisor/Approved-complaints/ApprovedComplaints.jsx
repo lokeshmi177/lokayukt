@@ -535,7 +535,7 @@ const ApprovedComplaints = () => {
 
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Aprroved Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Approved Complaints</h1>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
