@@ -292,14 +292,7 @@ const ViewComplaints = () => {
 
           <div className="flex gap-4">
        
-              <button
-                onClick={handleEditNavigation}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
-                disabled={!id || !complaintData}
-              >
-                <FaRegEdit className="mr-2 text-lg" />
-                Edit
-              </button>
+              
   
             
             <button
@@ -349,7 +342,7 @@ const ViewComplaints = () => {
                     Email
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaEnvelope className="w-4 h-4 text-gray-400" />
+                   <FaEnvelope className="w-4 h-4 text-blue-500" /> 
                     <p className="text-sm text-gray-900">{complaintData.email || "N/A"}</p>
                   </div>
                 </div>
@@ -359,7 +352,7 @@ const ViewComplaints = () => {
                     Mobile
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaPhone className="w-4 h-4 text-gray-400" />
+                    <FaPhone  className="w-4 h-4 text-green-500 " />
                     <p className="text-sm text-gray-900 font-mono">
                       {complaintData.mobile || "N/A"}
                     </p>
@@ -374,7 +367,7 @@ const ViewComplaints = () => {
                     District
                   </label>
                   <div className="flex items-center gap-2 relative mt-3">
-                    <FaMapMarkerAlt className="w-4 h-4 text-gray-400" />
+                    <FaMapMarkerAlt className="w-4 h-4 text-red-500" />
                     <p className="text-sm text-gray-900 font-medium">
                       {complaintData.district_name || "N/A"}
                     </p>
@@ -405,7 +398,7 @@ const ViewComplaints = () => {
                     Amount
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaRupeeSign className="w-4 h-4 text-gray-400" />
+                    <FaRupeeSign className="w-4 h-4 text-green-400" />
                     <p className="text-sm text-gray-900">
                       {complaintData.amount || (complaintData.fee_exempted ? "Fee Exempted" : "N/A")}
                     </p>
@@ -417,7 +410,7 @@ const ViewComplaints = () => {
                     Challan No
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaIdCard className="w-4 h-4 text-gray-400" />
+                    <FaIdCard className="w-4 h-4 text-yellow-400" />
                     <p className="text-sm text-gray-900">
                       {complaintData.challan_no || "N/A"}
                     </p>
@@ -441,7 +434,7 @@ const ViewComplaints = () => {
                     Submitted Date
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaCalendarAlt className="w-4 h-4 text-gray-400" />
+                    <FaCalendarAlt className="w-4 h-4 text-blue-400" />
                     <p className="text-sm text-gray-900">
                       {formatDate(complaintData.created_at)}
                     </p>

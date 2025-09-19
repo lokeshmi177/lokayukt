@@ -521,7 +521,7 @@ const ProgressRegister = () => {
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
                       <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Recent File Movements ({complaintsData.length} records)
+                        Recent File Movements
                       </h3>
                     </div>
 
@@ -629,7 +629,7 @@ const ProgressRegister = () => {
                     <div className="flex items-center gap-2 mb-4">
                       <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Current Complaint Status ({currentReportData.length} records)
+                        Current Complaint Status 
                       </h3>
                     </div>
 

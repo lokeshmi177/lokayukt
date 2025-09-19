@@ -340,7 +340,7 @@ const ViewPendingComplaints = () => {
                     Email
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaEnvelope className="w-4 h-4 text-gray-400" />
+                   <FaEnvelope className="w-4 h-4 text-blue-500" /> 
                     <p className="text-sm text-gray-900">{complaintData.email || "N/A"}</p>
                   </div>
                 </div>
@@ -350,7 +350,7 @@ const ViewPendingComplaints = () => {
                     Mobile
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaPhone className="w-4 h-4 text-gray-400" />
+                    <FaPhone  className="w-4 h-4 text-green-500 " />
                     <p className="text-sm text-gray-900 font-mono">
                       {complaintData.mobile || "N/A"}
                     </p>
@@ -365,7 +365,7 @@ const ViewPendingComplaints = () => {
                     District
                   </label>
                   <div className="flex items-center gap-2 relative mt-3">
-                    <FaMapMarkerAlt className="w-4 h-4 text-gray-400" />
+                    <FaMapMarkerAlt className="w-4 h-4 text-red-500" />
                     <p className="text-sm text-gray-900 font-medium">
                       {complaintData.district_name || "N/A"}
                     </p>
@@ -396,7 +396,7 @@ const ViewPendingComplaints = () => {
                     Amount
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaRupeeSign className="w-4 h-4 text-gray-400" />
+                    <FaRupeeSign className="w-4 h-4 text-green-400" />
                     <p className="text-sm text-gray-900">
                       {complaintData.amount || (complaintData.fee_exempted ? "Fee Exempted" : "N/A")}
                     </p>
@@ -408,7 +408,7 @@ const ViewPendingComplaints = () => {
                     Challan No
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaIdCard className="w-4 h-4 text-gray-400" />
+                    <FaIdCard className="w-4 h-4 text-yellow-400" />
                     <p className="text-sm text-gray-900">
                       {complaintData.challan_no || "N/A"}
                     </p>
@@ -432,7 +432,7 @@ const ViewPendingComplaints = () => {
                     Submitted Date
                   </label>
                   <div className="flex items-center gap-2">
-                    <FaCalendarAlt className="w-4 h-4 text-gray-400" />
+                    <FaCalendarAlt className="w-4 h-4 text-blue-400" />
                     <p className="text-sm text-gray-900">
                       {formatDate(complaintData.created_at)}
                     </p>
