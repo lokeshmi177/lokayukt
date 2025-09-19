@@ -466,7 +466,7 @@ const AllComplaints = () => {
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              forward_by: 1, // Set forwarded status
+              approved_rejected_by_so_us: 1, // Set forwarded status
               status: 'Forwarded' // Update status if needed
             }
           : complaint
@@ -504,7 +504,7 @@ const AllComplaints = () => {
 
   // Forward status helper
   const isForwarded = (complaint) => {
-    return complaint.forward_by && complaint.forward_by !== null;
+      return complaint.approved_rejected_by_so_us === 1;
   };
 
   if (error) {

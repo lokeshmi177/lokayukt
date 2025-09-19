@@ -458,22 +458,22 @@ const ApprovedComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // ✅ Handle forward submit with local state update
+
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // ✅ Update local state immediately without API call
+    
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              forward_by: 1, // Set forwarded status
-              status: 'Forwarded' // Update status if needed
+              approved_rejected_by_so_us: 1, 
+              status: 'Forwarded'
             }
           : complaint
       )
     );
     
-    console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
+    // console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
   };
 
   // Format date helper
@@ -502,9 +502,9 @@ const ApprovedComplaints = () => {
     }
   };
 
-  // Forward status helper
+  // ✅ Updated: Forward status helper - now checks approved_rejected_by_so_us field
   const isForwarded = (complaint) => {
-    return complaint.forward_by && complaint.forward_by !== null;
+    return complaint.approved_rejected_by_so_us === 1;
   };
 
   if (error) {
@@ -589,7 +589,7 @@ const ApprovedComplaints = () => {
                   >
                     View Details
                   </button>
-                  {/* ✅ Dynamic button based on forward status */}
+                  {/* ✅ Dynamic button based on approved_rejected_by_so_us field */}
                   {isForwarded(complaint) ? (
                     <button
                       disabled

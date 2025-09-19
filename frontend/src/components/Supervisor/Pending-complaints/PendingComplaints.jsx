@@ -441,7 +441,7 @@ const PendingComplaints = () => {
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
-    navigate(`/supervisor/pending-complaints/${complaintId}`);
+    navigate(`/supervisor/pending-complaints/view/${complaintId}`);
   };
 
   // Handle modal view
@@ -466,7 +466,7 @@ const PendingComplaints = () => {
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              forward_by: 1, // Set forwarded status
+              approved_rejected_by_so_us: 1, // Set forwarded status
               status: 'Forwarded' // Update status if needed
             }
           : complaint
@@ -504,7 +504,7 @@ const PendingComplaints = () => {
 
   // Forward status helper
   const isForwarded = (complaint) => {
-    return complaint.forward_by && complaint.forward_by !== null;
+    return complaint.approved_rejected_by_so_us === 1;;
   };
 
   if (error) {
