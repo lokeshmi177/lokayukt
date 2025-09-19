@@ -414,7 +414,7 @@ const Complaints = () => {
               <div className="text-sm text-yellow-700 space-y-1">
                 <div><strong>Complaint No:</strong> {duplicate.complain_no}</div>
                 <div><strong>Name:</strong> {duplicate.name}</div>
-                <div><strong>title:</strong> {duplicate.title}</div>
+                <div><strong>Title:</strong> {duplicate.title}</div>
               </div>
 
               <div className="mt-3 flex justify-end">

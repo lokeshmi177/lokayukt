@@ -441,7 +441,7 @@ const ApprovedComplaints = () => {
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
-    navigate(`/supervisor/all-complaints/view/${complaintId}`);
+    navigate(`/supervisor/approved-complaints/view/${complaintId}`);
   };
 
   // Handle modal view

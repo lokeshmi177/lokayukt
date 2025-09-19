@@ -50,10 +50,10 @@ const AllComplaintsEdit = () => {
     dob: '',
   });
 
-  // ✅ Multiple complaint details state - आपके API response के अनुसार
+  // Multiple complaint details state
   const [complaintDetails, setComplaintDetails] = useState([
     {
-      id: null, // Details की ID save करने के लिए (3, 5, 6, 7)
+      id: null,
       title: '',
       file: null,
       department: '',
@@ -71,7 +71,7 @@ const AllComplaintsEdit = () => {
     }
   ]);
 
-  // ✅ File preview states - ViewComplaint से exact copy
+  // File preview states
   const [filePreviewData, setFilePreviewData] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [currentPreviewFile, setCurrentPreviewFile] = useState(null);
@@ -84,18 +84,18 @@ const AllComplaintsEdit = () => {
   const [subjects, setSubjects] = useState([]);
   const [complaintTypes, setComplaintTypes] = useState([]);
   
+  // Only backend errors - no frontend validation
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ **EXACT SAME File helper functions as ViewComplaint**
+  // File helper functions
   const handleFileDownload = (filePath) => {
     if (!filePath) {
       toast.error("No file available for download");
       return;
     }
     
-    // Open file in new tab for download
     const fileUrl = `${APP_URL}${filePath}`;
     window.open(fileUrl, "_blank");
   };
@@ -117,7 +117,7 @@ const AllComplaintsEdit = () => {
     return filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   };
 
-  // ✅ **EXACT SAME PDF Preview Modal Component as ViewComplaint**
+  // PDF Preview Modal Component
   const PDFPreviewModal = () => {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -134,7 +134,6 @@ const AllComplaintsEdit = () => {
               <FaTimes className="w-5 h-5" />
             </button>
           </div>
-
           <div className="flex-1 p-4">
             {currentPreviewFile ? (
               <>
@@ -179,7 +178,7 @@ const AllComplaintsEdit = () => {
     );
   };
 
-  // ✅ Fetch complaint data - सही API endpoint के साथ
+  // Fetch complaint data
   useEffect(() => {
     const fetchData = async () => {
       if (!id) {
@@ -191,7 +190,6 @@ const AllComplaintsEdit = () => {
       try {
         setIsLoading(true);
 
-        // Parallel API calls for better performance
         const [
           complaintResponse,
           districtsResponse,
@@ -200,7 +198,6 @@ const AllComplaintsEdit = () => {
           subjectsResponse,
           complaintTypesResponse
         ] = await Promise.all([
-          // ✅ Correct API endpoint - http://localhost:8000/api/operator/edit-complaint/23
           api.get(`/operator/edit-complaint/${id}`),
           api.get(`/operator/all-district`),
           api.get(`/operator/department`),
@@ -226,10 +223,9 @@ const AllComplaintsEdit = () => {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
 
-        // ✅ Set complaint data - आपके API response के अनुसार
+        // Set complaint data
         if (complaintResponse.data.status === true) {
           const data = complaintResponse.data.data;
-          console.log("API Response Data:", data);
           
           // Set basic form data
           setFormData({
@@ -244,15 +240,11 @@ const AllComplaintsEdit = () => {
             dob: data.dob || '',
           });
 
-          // ✅ Set multiple complaint details - आपके API response के अनुसार
+          // Set multiple complaint details
           if (data.details && data.details.length > 0) {
-            console.log("Raw API Details:", data.details);
-            
             const detailsArray = data.details.map((detail, index) => {
-              console.log(`Mapping API Detail ${index}:`, detail);
-              
               return {
-                id: detail.id, // ✅ This ID will be used for preview/download API calls
+                id: detail.id,
                 title: detail.title || '',
                 file: null,
                 department: detail.department_id || '',
@@ -262,7 +254,7 @@ const AllComplaintsEdit = () => {
                 subject: detail.subject_id || '',
                 nature: detail.complaintype_id || '',
                 description: detail.description || '',
-                existingFile: detail.file || null, // Keep original file name for display
+                existingFile: detail.file || null,
                 uploadProgress: 0,
                 isUploading: false,
                 uploadSuccess: false,
@@ -270,21 +262,16 @@ const AllComplaintsEdit = () => {
               };
             });
             
-            console.log("Final Details Array:", detailsArray);
             setComplaintDetails(detailsArray);
           }
 
-          // ✅ **EXACT SAME File preview data fetching as ViewComplaint**
+          // File preview data fetching
           try {
-            const fileResponse = await api.get(
-              `/operator/get-file-preview/${id}`  // Using complaint ID, not detail ID
-            );
+            const fileResponse = await api.get(`/operator/get-file-preview/${id}`);
             if (fileResponse.data.status === true) {
               setFilePreviewData(fileResponse.data.data || []);
-              console.log("File Preview Data:", fileResponse.data.data);
             }
           } catch (fileErr) {
-            console.log("File preview not available:", fileErr);
             setFilePreviewData([]);
           }
 
@@ -305,7 +292,6 @@ const AllComplaintsEdit = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Handle radio button for fee_exempted
     if (name === 'fee_exempted') {
       setFormData(prev => ({
         ...prev,
@@ -318,7 +304,7 @@ const AllComplaintsEdit = () => {
       }));
     }
 
-    // Clear error when user starts typing
+    // Clear backend error when user types
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -338,12 +324,11 @@ const AllComplaintsEdit = () => {
       return updated;
     });
 
-    // Clear errors
-    const errorKey = `details.${index}.${field}`;
-    if (errors[errorKey]) {
+    // Clear backend errors for details fields
+    if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [errorKey]: ''
+        [field]: ''
       }));
     }
   };
@@ -430,96 +415,66 @@ const AllComplaintsEdit = () => {
     });
   };
 
-  // Add new complaint detail
-  const addComplaintDetail = () => {
-    setComplaintDetails(prev => [
-      ...prev,
-      {
-        id: null, // ✅ New detail में ID null होगी
-        title: '',
-        file: null,
-        department: '',
-        officer_name: '',
-        designation: '',
-        category: '',
-        subject: '',
-        nature: '',
-        description: '',
-        existingFile: null,
-        uploadProgress: 0,
-        isUploading: false,
-        uploadSuccess: false,
-        uploadError: ''
-      }
-    ]);
-  };
-
-  // Remove complaint detail
-  const removeComplaintDetail = (index) => {
-    if (complaintDetails.length > 1) {
-      setComplaintDetails(prev => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  // ✅ Submit handler - POST API के लिए
+  // UPDATED Submit handler - Only backend validation
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({});
+    setErrors({}); // Clear previous errors
 
     try {
-      // Create FormData for file upload
-      const submitFormData = new FormData();
+      // Prepare data in array format
+      const submitData = {
+        // Basic form fields
+        name: formData.name,
+        mobile: formData.mobile,
+        address: formData.address,
+        district_id: formData.district_id,
+        email: formData.email,
+        fee_exempted: formData.fee_exempted ? '1' : '0',
+        amount: formData.amount || '',
+        challan_no: formData.challan_no || '',
+        dob: formData.dob || '',
+        
+        // Details arrays
+        title: complaintDetails.map(item => item.title),
+        department: complaintDetails.map(item => item.department),
+        officer_name: complaintDetails.map(item => item.officer_name),
+        designation: complaintDetails.map(item => item.designation),
+        category: complaintDetails.map(item => item.category),
+        subject: complaintDetails.map(item => item.subject),
+        nature: complaintDetails.map(item => item.nature),
+        description: complaintDetails.map(item => item.description),
+        
+        // IDs array for existing records
+        detail_ids: complaintDetails.map(item => item.id).filter(id => id !== null)
+      };
+
+      // Use FormData for file uploads
+      const formDataToSend = new FormData();
       
-      // Add basic form fields
-      Object.keys(formData).forEach(key => {
-        if (key === 'fee_exempted') {
-          submitFormData.append(key, formData[key] ? '1' : '0');
-        } else if (formData[key] !== null && formData[key] !== '') {
-          submitFormData.append(key, formData[key]);
+      // Add basic fields
+      Object.keys(submitData).forEach(key => {
+        if (Array.isArray(submitData[key])) {
+          submitData[key].forEach((value, index) => {
+            formDataToSend.append(`${key}[]`, value || '');
+          });
+        } else {
+          formDataToSend.append(key, submitData[key]);
         }
       });
-
-      // Add complaint details
+      
+      // Add files in array format
       complaintDetails.forEach((detail, index) => {
-        // ✅ Add detail ID if it exists (for existing records)
-        if (detail.id) {
-          submitFormData.append(`complaint_details_id`, detail.id);
-        }
-        
-        submitFormData.append(`details[${index}][title]`, detail.title);
-        submitFormData.append(`details[${index}][department]`, detail.department);
-        submitFormData.append(`details[${index}][officer_name]`, detail.officer_name);
-        submitFormData.append(`details[${index}][designation]`, detail.designation);
-        submitFormData.append(`details[${index}][category]`, detail.category);
-        submitFormData.append(`details[${index}][subject]`, detail.subject);
-        submitFormData.append(`details[${index}][nature]`, detail.nature);
-        submitFormData.append(`details[${index}][description]`, detail.description);
-        
-        // Add file if exists
         if (detail.file) {
-          submitFormData.append(`details[${index}][file]`, detail.file);
+          formDataToSend.append(`files[]`, detail.file);
         }
       });
 
-      // Debug: Log what we're sending
-      console.log('FormData being sent:');
-      for (let [key, value] of submitFormData.entries()) {
-        console.log(key, ':', value);
-      }
-
-      // ✅ Submit the form - POST method के साथ
-      const response = await axios.post(
-        `${BASE_URL}/operator/edit-complaint/${id}`,
-        submitFormData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        }
-      );
-
+      // Submit using api.post
+      const response = await api.post(`/operator/update-complaint/${id}`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
       if (response.data.status === true) {
         toast.success(response.data.message || 'Complaint updated successfully!');
         
@@ -529,16 +484,30 @@ const AllComplaintsEdit = () => {
         }, 1500);
       }
     } catch (error) {
+      // ONLY backend error handling - exactly as you requested
       if (error.response?.data?.status === false && error.response?.data?.errors) {
         const backendErrors = {};
+        
+        // Convert array errors to single error messages
         Object.keys(error.response.data.errors).forEach(field => {
-          backendErrors[field] = error.response.data.errors[field][0];
+          // API returns array like: "name": ["Name is required."]
+          // We take first error from array
+          if (Array.isArray(error.response.data.errors[field])) {
+            backendErrors[field] = error.response.data.errors[field][0];
+          } else {
+            backendErrors[field] = error.response.data.errors[field];
+          }
         });
+        
         setErrors(backendErrors);
+        
+        // Show first error as toast
+        const firstError = Object.values(backendErrors)[0];
+        toast.error(firstError);
+        
       } else {
         toast.error('Something went wrong. Please try again.');
       }
-      console.error('Update error:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -569,7 +538,7 @@ const AllComplaintsEdit = () => {
         style={{ zIndex: 9999 }}
       />
 
-      {/* Header - Mobile responsive */}
+      {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
@@ -614,17 +583,13 @@ const AllComplaintsEdit = () => {
                     type="text"
                     name="name"
                     value={formData.name}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^[A-Za-z\s]*$/.test(value)) {
-                        handleInputChange(e);
-                      }
-                    }}
+                    onChange={handleInputChange}
                     className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
                       errors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter full name"
                   />
+                  {/* Only backend error display */}
                   {errors.name && (
                     <p className="mt-1 text-sm text-red-600">{errors.name}</p>
                   )}
@@ -639,12 +604,7 @@ const AllComplaintsEdit = () => {
                     type="tel"
                     name="mobile"
                     value={formData.mobile}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^[0-9]*$/.test(value) && value.length <= 10) {
-                        handleInputChange(e);
-                      }
-                    }}
+                    onChange={handleInputChange}
                     className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
                       errors.mobile ? 'border-red-500' : 'border-gray-300'
                     }`}
@@ -829,15 +789,13 @@ const AllComplaintsEdit = () => {
             </div>
           </div>
 
-          {/* ✅ Multiple Complaint Details - ViewComplaint जैसी exact functionality */}
+          {/* Multiple Complaint Details */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Complaint Details</h2>
-              
             </div>
 
             {complaintDetails.map((detail, index) => {
-              // ✅ **EXACT SAME file mapping logic as ViewComplaint**
               const correspondingFile = filePreviewData[index] || null;
 
               return (
@@ -848,31 +806,15 @@ const AllComplaintsEdit = () => {
                       <div>
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                           Complaint Detail #{index + 1}
-                       
-                        <div className="flex items-center gap-2 mt-2">
- 
-  <input
-    type="hidden"
-    // valuee={detail.id}
-    value={detail.id}
-    readOnly
-    className="px-2 py-1 text-xs border border-gray-300 rounded bg-gray-50 text-gray-700 w-24"
-  />
-</div>
                         </h3>
                         <p className="text-xs sm:text-sm text-gray-500">शिकायत विवरण</p>
                       </div>
                     </div>
-                    
                   </div>
 
                   <div className="space-y-4">
-                
-                  
-
                     {/* Title and File Upload Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    
                       {/* Title */}
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
@@ -883,12 +825,13 @@ const AllComplaintsEdit = () => {
                           value={detail.title}
                           onChange={(e) => handleDetailChange(index, 'title', e.target.value)}
                           className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                            errors[`details.${index}.title`] ? 'border-red-500' : 'border-gray-300'
+                            errors.title ? 'border-red-500' : 'border-gray-300'
                           }`}
                           placeholder="Enter complaint title"
                         />
-                        {errors[`details.${index}.title`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.title`]}</p>
+                        {/* Backend error display */}
+                        {errors.title && (
+                          <p className="mt-1 text-sm text-red-600">{errors.title}</p>
                         )}
                       </div>
 
@@ -898,7 +841,7 @@ const AllComplaintsEdit = () => {
                           Choose File / फ़ाइल चुनें
                         </label>
                         
-                        {/* ✅ **EXACT SAME existing file display as ViewComplaint** */}
+                        {/* Existing file display */}
                         {correspondingFile && (
                           <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
                             <div className="flex items-center justify-between">
@@ -908,16 +851,7 @@ const AllComplaintsEdit = () => {
                                   Current file: {correspondingFile.split('/').pop()}
                                 </p>
                               </div>
-                              {/* ✅ **EXACT SAME Preview और Download buttons as ViewComplaint** */}
                               <div className="flex gap-2">
-                                {/* <button
-                                  type="button"
-                                  onClick={() => handleFilePreview(correspondingFile)}
-                                  className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded text-xs transition-colors"
-                                >
-                                  <FaEye className="w-3 h-3" />
-                                  Preview
-                                </button> */}
                                 <button
                                   type="button"
                                   onClick={() => handleFileDownload(correspondingFile)}
@@ -936,9 +870,7 @@ const AllComplaintsEdit = () => {
                           <div className="flex items-center space-x-2">
                             <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                               <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                              <span className="text-sm text-gray-700">
-                                {correspondingFile ? 'Choose PDF file' : 'Choose PDF file'}
-                              </span>
+                              <span className="text-sm text-gray-700">Choose PDF file</span>
                               <input
                                 type="file"
                                 accept=".pdf"
@@ -1015,7 +947,7 @@ const AllComplaintsEdit = () => {
                           value={detail.department}
                           onChange={(e) => handleDetailChange(index, 'department', e.target.value)}
                           className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                            errors[`details.${index}.department`] ? 'border-red-500' : 'border-gray-300'
+                            errors.department ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
                           <option value="">Select Department</option>
@@ -1025,8 +957,8 @@ const AllComplaintsEdit = () => {
                             </option>
                           ))}
                         </select>
-                        {errors[`details.${index}.department`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.department`]}</p>
+                        {errors.department && (
+                          <p className="mt-1 text-sm text-red-600">{errors.department}</p>
                         )}
                       </div>
 
@@ -1040,12 +972,12 @@ const AllComplaintsEdit = () => {
                           value={detail.officer_name}
                           onChange={(e) => handleDetailChange(index, 'officer_name', e.target.value)}
                           className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                            errors[`details.${index}.officer_name`] ? 'border-red-500' : 'border-gray-300'
+                            errors.officer_name ? 'border-red-500' : 'border-gray-300'
                           }`}
                           placeholder="Enter officer name"
                         />
-                        {errors[`details.${index}.officer_name`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.officer_name`]}</p>
+                        {errors.officer_name && (
+                          <p className="mt-1 text-sm text-red-600">{errors.officer_name}</p>
                         )}
                       </div>
 
@@ -1058,7 +990,7 @@ const AllComplaintsEdit = () => {
                           value={detail.designation}
                           onChange={(e) => handleDetailChange(index, 'designation', e.target.value)}
                           className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                            errors[`details.${index}.designation`] ? 'border-red-500' : 'border-gray-300'
+                            errors.designation ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
                           <option value="">Select Designation</option>
@@ -1068,8 +1000,8 @@ const AllComplaintsEdit = () => {
                             </option>
                           ))}
                         </select>
-                        {errors[`details.${index}.designation`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.designation`]}</p>
+                        {errors.designation && (
+                          <p className="mt-1 text-sm text-red-600">{errors.designation}</p>
                         )}
                       </div>
 
@@ -1082,15 +1014,15 @@ const AllComplaintsEdit = () => {
                           value={detail.category}
                           onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
                           className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                            errors[`details.${index}.category`] ? 'border-red-500' : 'border-gray-300'
+                            errors.category ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
                           <option value="">Select Category</option>
                           <option value="class_1">Class 1</option>
                           <option value="class_2">Class 2</option>
                         </select>
-                        {errors[`details.${index}.category`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.category`]}</p>
+                        {errors.category && (
+                          <p className="mt-1 text-sm text-red-600">{errors.category}</p>
                         )}
                       </div>
                     </div>
@@ -1106,7 +1038,7 @@ const AllComplaintsEdit = () => {
                           value={detail.subject}
                           onChange={(e) => handleDetailChange(index, 'subject', e.target.value)}
                           className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                            errors[`details.${index}.subject`] ? 'border-red-500' : 'border-gray-300'
+                            errors.subject ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
                           <option value="">Select Subject</option>
@@ -1116,8 +1048,8 @@ const AllComplaintsEdit = () => {
                             </option>
                           ))}
                         </select>
-                        {errors[`details.${index}.subject`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.subject`]}</p>
+                        {errors.subject && (
+                          <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
                         )}
                       </div>
 
@@ -1130,7 +1062,7 @@ const AllComplaintsEdit = () => {
                           value={detail.nature}
                           onChange={(e) => handleDetailChange(index, 'nature', e.target.value)}
                           className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                            errors[`details.${index}.nature`] ? 'border-red-500' : 'border-gray-300'
+                            errors.nature ? 'border-red-500' : 'border-gray-300'
                           }`}
                         >
                           <option value="">Select Nature</option>
@@ -1140,8 +1072,8 @@ const AllComplaintsEdit = () => {
                             </option>
                           ))}
                         </select>
-                        {errors[`details.${index}.nature`] && (
-                          <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.nature`]}</p>
+                        {errors.nature && (
+                          <p className="mt-1 text-sm text-red-600">{errors.nature}</p>
                         )}
                       </div>
                     </div>
@@ -1156,12 +1088,12 @@ const AllComplaintsEdit = () => {
                         onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
                         rows={4}
                         className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
-                          errors[`details.${index}.description`] ? 'border-red-500' : 'border-gray-300'
+                          errors.description ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Enter detailed complaint description..."
                       />
-                      {errors[`details.${index}.description`] && (
-                        <p className="mt-1 text-sm text-red-600">{errors[`details.${index}.description`]}</p>
+                      {errors.description && (
+                        <p className="mt-1 text-sm text-red-600">{errors.description}</p>
                       )}
                     </div>
                   </div>
@@ -1199,7 +1131,7 @@ const AllComplaintsEdit = () => {
         </div>
       </form>
 
-      {/* ✅ **EXACT SAME Preview Modal as ViewComplaint** */}
+      {/* Preview Modal */}
       {showPreview && <PDFPreviewModal />}
     </div>
   );

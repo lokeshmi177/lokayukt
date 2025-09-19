@@ -256,7 +256,7 @@ const ViewComplaints = () => {
           <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <p className="text-red-600 font-medium">{error}</p>
           <button
-            onClick={() => navigate("/supervisor/all-complaints")}
+            onClick={() => navigate("/supervisor/search-reports")}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Back to Complaints
@@ -292,7 +292,7 @@ const ViewComplaints = () => {
 
           <div className="flex gap-4">
             <button
-              onClick={() => navigate("/supervisor/all-complaints")}
+              onClick={() => navigate("/supervisor/search-reports")}
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
               <IoMdArrowBack className="mr-2 text-lg" />
