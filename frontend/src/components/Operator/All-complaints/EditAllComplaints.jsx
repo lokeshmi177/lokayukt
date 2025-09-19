@@ -512,6 +512,63 @@ const AllComplaintsEdit = () => {
       setIsSubmitting(false);
     }
   };
+//   const handleSubmit = async (e) => {
+//   e.preventDefault();
+//   setIsSubmitting(true);
+//   setErrors({});
+
+//   try {
+//     const formDataToSend = new FormData();
+    
+//     // Basic form fields
+//     formDataToSend.append('name', formData.name);
+//     formDataToSend.append('mobile', formData.mobile);
+//     formDataToSend.append('address', formData.address);
+//     formDataToSend.append('district_id', formData.district_id);
+//     formDataToSend.append('email', formData.email);
+//     formDataToSend.append('fee_exempted', formData.fee_exempted ? '1' : '0');
+//     formDataToSend.append('amount', formData.amount || '');
+//     formDataToSend.append('challan_no', formData.challan_no || '');
+//     formDataToSend.append('dob', formData.dob || '');
+    
+//     // ✅ Complaint details arrays (same format as hidden input)
+//     complaintDetails.forEach((detail, index) => {
+//       formDataToSend.append(`title[${index}]`, detail.title || '');
+//       formDataToSend.append(`department[${index}]`, detail.department || '');
+//       formDataToSend.append(`officer_name[${index}]`, detail.officer_name || '');
+//       formDataToSend.append(`designation[${index}]`, detail.designation || '');
+//       formDataToSend.append(`category[${index}]`, detail.category || '');
+//       formDataToSend.append(`subject[${index}]`, detail.subject || '');
+//       formDataToSend.append(`nature[${index}]`, detail.nature || '');
+//       formDataToSend.append(`description[${index}]`, detail.description || '');
+      
+//       // ✅ ID को भी same format में
+//       if (detail.id) {
+//         formDataToSend.append(`complaint_details_id[${index}]`, detail.id);
+//       }
+      
+//       // Files
+//       if (detail.file) {
+//         formDataToSend.append(`files[${index}]`, detail.file);
+//       }
+//     });
+
+//     // Remove the multipart/form-data header - let axios handle it
+//     const response = await api.post(`/operator/update-complaint/${id}`, formDataToSend);
+    
+//     if (response.data.status === true) {
+//       toast.success(response.data.message || 'Complaint updated successfully!');
+//       setTimeout(() => {
+//         navigate(`/operator/all-complaints/view/${id}`);
+//       }, 1500);
+//     }
+//   } catch (error) {
+//     // Same error handling as before...
+//   } finally {
+//     setIsSubmitting(false);
+//   }
+// };
+
 
   // Loading state
   if (isLoading) {
@@ -815,10 +872,13 @@ const AllComplaintsEdit = () => {
                   <div className="space-y-4">
                     {/* Title and File Upload Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="hidden" 
-                    name="complaint_details_id"
-                    value={detail.id}
-                     />
+ <input 
+  type="hidden" 
+  name={`complaint_details_id[${index}]`}
+  value={detail.id || ''}
+  onChange={(e) => handleDetailChange(index, 'id', e.target.value)}
+/>
+
                       {/* Title */}
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
