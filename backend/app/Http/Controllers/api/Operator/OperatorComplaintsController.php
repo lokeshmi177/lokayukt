@@ -384,7 +384,7 @@ $cmpedit->details = DB::table('complaints_details as cd')
     // }
 
      public function updateComplain(Request $request,$id){
-        dd($request->all());
+        // dd($request->all());
         $added_by = Auth::user()->id;
             $validation = Validator::make($request->all(), [
                 'name' => 'required|string|max:255',
@@ -396,23 +396,23 @@ $cmpedit->details = DB::table('complaints_details as cd')
                 // 'fee_exempted' => 'required|boolean',
                 // 'department' => 'required',
                  'department'   => 'required|array',
-                 'department.*' => 'required',
+                 'department.*' => 'required|integer|exists:departments,id',
 
                   'designation'   => 'required|array',
-                 'designation.*' => 'required',
+                 'designation.*' => 'required|integer|exists:designations,id',
                   'category'   => 'required|array',
-                 'category.*' => 'required',
+                 'category.*' => 'required|string|max:255',
                   'subject'   => 'required|array',
-                 'subject.*' => 'required',
+                 'subject.*' => 'required|integer|exists:subjects,id',
                   'nature'   => 'required|array',
-                 'nature.*' => 'required',
+                 'nature.*' => 'required|integer|exists:complaintype,id',
                   'description'   => 'required|array',
-                 'description.*' => 'required',
+                 'description.*' => 'required|string|max:255',
                   'title'   => 'required|array',
-                 'title.*' => 'required',
+                 'title.*' => 'required|string|max:255',
                   'file'   => 'array',
                  'file.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-                'officer_name' => 'required',
+                'officer_name' => 'required|array',
                
             ], [
                 'name.required' => 'Name is required.',
@@ -426,25 +426,33 @@ $cmpedit->details = DB::table('complaints_details as cd')
                 // 'email.unique' => 'This email is already registered.',
                 'dob.date' => 'Date of Birth must be a valid date.',
                 'fee_exempted.required' => 'Please specify if fee is exempted or not.',
+               
                 'department.required' => 'Department is required.',
                 'department.array' => 'Department must be an array.',
                 'department.*.required' => 'Each department is required.',
+               
                 'officer_name.required' => 'Officer name is required.',
+               
                 'designation.required' => 'designation is required.',
                 'designation.array' => 'designation must be an array.',
                 'designation.*.required' => 'Each designation is required.',
+               
                 'category.required' => 'category is required.',
                 'category.array' => 'category must be an array.',
                 'category.*.required' => 'Each category is required.',
+               
                 'subject.required' => 'subject is required.',
                 'subject.array' => 'subject must be an array.',
                 'subject.*.required' => 'Each subject is required.',
+               
                 'nature.required' => 'nature is required.',
                 'nature.array' => 'nature must be an array.',
                 'nature.*.required' => 'Each nature is required.',
+               
                 'description.required' => 'description is required.',
                 'description.array' => 'description must be an array.',
                 'description.*.required' => 'Each description is required.',
+               
                 'title.required' => 'title is required.',
                 'title.array' => 'title must be an array.',
                 'title.*.required' => 'Each title is required.',
@@ -485,21 +493,24 @@ $cmpedit->details = DB::table('complaints_details as cd')
 
             foreach ($request->department as $i => $departName) {
                 
-                $data = [
+                $data[] = [
                     'id' => $request->complaint_details_id[$i], 
-                    'department' => $request->department[$i], 
+                    'department_id' => $request->department[$i], 
                     'officer_name' => $request->officer_name[$i], 
-                    'designation' => $request->designation[$i],  
+                    'designation_id' => $request->designation[$i],  
                     'category' => $request->category[$i], 
-                    'added_by' => $added_by[$i], 
-                    'subject' => $request->subject[$i], 
-                    'nature' => $request->nature[$i], 
+                    'added_by' => $added_by, 
+                    'subject_id' => $request->subject[$i], 
+                    'complaintype_id' => $request->nature[$i], 
                     'description' => $request->description[$i], 
                     'title' => $request->title[$i], 
                      
                 ];
 
+
             }
+
+            
             // $complaint->department_id = $request->department;
             // $complaint->officer_name = $request->officer_name;
             // $complaint->designation_id = $request->designation;
@@ -528,12 +539,18 @@ $cmpedit->details = DB::table('complaints_details as cd')
               if (!empty($filePath)) {
                  $data['file'] = $filename;
               }
-              $dataList[] = $data;
+            
+              $dataList = $data;
+                // return response()->json($dataList);
+            //  dd($dataList);
                foreach($dataList as $key => $value){
+            
                      DB::table('complaints_details')
                          ->where('id', $value['id'])
                          ->update($value);
+                   
                 }
+               
 
             // MP2024ALG001
             // $year = date('Y');
