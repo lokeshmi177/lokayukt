@@ -278,6 +278,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 $remark ='Remark By Section Officer / Under Secretary';
                 $remark.='\n';
                 $remark.= $request->remarks;
+                $remark.='\n';
                 $cmp->remark = $remark;
                 $cmp->save();
                 // $cmpAction =new ComplaintAction();
