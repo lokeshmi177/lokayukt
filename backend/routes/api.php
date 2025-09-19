@@ -4,6 +4,7 @@ use App\Http\Controllers\api\Admin\AdminDashboardController;
 use App\Http\Controllers\api\Admin\AdminReportController;
 // use App\Http\Controllers\api\Admin\AdminDashboardController;
 // use App\Http\Controllers\api\Admin\OperatorReportController;
+
 use App\Http\Controllers\api\Operator\OperatorDashboardController;
 use App\Http\Controllers\api\Operator\OperatorReportController;
 // use App\Http\Controllers\api\Admin\OperatorReportController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\api\Operator\OperatorComplaintsController;
 // use App\Http\Controllers\api\OperatorComplaintsController;
 use App\Http\Controllers\api\Supervisor\SupervisorCommonController;
 use App\Http\Controllers\api\Supervisor\SupervisorComplaintsController;
+use App\Http\Controllers\api\Supervisor\SupervisorDashboardController;
 use App\Http\Controllers\api\Supervisor\SupervisorReportController;
 use App\Http\Controllers\api\UserManagement;
 use Illuminate\Support\Facades\Route;
@@ -207,11 +209,11 @@ Route::middleware('auth:sanctum')->group(function(){
         // Route::get('/compliance-report',[AdminReportController::class,'complianceReport']);
 
         // // Daishboard
-        // Route::get('/dashboard/{date}',[AdminDashboardController::class,'index']);
-        // Route::get('/montly-complaint',[AdminDashboardController::class,'getDistrictGraph']);
-        // Route::get('/district-wise-company-type',[AdminDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
-        // Route::get('/status-distribution',[AdminDashboardController::class,'gestatusDistribution']);
-        // Route::get('/status-distribution',action: [AdminDashboardController::class,'gestatusDistribution']);
+        Route::get('/dashboard/{date}',[SupervisorDashboardController::class,'index']);
+        Route::get('/montly-complaint',[SupervisorDashboardController::class,'getDistrictGraph']);
+        Route::get('/district-wise-company-type',[SupervisorDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
+        Route::get('/status-distribution',[SupervisorDashboardController::class,'gestatusDistribution']);
+        Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
 
     });
 
