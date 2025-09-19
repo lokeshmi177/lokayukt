@@ -483,7 +483,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                     // 'ct.name as complaintype_name',
                     // 'sub.name as subject_name'
                 )
-                ->where('form_status',0)
+                ->where('form_status',1)
                 ->where('approved_rejected_by_ro',1)
                 ->where('approved_rejected_by_so_us',0)
                 ->get();
