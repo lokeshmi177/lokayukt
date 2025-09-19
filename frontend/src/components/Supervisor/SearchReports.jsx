@@ -34,7 +34,7 @@ const api = axios.create({
   },
 });
 
-//  Custom Searchable Dropdown Component [2][3]
+//  Custom Searchable Dropdown Component
 const CustomSearchableDropdown = ({ 
   value, 
   onChange, 
@@ -45,7 +45,7 @@ const CustomSearchableDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Flatten options for searching [11]
+  // Flatten options for searching
   const flattenOptions = (options) => {
     const flattened = [];
     options.forEach(group => {
@@ -60,7 +60,7 @@ const CustomSearchableDropdown = ({
     return flattened;
   };
 
-  // Filter options based on search [2][20]
+  // Filter options based on search
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
     
@@ -70,7 +70,7 @@ const CustomSearchableDropdown = ({
       option.groupLabel.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Group filtered options back [11]
+    // Group filtered options back
     const groupedFiltered = {};
     filtered.forEach(option => {
       if (!groupedFiltered[option.groupLabel]) {
@@ -123,7 +123,7 @@ const CustomSearchableDropdown = ({
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
-          {/* Search Input [2] */}
+          {/* Search Input */}
           <div className="p-2 border-b">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -142,7 +142,7 @@ const CustomSearchableDropdown = ({
             {filteredOptions().length > 0 ? (
               filteredOptions().map((group) => (
                 <div key={group.label}>
-                  {/* Group Header [18] */}
+                  {/* Group Header */}
                   <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
                     {group.icon}
                     <span className="ml-2">{group.label}</span>
@@ -177,7 +177,7 @@ const CustomSearchableDropdown = ({
   );
 };
 
-//  Updated Forward Modal Component with Custom Dropdown
+//  Updated Forward Modal Component with Dynamic API Data
 const ForwardModal = ({ 
   isOpen, 
   onClose, 
@@ -189,47 +189,68 @@ const ForwardModal = ({
     remarks: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lokayuktData, setLokayuktData] = useState([]);
+  const [upLokayuktData, setUpLokayuktData] = useState([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
-  //  Dropdown Options with Search Support [2]
-  const dropdownOptions = [
-    {
-      label: "Assistant",
-      icon: <FaUsers className="w-4 h-4 text-blue-500" />,
-      items: [
-        { 
-          value: "assistant_1", 
-          label: "Assistant Level 1", 
-          icon: <FaUser className="w-4 h-4 text-blue-500" /> 
-        },
-        { 
-          value: "assistant_2", 
-          label: "Assistant Level 2", 
-          icon: <FaUser className="w-4 h-4 text-green-500" /> 
-        },
-        { 
-          value: "assistant_3", 
-          label: "Assistant Level 3", 
-          icon: <FaUser className="w-4 h-4 text-purple-500" /> 
-        }
-      ]
-    },
-    {
-      label: "Lokaukt",
-      icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
-      items: [
-        { 
-          value: "lok", 
-          label: "Lok", 
-          icon: <FaUserTie className="w-4 h-4 text-yellow-500" /> 
-        },
-        { 
-          value: "uployut", 
-          label: "Uployut", 
-          icon: <FaCrown className="w-4 h-4 text-red-500" /> 
-        }
-      ]
+  // Fetch LokAyukta and UpLokAyukta data
+  const fetchForwardingData = async () => {
+    setIsLoadingData(true);
+    try {
+      // Fetch LokAyukta data
+      const lokayuktResponse = await api.get("/supervisor/get-lokayukt");
+      console.log("LokAyukta Response:", lokayuktResponse.data);
+      
+      // Fetch UpLokAyukta data  
+      const upLokayuktResponse = await api.get("/supervisor/get-uplokayukt");
+      console.log("UpLokAyukta Response:", upLokayuktResponse.data);
+      
+      // Set data - assuming response is array directly
+      setLokayuktData(Array.isArray(lokayuktResponse.data) ? lokayuktResponse.data : []);
+      setUpLokayuktData(Array.isArray(upLokayuktResponse.data) ? upLokayuktResponse.data : []);
+      
+    } catch (error) {
+      console.error("Error fetching forwarding data:", error);
+      toast.error("Error loading forwarding options");
+      setLokayuktData([]);
+      setUpLokayuktData([]);
+    } finally {
+      setIsLoadingData(false);
     }
-  ];
+  };
+
+  // Build dropdown options dynamically from API data
+  const buildDropdownOptions = () => {
+    const options = [];
+
+    // Add LokAyukta options if data exists
+    if (lokayuktData.length > 0) {
+      options.push({
+        label: "Hon'ble LokAyukta",
+        // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
+        items: lokayuktData.map(item => ({
+          value: `lokayukt_${item.id}`,
+          label: item.name,
+          // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />
+        }))
+      });
+    }
+
+    // Add UpLokAyukta options if data exists
+    if (upLokayuktData.length > 0) {
+      options.push({
+        label: "Hon'ble UpLokAyukta", 
+        // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
+        items: upLokayuktData.map(item => ({
+          value: `uplokayukt_${item.id}`,
+          label: item.name,
+          // icon: <FaUserTie className="w-4 h-4 text-blue-500" />
+        }))
+      });
+    }
+
+    return options;
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -237,6 +258,7 @@ const ForwardModal = ({
         forwardTo: '',
         remarks: ''
       });
+      fetchForwardingData();
     }
   }, [isOpen]);
 
@@ -246,10 +268,17 @@ const ForwardModal = ({
     
     try {
       // Your forward API call here
+      console.log("Forwarding complaint:", {
+        complaintId,
+        forwardTo: formData.forwardTo,
+        remarks: formData.remarks
+      });
+      
       toast.success('Complaint forwarded successfully!');
       onSubmit();
       onClose();
     } catch (error) {
+      console.error("Error forwarding complaint:", error);
       toast.error('Error forwarding complaint');
     } finally {
       setIsSubmitting(false);
@@ -264,6 +293,7 @@ const ForwardModal = ({
   };
 
   if (!isOpen) return null;
+
   return (
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
@@ -286,14 +316,14 @@ const ForwardModal = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Forward To / भेजें
               </label>
-              {/*  Custom Searchable Dropdown [2][3] */}
-              <CustomSearchableDropdown
-                value={formData.forwardTo}
-                onChange={(value) => setFormData(prev => ({ ...prev, forwardTo: value }))}
-                options={dropdownOptions}
-                placeholder="Select Department/Officer"
-                required
-              />
+                <CustomSearchableDropdown
+                  value={formData.forwardTo}
+                  onChange={(value) => setFormData(prev => ({ ...prev, forwardTo: value }))}
+                  options={buildDropdownOptions()}
+                  placeholder="Select LokAyukta/UpLokAyukta"
+                  required
+                />
+             
             </div>
 
             <div>
@@ -321,16 +351,16 @@ const ForwardModal = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !formData.forwardTo}
+              disabled={isSubmitting || !formData.forwardTo || isLoadingData}
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
-                isSubmitting || !formData.forwardTo
+                isSubmitting || !formData.forwardTo || isLoadingData
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >
               {isSubmitting ? (
                 <>
-                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  {/* <FaSpinner className="w-4 h-4 animate-spin" /> */}
                   Forwarding...
                 </>
               ) : (
@@ -383,6 +413,7 @@ const SearchReports = () => {
     setSelectedComplaintId(complaintId);
     setIsForwardModalOpen(true);
   };
+
   const handleForwardSubmit = () => {
     // Refresh data or update state as needed
     console.log('Complaint forwarded');
@@ -511,6 +542,7 @@ const SearchReports = () => {
       return "bg-blue-100 text-blue-800 border-blue-200";
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
+
   //  CORRECTED FILTERING LOGIC - Fixed district matching
   const filteredResults = ensureArray(searchResults).filter((result) => {
     // Search filter
@@ -584,6 +616,7 @@ const SearchReports = () => {
   };
 
   const navigate = useNavigate()
+
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
       <ToastContainer
@@ -658,6 +691,7 @@ const SearchReports = () => {
                 </button>
               </div>
             </div>
+
             {/* Tab Content */}
             <div className="overflow-hidden">
               {/* Advanced Search Tab */}
@@ -732,7 +766,7 @@ const SearchReports = () => {
                             >
                               {isSearching ? (
                                 <>
-                                  <FaSpinner className="w-3 h-3 animate-spin" />
+                                  {/* <FaSpinner className="w-3 h-3 animate-spin" /> */}
                                   <span>Refreshing...</span>
                                 </>
                               ) : (
@@ -817,6 +851,7 @@ const SearchReports = () => {
                         </div>
                       </div>
                     </div>
+
                     {/* Search Results */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       {/* Table wrapper */}
@@ -854,10 +889,17 @@ const SearchReports = () => {
                             <tbody className="bg-white divide-y divide-gray-100">
                               {paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
-                                  <tr key={result.id} className="hover:bg-gray-50">
+                                  
+                                  <tr key={result.id}  className="hover:bg-gray-50">
+                                  <div 
+             className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105"
+
+                                   onClick={() => navigate(`view/${result.id}`)} >
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
                                       {result.complain_no || result.application_no || "N/A"}
                                     </td>
+
+                                  </div>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.name || "N/A"}
                                     </td>
@@ -906,7 +948,7 @@ const SearchReports = () => {
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
-                                        {/* /// START: ADDED FORWARD BUTTON /// */}
+                                        {/* Forward Button */}
                                         <button 
                                           onClick={() => handleForward(result.id)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
@@ -914,7 +956,6 @@ const SearchReports = () => {
                                           <FaArrowRight className="w-3 text-blue-600 h-3" />
                                           <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
                                         </button>
-                                        {/* /// END: ADDED FORWARD BUTTON /// */}
                                       </div>
                                     </td>
                                   </tr>
@@ -932,6 +973,7 @@ const SearchReports = () => {
                           </table>
                         </div>
                       </div>
+
                       {/* Pagination */}
                       {totalPages > 1 && (
                         <div className="mt-4">
@@ -989,7 +1031,7 @@ const SearchReports = () => {
                         </div>
                       </div>
                     </div>
-                    {/*  NEW REPORTS USING NEW API DATA */}
+
                     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       {/* District-wise Report using new API */}
                       <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
@@ -1045,7 +1087,7 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/*  UPDATED Statistical Reports Tab with Monthly Trends API */}
+              {/* Statistical Reports Tab */}
               {activeTab === "statistical" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 overflow-hidden">
@@ -1087,7 +1129,7 @@ const SearchReports = () => {
                         )}
                       </div>
                     </div>
-                    {/*  UPDATED Average Processing Time Section with Dynamic API Data */}
+
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
                         Average Processing Time
@@ -1133,7 +1175,8 @@ const SearchReports = () => {
                   </div>
                 </div>
               )}
-              {/*  UPDATED Compliance Reports Tab with Compliance Report API */}
+
+              {/* Compliance Reports Tab */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-4 sm:space-y-6 overflow-hidden">
@@ -1195,7 +1238,7 @@ const SearchReports = () => {
         </div>
       </div>
 
-      {/*  Updated Forward Modal with Custom Searchable Dropdown */}
+      {/* Updated Forward Modal with Dynamic API Data */}
       <ForwardModal
         isOpen={isForwardModalOpen}
         onClose={() => setIsForwardModalOpen(false)}

@@ -66,7 +66,7 @@ const PendingComplaints = () => {
     setIsConfirmModalOpen(true);
   };
 
-  // ✅ Handle approval confirmation with react-toastify
+  // ✅ **UPDATED: Handle approval confirmation - Show as verified and remove after delay**
   const handleConfirmApproval = async () => {
     if (!complaintToApprove) return;
     
@@ -77,7 +77,7 @@ const PendingComplaints = () => {
       
       if (response.data.success || response.status === 200) {
         // Show success toast using react-toastify
-        toast.success("Approved Successfully!", {
+        toast.success("Verified Successfully!", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -86,16 +86,27 @@ const PendingComplaints = () => {
           draggable: true,
         });
         
-        // Update complaint approved_by_ro status in local state
+        // ✅ **STEP 1: First update to show as verified**
         setComplaintsData(prevData => 
           prevData.map(complaint => 
             complaint.id === complaintToApprove.id 
-              ? { ...complaint, approved_by_ro: 1 }
+              ? { 
+                  ...complaint, 
+                  approved_rejected_by_ro: 1  // ✅ Show as verified first
+                }
               : complaint
           )
         );
+
+        // ✅ **STEP 2: Remove from list after 2 seconds**
+        setTimeout(() => {
+          setComplaintsData(prevData => 
+            prevData.filter(complaint => complaint.id !== complaintToApprove.id)
+          );
+        }, 2000); // 2 seconds delay to show "Verified" status
+
       } else {
-        toast.error("Failed to approve complaint", {
+        toast.error("Failed to verify complaint", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -106,7 +117,7 @@ const PendingComplaints = () => {
       }
     } catch (error) {
       console.error("Approval Error:", error);
-      toast.error("Failed to approve complaint", {
+      toast.error("Failed to verify complaint", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -151,7 +162,7 @@ const PendingComplaints = () => {
     }
   };
 
-  // ✅ Check if complaint is approved by RO (Regional Officer)
+  // ✅ **UPDATED: Check if complaint is approved by RO (Regional Officer)**
   const isApprovedByRO = (complaint) => {
     return complaint.approved_rejected_by_ro === 1;
   };
@@ -235,12 +246,10 @@ const PendingComplaints = () => {
 
               {/* ✅ Row 3 - All labels normal (not bold) */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 border-b sm:border-b-0 border-gray-100">
-              
-               
                 <div className="hidden sm:block"></div>
               </div>
 
-              {/* ✅ Row 4 - Action Buttons with conditional rendering based on approved_by_ro */}
+              {/* ✅ **UPDATED: Row 4 - Action Buttons with real-time conditional rendering** */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                   <button
@@ -250,20 +259,21 @@ const PendingComplaints = () => {
                     View Details
                   </button>
                   
-                  {/* ✅ Conditional rendering based on approved_by_ro field */}
+                  {/* ✅ **REAL-TIME: Conditional rendering based on approved_rejected_by_ro field** */}
                   {isApprovedByRO(complaint) ? (
                     <button
                       disabled
-                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+                      className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed transition-all duration-300"
                     >
                       ✓ Verified
                     </button>
                   ) : (
                     <button
                       onClick={(e) => handleApproveClick(e, complaint)}
-                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                      disabled={isApproving && complaintToApprove?.id === complaint.id}
+                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Verify
+                      {isApproving && complaintToApprove?.id === complaint.id ? 'Verifying...' : 'Verify'}
                     </button>
                   )}
                 </div>
@@ -280,7 +290,7 @@ const PendingComplaints = () => {
         )}
       </div>
 
-      {/* ✅ Confirmation Modal */}
+      {/* ✅ **UPDATED: Confirmation Modal with better messaging** */}
       {isConfirmModalOpen && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -294,9 +304,9 @@ const PendingComplaints = () => {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Confirm Approval</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Confirm Verification</h3>
                   <p className="text-sm text-gray-500">
-                    Are you sure you want to approve this complaint?
+                    Are you sure you want to verify complaint <strong>{complaintToApprove?.complain_no}</strong>?
                   </p>
                 </div>
               </div>
@@ -305,7 +315,7 @@ const PendingComplaints = () => {
                 <button
                   onClick={handleCancelApproval}
                   disabled={isApproving}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
@@ -314,7 +324,7 @@ const PendingComplaints = () => {
                   disabled={isApproving}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isApproving ? "Approving..." : "Yes, Approve"}
+                  {isApproving ? "Verifying..." : "Yes, Verify"}
                 </button>
               </div>
             </div>
