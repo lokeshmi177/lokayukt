@@ -244,7 +244,7 @@ const ForwardModal = ({
 
       console.log("API Response:", response.data);
 
-      // ✅ Check for success response based on your API
+      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
         toast.success(response.data.message || 'Complaint forwarded successfully!', {
           position: "top-right",
@@ -255,7 +255,7 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // ✅ Pass the complaint ID to parent for local update
+        // Pass the complaint ID to parent for local update
         onSubmit(complaintId); // Pass complaint ID to parent
         onClose(); // Close modal
       } else {
@@ -458,9 +458,9 @@ const AllComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // ✅ Handle forward submit with local state update
+  // Handle forward submit with local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // ✅ Update local state immediately without API call
+    // Update local state immediately without API call
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
         complaint.id === forwardedComplaintId 
@@ -589,7 +589,7 @@ const AllComplaints = () => {
                   >
                     View Details
                   </button>
-                  {/* ✅ Dynamic button based on forward status */}
+                  {/* Dynamic button based on forward status */}
                   {isForwarded(complaint) ? (
                     <button
                       disabled
