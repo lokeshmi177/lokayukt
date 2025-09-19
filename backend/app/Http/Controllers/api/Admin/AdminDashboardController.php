@@ -737,12 +737,13 @@ class AdminDashboardController extends Controller
     // ->get();
 $blockdata = DB::table('district_master as dm')
     ->leftJoin('complaints as hd', 'hd.district_id', '=', 'dm.district_code') // use inner join to exclude empty blocks
+     ->leftJoin('complaints_details as cd', 'hd.id', '=', 'cd.complain_id')
     ->select(
         'dm.district_code as district_id',
         'dm.district_name',
         DB::raw("count(hd.id) as total_complains"),
-        DB::raw("SUM(CASE WHEN hd.complaintype_id = '1' THEN 1 ELSE 0 END) as allegations"),
-        DB::raw("SUM(CASE WHEN hd.complaintype_id = '2' THEN 1 ELSE 0 END) as grievances")
+        DB::raw("SUM(CASE WHEN cd.complaintype_id = '1' THEN 1 ELSE 0 END) as allegations"),
+        DB::raw("SUM(CASE WHEN cd.complaintype_id = '2' THEN 1 ELSE 0 END) as grievances")
     )
     ->groupBy('dm.district_code', 'dm.district_name')
     ->having('total_complains', '>', 0)

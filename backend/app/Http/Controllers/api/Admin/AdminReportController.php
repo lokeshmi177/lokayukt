@@ -290,7 +290,8 @@ class AdminReportController extends Controller
     {
        
         $complainCounts = Complaint::select('departments.name', DB::raw('count(*) as complain_count'))
-            ->join('departments', 'complaints.department_id', '=', 'departments.id')
+        ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+        ->leftJoin('departments', 'cd.department_id', '=', 'departments.id')
             ->groupBy('departments.id', 'departments.name')
              
             ->pluck('complain_count', 'departments.name');
@@ -357,7 +358,8 @@ class AdminReportController extends Controller
     //        ]);
 
         $complaintData = DB::table('complaints as cm')
-         ->leftjoin('complaintype', 'cm.complaintype_id', '=', 'complaintype.id')
+          ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+        ->leftjoin('complaintype', 'cd.complaintype_id', '=', 'complaintype.id')
     ->select(
     
         'complaintype.name',
