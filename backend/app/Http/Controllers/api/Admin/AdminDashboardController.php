@@ -454,7 +454,7 @@ class AdminDashboardController extends Controller
                
             )
             ->groupBy('rl.id', 'rl.name')
-            ->having('total_complains', '>', 0)
+            // ->having('total_complains', '>', 0)
             ->orderBy('rl.name')
             // ->limit(10)
             ->get();
