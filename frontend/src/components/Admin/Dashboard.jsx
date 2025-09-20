@@ -265,6 +265,9 @@ const Dashboard = ({ userRole = "Administrator" }) => {
   const [workloadData, setWorkloadData] = useState([]);
   const [showMonthlyTab, setShowMonthlyTab] = useState(false);
   
+  // ✅ NEW: Performance Dashboard State
+  const [performanceData, setPerformanceData] = useState(null);
+  
   // ✅ NEW: Compliance Section State
   const [complianceData, setComplianceData] = useState({
     overallCompliance: 86,
@@ -278,6 +281,22 @@ const Dashboard = ({ userRole = "Administrator" }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
+
+  // ✅ NEW: Fetch Performance Dashboard Data
+  const fetchPerformanceData = async () => {
+    try {
+      console.log('🔄 Fetching performance dashboard data...');
+      const response = await api.get('/admin/get-performance-dashboard');
+      console.log('📊 Performance Dashboard API Response:', response.data);
+      
+      if (response.data && response.data.status && response.data.data) {
+        setPerformanceData(response.data.data);
+        console.log('✅ Performance data updated successfully');
+      }
+    } catch (error) {
+      console.error('💥 Error fetching performance data:', error);
+    }
+  };
 
   // ✅ NEW: Fetch Compliance Data
   const fetchComplianceData = async () => {
@@ -488,7 +507,10 @@ const Dashboard = ({ userRole = "Administrator" }) => {
       // ✅ 7. Fetch Workload Data
       await fetchWorkloadData();
 
-      // ✅ 8. NEW: Fetch Compliance Section Data
+      // ✅ 8. NEW: Fetch Performance Dashboard Data
+      await fetchPerformanceData();
+
+      // ✅ 9. NEW: Fetch Compliance Section Data
       await fetchComplianceData();
       await fetchActiveUsersCount();
       await fetchDepartmentCount();
@@ -523,19 +545,12 @@ const Dashboard = ({ userRole = "Administrator" }) => {
 
   // Sample data for charts with realistic values (keeping original for other tabs)
   const processingTimeData = [
-    { stage: 'Entry to Verification', avg: 2.3, target: 3 },
-    { stage: 'Verification to Forward', avg: 4.1, target: 5 },
+    { stage: 'Entry to Rejected', avg: 2.3, target: 3 },
+    { stage: 'Rejected to Forward', avg: 4.1, target: 5 },
     { stage: 'Forward to Assignment', avg: 1.8, target: 2 },
     { stage: 'Assignment to Investigation', avg: 12.5, target: 15 },
     { stage: 'Investigation to Decision', avg: 18.7, target: 20 },
     { stage: 'Decision to Disposal', avg: 3.2, target: 5 }
-  ];
-
-  const slaCompliance = [
-    { metric: 'Entry SLA', value: 95, target: 90 },
-    { metric: 'Verification SLA', value: 87, target: 85 },
-    { metric: 'Investigation SLA', value: 78, target: 80 },
-    { metric: 'Disposal SLA', value: 82, target: 85 }
   ];
 
   // Add CSS class for cursor pointer on chart elements
@@ -935,34 +950,119 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
-          {/* SLA Compliance Metrics */}
+      
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {slaCompliance.map((item, index) => (
-              <Card key={index} className="cursor-pointer">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm">{item.metric}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold">
-                      {item.value}%
-                    </div>
-                    <Badge 
-                      variant={item.value >= item.target ? "default" : "destructive"}
-                      className={item.value >= item.target ? "bg-green-100 text-green-600" : ""}
-                    >
-                      Target: {item.target}%
-                    </Badge>
+            {/* <Card className="cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Total Complaints</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {performanceData?.total_complaints || 0}
+                </div>
+                <div className="text-sm text-gray-500">All complaints</div>
+              </CardContent>
+            </Card> */}
+
+            <Card className="cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Pending SLA</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">
+                    {performanceData?.pending_percentage || 0}%
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2 cursor-pointer">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${item.value >= item.target ? 'bg-green-600' : 'bg-red-600'}`}
-                      style={{ width: `${Math.min(item.value, 100)}%` }}
-                    ></div>
+                  <Badge 
+                    variant="secondary"
+                    className="bg-yellow-100 text-yellow-600"
+                  >
+                    In Progress
+                  </Badge>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2 cursor-pointer">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-300 bg-yellow-600"
+                    style={{ width: `${Math.min(parseFloat(performanceData?.pending_percentage || 0), 100)}%` }}
+                  ></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Investigation SLA</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">
+                    {performanceData?.investigation_percentage || 0}%
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <Badge 
+                    variant="default"
+                    className="bg-blue-100 text-blue-600"
+                  >
+                    Active
+                  </Badge>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2 cursor-pointer">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-300 bg-blue-600"
+                    style={{ width: `${Math.min(parseFloat(performanceData?.investigation_percentage || 0), 100)}%` }}
+                  ></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Approved SLA</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">
+                    {performanceData?.approved_percentage || 0}%
+                  </div>
+                  <Badge 
+                    variant="default"
+                    className="bg-green-100 text-green-600"
+                  >
+                    Completed
+                  </Badge>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2 cursor-pointer">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-300 bg-green-600"
+                    style={{ width: `${Math.min(parseFloat(performanceData?.approved_percentage || 0), 100)}%` }}
+                  ></div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="cursor-pointer">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Rejected SLA</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="text-2xl font-bold">
+                    {performanceData?.rejected_percentage || 0}%
+                  </div>
+                  <Badge 
+                    variant="destructive"
+                    className="bg-red-100 text-red-600"
+                  >
+                    Closed
+                  </Badge>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2 cursor-pointer">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-300 bg-red-600"
+                    style={{ width: `${Math.min(parseFloat(performanceData?.rejected_percentage || 0), 100)}%` }}
+                  ></div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
@@ -970,7 +1070,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           {/* ✅ UPDATED: Role-wise Workload with API Data and Role Mapping */}
           <Card className="cursor-pointer">
             <CardHeader>
-              <CardTitle>Role-wise Workload Distribution</CardTitle>
+              <CardTitle>SubRole-wise Workload Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
