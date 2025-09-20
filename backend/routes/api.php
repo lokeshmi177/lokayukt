@@ -199,6 +199,13 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/forward-by-ds-js/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbyds']);
         Route::post('/forward-report-by-so/{complainId}',[SupervisorReportController::class,'forwardReporttbySo']);
         Route::post('/forward-report-by-ds/{complainId}',[SupervisorReportController::class,'forwardReporttbyds']);
+        /**
+         * Forward Report By Subroles
+         */
+        Route::post('/forwardReporttbysec{complainId}',[SupervisorReportController::class,'forwardReporttbysec']);
+        Route::post('/forwardReporttbycio/{complainId}',[SupervisorReportController::class,'forwardReporttbycio']);
+        Route::post('/forwardReporttbyda/{complainId}',[SupervisorReportController::class,'forwardReporttbyda']);
+       
         Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
         Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
         Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);

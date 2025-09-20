@@ -310,7 +310,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
-      public function forwardComplaintbyds(Request $request,$complainId){
+    public function forwardComplaintbyds(Request $request,$complainId){
         //    dd($request->all());
         $user = Auth::user()->id;
         // dd($usersubrole);
@@ -372,7 +372,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
 
 
-      public function allComplainspending(){
+    public function allComplainspending(){
        
            $complainDetails = DB::table('complaints as cm')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
