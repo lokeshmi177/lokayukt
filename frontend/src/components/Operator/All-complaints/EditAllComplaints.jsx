@@ -616,10 +616,8 @@ const AllComplaintsEdit = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="space-y-4 sm:space-y-6">
-
           {/* Top Row: Complainant Details + Security Fee */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-            
             {/* Complainant Details */}
             <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
               <div className="flex items-center gap-3 mb-4">

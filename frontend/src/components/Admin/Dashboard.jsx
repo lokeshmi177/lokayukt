@@ -46,6 +46,24 @@ const api = axios.create({
   },
 });
 
+// ✅ NEW: Role Mapping Function
+const mapRoleToDisplayName = (apiRole) => {
+  const roleMapping = {
+    'ro-aro': 'RO/ARO',
+    'entry-operator': 'Entry Operator',
+    'review-operator': 'Review Operator', 
+    'so-us': 'Section Officer',
+    'ds-js': 'DS/JS',
+    'sec': 'Secretary',
+    'cio-io': 'CIO/IO',
+    'dea-assis': 'DEA Assistant'
+  };
+  
+  // Convert to lowercase for comparison and return mapped name or original
+  const normalizedRole = apiRole?.toLowerCase?.() || '';
+  return roleMapping[normalizedRole] || apiRole || 'Unknown Role';
+};
+
 // Utility function for className merging
 const cn = (...classes) => {
   return classes.filter(Boolean).join(' ');
@@ -244,13 +262,75 @@ const Dashboard = ({ userRole = "Administrator" }) => {
   const [departmentData, setDepartmentData] = useState([]);
   const [districtData, setDistrictData] = useState([]);
   const [weeklyData, setWeeklyData] = useState([]);
-  const [workloadData, setWorkloadData] = useState([]); // ✅ NEW: API data for workload
+  const [workloadData, setWorkloadData] = useState([]);
   const [showMonthlyTab, setShowMonthlyTab] = useState(false);
+  
+  // ✅ NEW: Compliance Section State
+  const [complianceData, setComplianceData] = useState({
+    overallCompliance: 86,
+    totalComplaints: 0,
+    approvedPercentage: 0
+  });
+  const [activeUsersCount, setActiveUsersCount] = useState(0);
+  const [departmentCount, setDepartmentCount] = useState(0);
   
   // ✅ Date Picker State
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
+
+  // ✅ NEW: Fetch Compliance Data
+  const fetchComplianceData = async () => {
+    try {
+      console.log('🔄 Fetching compliance data...');
+      const response = await api.get('/admin/get-compliance');
+      console.log('📊 Compliance API Response:', response.data);
+      
+      if (response.data && response.data.status && response.data.data) {
+        const { total_complaints, approved_percentage } = response.data.data;
+        setComplianceData({
+          overallCompliance: parseFloat(approved_percentage) || 0,
+          totalComplaints: parseInt(total_complaints) || 0,
+          approvedPercentage: parseFloat(approved_percentage) || 0
+        });
+        console.log('✅ Compliance data updated successfully');
+      }
+    } catch (error) {
+      console.error('💥 Error fetching compliance data:', error);
+    }
+  };
+
+  // ✅ NEW: Fetch Active Users Count
+  const fetchActiveUsersCount = async () => {
+    try {
+      console.log('🔄 Fetching active users count...');
+      const response = await api.get('/admin/get-all-active-users');
+      console.log('👥 Active Users API Response:', response.data);
+      
+      if (response.data && response.data.status) {
+        setActiveUsersCount(parseInt(response.data.data) || 0);
+        console.log('✅ Active users count updated successfully');
+      }
+    } catch (error) {
+      console.error('💥 Error fetching active users count:', error);
+    }
+  };
+
+  // ✅ NEW: Fetch Department Count
+  const fetchDepartmentCount = async () => {
+    try {
+      console.log('🔄 Fetching department count...');
+      const response = await api.get('/admin/get-all-department-count');
+      console.log('🏢 Department Count API Response:', response.data);
+      
+      if (response.data && response.data.status) {
+        setDepartmentCount(parseInt(response.data.data) || 0);
+        console.log('✅ Department count updated successfully');
+      }
+    } catch (error) {
+      console.error('💥 Error fetching department count:', error);
+    }
+  };
 
   // ✅ NEW: Fetch Weekly Graph Data
   const fetchWeeklyData = async () => {
@@ -285,7 +365,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     }
   };
 
-  // ✅ NEW: Fetch Role-wise Workload Data
+  // ✅ UPDATED: Fetch Role-wise Workload Data with Role Mapping
   const fetchWorkloadData = async () => {
     try {
       console.log('🔄 Fetching role-wise workload data...');
@@ -293,14 +373,14 @@ const Dashboard = ({ userRole = "Administrator" }) => {
       console.log('📊 Workload API Response:', response.data);
       
       if (response.data && response.data.data && Array.isArray(response.data.data)) {
-        // ✅ Transform API data to chart format
+        // ✅ Transform API data to chart format with role mapping
         const workloadChartData = response.data.data.map((role) => ({
-          role: role.sub_role_name || 'Unknown Role',
+          role: mapRoleToDisplayName(role.sub_role_name), // ✅ Use mapped role name
           pending: parseInt(role.total_pending_complains) || 0,   // ✅ Pending complaints
           completed: parseInt(role.total_approved_complains) || 0  // ✅ Approved/Completed complaints
         }));
         
-        console.log('🔄 Transformed workload data:', workloadChartData);
+        console.log('🔄 Transformed workload data with role mapping:', workloadChartData);
         
         // ✅ Set workload data
         setWorkloadData(workloadChartData);
@@ -327,7 +407,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
     console.log('🔄 WorkloadData state changed:', workloadData);
   }, [workloadData]);
 
-  // ✅ API Data Fetching Function
+  // ✅ UPDATED: API Data Fetching Function
   const fetchDashboardData = async (monthParam) => {
     try {
       // 1. Dashboard Stats API
@@ -405,8 +485,13 @@ const Dashboard = ({ userRole = "Administrator" }) => {
       // ✅ 6. Fetch Weekly Data
       await fetchWeeklyData();
 
-      // ✅ 7. NEW: Fetch Workload Data
+      // ✅ 7. Fetch Workload Data
       await fetchWorkloadData();
+
+      // ✅ 8. NEW: Fetch Compliance Section Data
+      await fetchComplianceData();
+      await fetchActiveUsersCount();
+      await fetchDepartmentCount();
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -481,13 +566,13 @@ const Dashboard = ({ userRole = "Administrator" }) => {
           </p>
         </div>
         <div className="flex gap-2 relative">
-          {/* ✅ Month-Year Picker Button */}
+          {/* ✅ UPDATED: Month-Year Picker Button with Purple Icon */}
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => setShowDatePicker(!showDatePicker)}
           >
-            <FaCalendarAlt className="h-4 w-4 mr-2" />
+            <FaCalendarAlt className="h-4 w-4 mr-2 text-purple-600" />
             {selectedDate.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
           </Button>
 
@@ -508,9 +593,9 @@ const Dashboard = ({ userRole = "Administrator" }) => {
             </div>
           )}
 
-          {/* ✅ Refresh Button */}
+          {/* ✅ UPDATED: Refresh Button with Orange Icon */}
           <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <FaChartLine className="h-4 w-4 mr-2" />
+            <FaChartLine className="h-4 w-4 mr-2 text-orange-600" />
             Refresh
           </Button>
         </div>
@@ -882,7 +967,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </TabsContent>
 
         <TabsContent value="workload" className="space-y-6">
-          {/* ✅ UPDATED: Role-wise Workload with API Data */}
+          {/* ✅ UPDATED: Role-wise Workload with API Data and Role Mapping */}
           <Card className="cursor-pointer">
             <CardHeader>
               <CardTitle>Role-wise Workload Distribution</CardTitle>
@@ -892,12 +977,18 @@ const Dashboard = ({ userRole = "Administrator" }) => {
                 <BarChart 
                   data={workloadData} 
                   layout="vertical" 
-                  margin={{ left: 100 }}
+                  margin={{ left: 130 }} // ✅ Increased left margin for longer role names
                   key={JSON.stringify(workloadData)} // ✅ Force re-render when data changes
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis type="number" stroke="#6b7280" />
-                  <YAxis dataKey="role" type="category" width={100} stroke="#6b7280" />
+                  <YAxis 
+                    dataKey="role" 
+                    type="category" 
+                    width={130} // ✅ Increased width for longer role names
+                    stroke="#6b7280" 
+                    fontSize={12}
+                  />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend />
                   <Bar dataKey="pending" fill="#f59e0b" name="Pending" radius={[0, 4, 4, 0]} />
@@ -909,6 +1000,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
         </TabsContent>
 
         <TabsContent value="compliance" className="space-y-6">
+          {/* ✅ UPDATED: Compliance Section with API Data */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="cursor-pointer">
               <CardHeader>
@@ -919,8 +1011,13 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-green-600">86%</div>
-                  <p className="text-sm text-gray-500">Meeting SLA targets</p>
+                  <div className="text-4xl font-bold text-green-600">
+                    {complianceData.approvedPercentage.toFixed(1)}%
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    {/* {complianceData.totalComplaints} total complaints */}
+                    Meeting SLA targets
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -934,8 +1031,8 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-4xl font-bold">24</div>
-                  <p className="text-sm text-gray-500">Currently online</p>
+                  <div className="text-4xl font-bold">{activeUsersCount}</div>
+                  <p className="text-sm text-gray-500">Currently active</p>
                 </div>
               </CardContent>
             </Card>
@@ -949,7 +1046,7 @@ const Dashboard = ({ userRole = "Administrator" }) => {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-4xl font-bold">8</div>
+                  <div className="text-4xl font-bold">{departmentCount}</div>
                   <p className="text-sm text-gray-500">Total departments</p>
                 </div>
               </CardContent>

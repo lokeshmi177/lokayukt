@@ -46,10 +46,7 @@ const Login = () => {
         },
       });
 
-      const response = await loginApi.post('/login', {
-        user_name: formData.user_name,
-        password: formData.password
-      });
+      const response = await loginApi.post('/login', formData);
 
       if (response.data.status === 'success') {
         // Store authentication data in localStorage
