@@ -12,14 +12,14 @@ import {
   FaUserTie,
   FaCrown,
   FaUsers,
-  FaTimes
+  FaTimes,
 } from "react-icons/fa";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Pagination from '../Pagination';
-import * as XLSX from "xlsx-js-style"; 
-import { saveAs } from "file-saver"; 
+import Pagination from "../Pagination";
+import * as XLSX from "xlsx-js-style";
+import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
@@ -34,27 +34,17 @@ const api = axios.create({
   },
 });
 
-//  Custom Searchable Dropdown Component
-const CustomSearchableDropdown = ({ 
-  value, 
-  onChange, 
-  options = [], 
-  placeholder = "Select option...",
-  required = false 
-}) => {
+// Custom Searchable Dropdown Component
+const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select option...", required = false, error = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Flatten options for searching
   const flattenOptions = (options) => {
     const flattened = [];
-    options.forEach(group => {
-      group.items.forEach(item => {
-        flattened.push({
-          ...item,
-          groupLabel: group.label,
-          groupIcon: group.icon
-        });
+    options.forEach((group) => {
+      group.items.forEach((item) => {
+        flattened.push({ ...item, groupLabel: group.label, groupIcon: group.icon });
       });
     });
     return flattened;
@@ -63,22 +53,22 @@ const CustomSearchableDropdown = ({
   // Filter options based on search
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
-    
+
     const flatOptions = flattenOptions(options);
-    const filtered = flatOptions.filter(option => 
+    const filtered = flatOptions.filter((option) =>
       option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
       option.groupLabel.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Group filtered options back
     const groupedFiltered = {};
-    filtered.forEach(option => {
+    filtered.forEach((option) => {
       if (!groupedFiltered[option.groupLabel]) {
-        const originalGroup = options.find(g => g.label === option.groupLabel);
+        const originalGroup = options.find((g) => g.label === option.groupLabel);
         groupedFiltered[option.groupLabel] = {
           label: option.groupLabel,
           icon: originalGroup?.icon,
-          items: []
+          items: [],
         };
       }
       groupedFiltered[option.groupLabel].items.push(option);
@@ -87,7 +77,7 @@ const CustomSearchableDropdown = ({
     return Object.values(groupedFiltered);
   };
 
-  const selectedOption = flattenOptions(options).find(opt => opt.value === value);
+  const selectedOption = flattenOptions(options).find((opt) => opt.value === value);
 
   const handleSelect = (optionValue) => {
     onChange(optionValue);
@@ -101,7 +91,9 @@ const CustomSearchableDropdown = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between"
+        className={`w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
+          error ? '' : 'border-gray-300'
+        }`}
         required={required}
       >
         <span className="flex items-center">
@@ -117,8 +109,17 @@ const CustomSearchableDropdown = ({
             </>
           )}
         </span>
-        <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <span>
+          <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        </span>
       </button>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mt-1 text-sm text-red-600">
+          {error}
+        </div>
+      )}
 
       {/* Dropdown Menu */}
       {isOpen && (
@@ -137,6 +138,7 @@ const CustomSearchableDropdown = ({
               />
             </div>
           </div>
+
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions().length > 0 ? (
@@ -147,7 +149,6 @@ const CustomSearchableDropdown = ({
                     {group.icon}
                     <span className="ml-2">{group.label}</span>
                   </div>
-                  
                   {/* Group Items */}
                   {group.items.map((item) => (
                     <button
@@ -167,7 +168,7 @@ const CustomSearchableDropdown = ({
               ))
             ) : (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                {searchTerm ? 'No options found' : 'No options available'}
+                {searchTerm ? "No options found" : "No options available"}
               </div>
             )}
           </div>
@@ -177,21 +178,21 @@ const CustomSearchableDropdown = ({
   );
 };
 
-//  Updated Forward Modal Component with Dynamic API Data
-const ForwardModal = ({ 
-  isOpen, 
-  onClose, 
-  complaintId,
-  onSubmit 
-}) => {
-  const [formData, setFormData] = useState({
-    forwardTo: '',
-    remarks: ''
+// ✅ UPDATED: Forward Modal Component with Your Approach - Direct API Fields
+const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
+  // ✅ YOUR APPROACH: Direct API field names
+  const [forward, setForward] = useState({
+    forward_to: "",
+    remark: ""
   });
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lokayuktData, setLokayuktData] = useState([]);
   const [upLokayuktData, setUpLokayuktData] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  
+  // ✅ NEW: Error state for form validation
+  const [errors, setErrors] = useState({});
 
   // Fetch LokAyukta and UpLokAyukta data
   const fetchForwardingData = async () => {
@@ -200,15 +201,14 @@ const ForwardModal = ({
       // Fetch LokAyukta data
       const lokayuktResponse = await api.get("/supervisor/get-lokayukt");
       console.log("LokAyukta Response:", lokayuktResponse.data);
-      
-      // Fetch UpLokAyukta data  
+
+      // Fetch UpLokAyukta data
       const upLokayuktResponse = await api.get("/supervisor/get-uplokayukt");
       console.log("UpLokAyukta Response:", upLokayuktResponse.data);
-      
+
       // Set data - assuming response is array directly
       setLokayuktData(Array.isArray(lokayuktResponse.data) ? lokayuktResponse.data : []);
       setUpLokayuktData(Array.isArray(upLokayuktResponse.data) ? upLokayuktResponse.data : []);
-      
     } catch (error) {
       console.error("Error fetching forwarding data:", error);
       toast.error("Error loading forwarding options");
@@ -227,25 +227,25 @@ const ForwardModal = ({
     if (lokayuktData.length > 0) {
       options.push({
         label: "Hon'ble LokAyukta",
-        // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
-        items: lokayuktData.map(item => ({
+        icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
+        items: lokayuktData.map((item) => ({
           value: `lokayukt_${item.id}`,
           label: item.name,
-          // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />
-        }))
+          icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+        })),
       });
     }
 
     // Add UpLokAyukta options if data exists
     if (upLokayuktData.length > 0) {
       options.push({
-        label: "Hon'ble UpLokAyukta", 
-        // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
-        items: upLokayuktData.map(item => ({
+        label: "Hon'ble UpLokAyukta",
+        icon: <FaCrown className="w-4 h-4 text-blue-500" />,
+        items: upLokayuktData.map((item) => ({
           value: `uplokayukt_${item.id}`,
           label: item.name,
-          // icon: <FaUserTie className="w-4 h-4 text-blue-500" />
-        }))
+          icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
+        })),
       });
     }
 
@@ -254,32 +254,51 @@ const ForwardModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        forwardTo: '',
-        remarks: ''
-      });
+      // ✅ Reset with direct API field names
+      setForward({ forward_to: "", remark: "" });
+      setErrors({}); // Clear errors when modal opens
       fetchForwardingData();
     }
   }, [isOpen]);
 
+  // ✅ UPDATED: Handle Submit with Your Approach - Direct API Usage
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+    setErrors({}); // Clear previous errors
+
     try {
-      // Your forward API call here
-      console.log("Forwarding complaint:", {
-        complaintId,
-        forwardTo: formData.forwardTo,
-        remarks: formData.remarks
-      });
-      
-      toast.success('Complaint forwarded successfully!');
-      onSubmit();
-      onClose();
+      console.log("Forwarding complaint:", complaintId, "with payload:", forward);
+
+      // ✅ YOUR APPROACH: Direct API call with exact field names
+      const response = await api.post(`/supervisor/forward-report-by-so/${complaintId}`, forward);
+
+      console.log("Forward API Response:", response.data);
+
+      // ✅ Handle successful response
+      if (response.data.status !== false) {
+        toast.success("Complaint forwarded successfully!");
+        onSubmit && onSubmit();
+        onClose();
+      } else {
+        // Handle validation errors from API
+        if (response.data.errors) {
+          setErrors(response.data.errors);
+          console.log("Validation errors:", response.data.errors);
+        } else {
+          toast.error("Failed to forward complaint");
+        }
+      }
     } catch (error) {
       console.error("Error forwarding complaint:", error);
-      toast.error('Error forwarding complaint');
+      
+      // ✅ Handle API validation errors
+      if (error.response && error.response.data && error.response.data.errors) {
+        setErrors(error.response.data.errors);
+        console.log("API Validation Errors:", error.response.data.errors);
+      } else {
+        toast.error("Error forwarding complaint");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -295,11 +314,9 @@ const ForwardModal = ({
   if (!isOpen) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
       <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+        {/* Header */}
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h3 className="text-lg font-semibold">Forward Complaint</h3>
           <button
@@ -310,36 +327,62 @@ const ForwardModal = ({
             <FaTimes className="w-5 h-5" />
           </button>
         </div>
+
         <form onSubmit={handleSubmit}>
           <div className="p-4 space-y-4">
+            {/* ✅ Forward To Field - Using direct API field name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Forward To / भेजें
+                Forward To <span className="text-red-500">*</span>
               </label>
-                <CustomSearchableDropdown
-                  value={formData.forwardTo}
-                  onChange={(value) => setFormData(prev => ({ ...prev, forwardTo: value }))}
-                  options={buildDropdownOptions()}
-                  placeholder="Select LokAyukta/UpLokAyukta"
-                  required
-                />
-             
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Remarks / टिप्पणी
-              </label>
-              <textarea
-                name="remarks"
-                value={formData.remarks}
-                onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter forwarding remarks..."
-                rows="3"
+              <CustomSearchableDropdown
+                value={forward.forward_to}
+                onChange={(value) => {
+                  setForward((prev) => ({ ...prev, forward_to: value }));
+                  // Clear error when user selects value
+                  if (errors.forward_to) {
+                    setErrors((prev) => ({ ...prev, forward_to: null }));
+                  }
+                }}
+                options={buildDropdownOptions()}
+                placeholder="Select LokAyukta/UpLokAyukta"
+               
+                error={errors.forward_to && errors.forward_to[0]} // ✅ Show error message
               />
             </div>
+
+            {/* ✅ Remarks Field - Using direct API field name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remarks <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="remark"
+                value={forward.remark}
+                onChange={(e) => {
+                  setForward((prev) => ({ ...prev, remark: e.target.value }));
+                  // Clear error when user types
+                  if (errors.remark) {
+                    setErrors((prev) => ({ ...prev, remark: null }));
+                  }
+                }}
+                className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.remark ? '' : ''
+                }`}
+                placeholder="Enter forwarding remarks..."
+                rows={3}
+              
+              />
+              {/* ✅ Show remark error */}
+              {errors.remark && (
+                <div className="mt-1 text-sm text-red-600">
+                  {errors.remark[0]}
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Footer */}
           <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
             <button
               type="button"
@@ -351,16 +394,16 @@ const ForwardModal = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !formData.forwardTo || isLoadingData}
+              disabled={isSubmitting || !forward.forward_to || isLoadingData}
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
-                isSubmitting || !formData.forwardTo || isLoadingData
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
+                isSubmitting || !forward.forward_to || isLoadingData
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              } text-white`}
             >
               {isSubmitting ? (
                 <>
-                  {/* <FaSpinner className="w-4 h-4 animate-spin" /> */}
+                  <FaSpinner className="w-4 h-4 animate-spin" />
                   Forwarding...
                 </>
               ) : (
@@ -384,31 +427,31 @@ const SearchReports = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
-  
-  //  EXISTING API STATES
+
+  // EXISTING API STATES
   const [overallStats, setOverallStats] = useState(null);
   const [districtWiseStats, setDistrictWiseStats] = useState(null);
   const [departmentWiseStats, setDepartmentWiseStats] = useState(null);
-  
-  //  NEW API STATES
+
+  // NEW API STATES
   const [monthlyTrends, setMonthlyTrends] = useState(null);
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
-  
+
   const [isSearching, setIsSearching] = useState(false);
-  
+
   // Add pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Forward Modal States
+  // ✅ Forward Modal States
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
   // Helper function to ensure array
-  const ensureArray = (data) => Array.isArray(data) ? data : [];
+  const ensureArray = (data) => (Array.isArray(data) ? data : []);
 
-  // Forward Modal handlers
+  // ✅ Forward Modal handlers
   const handleForward = (complaintId) => {
     setSelectedComplaintId(complaintId);
     setIsForwardModalOpen(true);
@@ -416,7 +459,7 @@ const SearchReports = () => {
 
   const handleForwardSubmit = () => {
     // Refresh data or update state as needed
-    console.log('Complaint forwarded');
+    console.log("Complaint forwarded");
   };
 
   // Fetch initial data when component mounts
@@ -425,20 +468,18 @@ const SearchReports = () => {
       try {
         // Existing API calls
         const districtsResponse = await api.get("/supervisor/all-district");
-        
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
         }
 
         const reportsResponse = await api.get("/supervisor/complain-report");
-        
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
           setSearchResults(dataArray);
         }
 
-        //  EXISTING API CALLS
+        // EXISTING API CALLS
         // Fetch overall stats
         try {
           const overallResponse = await api.get("/supervisor/all-complains");
@@ -469,7 +510,7 @@ const SearchReports = () => {
           console.error("Error fetching department-wise stats:", error);
         }
 
-        //  NEW API CALLS
+        // NEW API CALLS
         // Fetch monthly trends
         try {
           const monthlyTrendsResponse = await api.get("/supervisor/montly-trends");
@@ -490,7 +531,7 @@ const SearchReports = () => {
           console.error("Error fetching compliance report:", error);
         }
 
-        //  NEW: Fetch average processing time by complaint type
+        // NEW: Fetch average processing time by complaint type
         try {
           const avgProcessingResponse = await api.get("/supervisor/detail-by-complaintype");
           if (avgProcessingResponse.data.status === true) {
@@ -499,7 +540,6 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching average processing times:", error);
         }
-
       } catch (error) {
         setSearchResults([]);
         setDistricts([]);
@@ -515,7 +555,6 @@ const SearchReports = () => {
     setIsSearching(true);
     try {
       const response = await api.get("/supervisor/complain-report");
-      
       if (response.data.status === true) {
         const dataArray = ensureArray(response.data.data);
         setSearchResults(dataArray);
@@ -533,40 +572,38 @@ const SearchReports = () => {
   };
 
   const getStatusColor = (status) => {
-    if (status === "Disposed - Accepted" || status === "Resolved")
+    if (status === "Disposed - Accepted" || status === "Resolved") {
       return "bg-green-100 text-green-800 border-green-200";
-    if (status === "Rejected") return "bg-red-100 text-red-800 border-red-200";
-    if (status === "In Progress" || status === "Under Investigation")
+    }
+    if (status === "Rejected") {
+      return "bg-red-100 text-red-800 border-red-200";
+    }
+    if (status === "In Progress" || status === "Under Investigation") {
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    if (status === "Pending")
+    }
+    if (status === "Pending") {
       return "bg-blue-100 text-blue-800 border-blue-200";
+    }
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  //  CORRECTED FILTERING LOGIC - Fixed district matching
+  // ✅ CORRECTED FILTERING LOGIC - Fixed field names to match API response
   const filteredResults = ensureArray(searchResults).filter((result) => {
-    // Search filter
-    const matchesSearch = 
-      searchTerm === "" ||
-      (result.complain_no && 
-        result.complain_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (result.application_no && 
-        result.application_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (result.name && 
-        result.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (result.officer_name && 
-        result.officer_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (result.department_name && 
-        result.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (result.district_name && 
-        result.district_name.toLowerCase().includes(searchTerm.toLowerCase()));
+    // Search filter - UPDATED field names to match API response
+    const matchesSearch =
+      !searchTerm ||
+      (result.complain_no && result.complain_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.name && result.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.department_name && result.department_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.district_name && result.district_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (result.designation_name && result.designation_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    //  FIXED: District filtering - Properly scoped variable
+    // FIXED District filtering - Use district_id from API
     let matchesDistrict = true;
     if (selectedDistrict !== "all") {
-      const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
+      const selectedDistrictObj = districts.find((d) => d.id.toString() === selectedDistrict);
       if (selectedDistrictObj) {
-        matchesDistrict = result.district_id.toString() === selectedDistrictObj.district_code;
+        matchesDistrict = result.district_id.toString() === selectedDistrictObj.districtcode;
       } else {
         matchesDistrict = false;
       }
@@ -588,34 +625,28 @@ const SearchReports = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedResults = filteredResults.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  //  UPDATED Report stats calculation using new API data
+  // UPDATED Report stats calculation using new API data
   const reportStats = {
-    total: overallStats?.total_complaints || ensureArray(searchResults).length,
-    disposed: ensureArray(searchResults).filter(
-      (r) => r.status === "Disposed - Accepted" || r.status === "Resolved"
-    ).length,
-    rejected: overallStats?.total_rejected || ensureArray(searchResults).filter((r) => r.status === "Rejected").length,
-    inProgress: overallStats?.total_pending || ensureArray(searchResults).filter(
-      (r) =>
-        r.status === "In Progress" ||
-        r.status === "Under Investigation" ||
-        r.status === "Pending"
-    ).length,
+    total: overallStats?.totalcomplaints || ensureArray(searchResults).length,
+    disposed: ensureArray(searchResults).filter((r) => r.status === "Disposed - Accepted" || r.status === "Resolved").length,
+    rejected: overallStats?.totalrejected || ensureArray(searchResults).filter((r) => r.status === "Rejected").length,
+    inProgress: overallStats?.totalpending || ensureArray(searchResults).filter((r) => r.status === "In Progress" || r.status === "Under Investigation" || r.status === "Pending").length,
   };
 
-  //  Calculate overall average from avgProcessingTimes data
+  // Calculate overall average from avgProcessingTimes data
   const calculateOverallAverage = () => {
-    if (!avgProcessingTimes || !Array.isArray(avgProcessingTimes)) return "N/A";
-    
-    const validTimes = avgProcessingTimes.filter(item => item.avg_days !== null && !isNaN(parseFloat(item.avg_days)));
-    if (validTimes.length === 0) return "N/A";
-    
-    const totalDays = validTimes.reduce((sum, item) => sum + parseFloat(item.avg_days), 0);
+    if (!avgProcessingTimes || !Array.isArray(avgProcessingTimes)) return "NA";
+
+    const validTimes = avgProcessingTimes.filter((item) => item.avgdays !== null && !isNaN(parseFloat(item.avgdays)));
+
+    if (validTimes.length === 0) return "NA";
+
+    const totalDays = validTimes.reduce((sum, item) => sum + parseFloat(item.avgdays), 0);
     const average = (totalDays / validTimes.length).toFixed(1);
-    return `${average}`;
+    return average;
   };
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
@@ -632,13 +663,13 @@ const SearchReports = () => {
         theme="light"
         style={{ zIndex: 9999 }}
       />
-
+      
       <div className="max-w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
-              Search & Reports / खोज और रिपोर्ट
+              Search Reports
             </h1>
           </div>
         </div>
@@ -652,9 +683,7 @@ const SearchReports = () => {
                 <button
                   onClick={() => setActiveTab("search")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                    activeTab === "search"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : ""
+                    activeTab === "search" ? "bg-white text-gray-900 shadow-sm" : ""
                   }`}
                 >
                   Advanced Search
@@ -662,9 +691,7 @@ const SearchReports = () => {
                 <button
                   onClick={() => setActiveTab("general")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                    activeTab === "general"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : ""
+                    activeTab === "general" ? "bg-white text-gray-900 shadow-sm" : ""
                   }`}
                 >
                   General Reports
@@ -672,9 +699,7 @@ const SearchReports = () => {
                 <button
                   onClick={() => setActiveTab("statistical")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                    activeTab === "statistical"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : ""
+                    activeTab === "statistical" ? "bg-white text-gray-900 shadow-sm" : ""
                   }`}
                 >
                   Statistical Reports
@@ -682,9 +707,7 @@ const SearchReports = () => {
                 <button
                   onClick={() => setActiveTab("compliance")}
                   className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                    activeTab === "compliance"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : ""
+                    activeTab === "compliance" ? "bg-white text-gray-900 shadow-sm" : ""
                   }`}
                 >
                   Compliance Reports
@@ -702,9 +725,7 @@ const SearchReports = () => {
                     <div className="bg-white p-3 sm:p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-3">
                         <FaSearch className="w-4 h-4 text-blue-600" />
-                        <h3 className="text-sm sm:text-base font-semibold text-gray-900">
-                          Search & Filter
-                        </h3>
+                        <h3 className="text-sm sm:text-base font-semibold text-gray-900">Search Filter</h3>
                       </div>
 
                       <div className="space-y-3">
@@ -721,6 +742,7 @@ const SearchReports = () => {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-3">
+                          {/* District Filter */}
                           <div className="flex-1">
                             <select
                               id="district"
@@ -731,11 +753,13 @@ const SearchReports = () => {
                               <option value="all">All Districts ({ensureArray(districts).length} total)</option>
                               {ensureArray(districts).map((district) => (
                                 <option key={district.id} value={district.id.toString()}>
-                                  {district.district_name} - {district.dist_name_hi}
+                                  {district.districtname} - {district.distnamehi}
                                 </option>
                               ))}
                             </select>
                           </div>
+
+                          {/* Status Filter */}
                           <div className="flex-1">
                             <select
                               id="status"
@@ -753,7 +777,7 @@ const SearchReports = () => {
                             </select>
                           </div>
 
-                          {/*  Buttons Side by Side with Same Blue Color */}
+                          {/* Buttons Side by Side with Same Blue Color */}
                           <div className="flex gap-3 flex-shrink-0">
                             <button
                               onClick={handleSearch}
@@ -766,7 +790,7 @@ const SearchReports = () => {
                             >
                               {isSearching ? (
                                 <>
-                                  {/* <FaSpinner className="w-3 h-3 animate-spin" /> */}
+                                  <FaSpinner className="w-3 h-3 animate-spin" />
                                   <span>Refreshing...</span>
                                 </>
                               ) : (
@@ -777,7 +801,7 @@ const SearchReports = () => {
                               )}
                             </button>
 
-                            {/*  Export Button - Same Blue Color & Icon */}
+                            {/* Export Button - Same Blue Color Icon */}
                             <button
                               onClick={() => {
                                 try {
@@ -787,19 +811,17 @@ const SearchReports = () => {
                                   }
 
                                   const wsData = [
-                                    ["Sr. No", "Complain No", "Application No", "Name", "Officer", "Department", "District", "Nature", "Status", "Entry Date"],
+                                    ["Sr. No", "Complain No", "Name", "Department", "District", "Nature", "Status", "Entry Date"],
                                     ...filteredResults.map((item, index) => [
                                       index + 1,
                                       item.complain_no || "NA",
-                                      item.application_no || "NA", 
                                       item.name || "NA",
-                                      item.officer_name || "NA",
                                       item.department_name || "NA",
                                       item.district_name || "NA",
                                       item.complaintype_name || "NA",
                                       item.status || "NA",
-                                      item.created_at || "NA"
-                                    ])
+                                      item.created_at || "NA",
+                                    ]),
                                   ];
 
                                   const wb = XLSX.utils.book_new();
@@ -809,35 +831,35 @@ const SearchReports = () => {
                                   const headerStyle = {
                                     font: { bold: true, color: { rgb: "000000" } },
                                     alignment: { horizontal: "center" },
-                                    fill: { fgColor: { rgb: "D3D3D3" } }
+                                    fill: { fgColor: { rgb: "D3D3D3" } },
                                   };
 
-                                  const range = XLSX.utils.decode_range(ws['!ref']);
+                                  const range = XLSX.utils.decode_range(ws["!ref"]);
                                   for (let C = range.s.c; C <= range.e.c; ++C) {
                                     const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
-                                    if (!ws[cellAddress]) ws[cellAddress] = {};
+                                    if (!ws[cellAddress]) continue;
                                     ws[cellAddress].s = headerStyle;
                                   }
 
-                                  ws['!cols'] = [
-                                    {wch: 8}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}
+                                  ws["!cols"] = [
+                                    { wch: 8 },
+                                    { wch: 15 },
+                                    { wch: 20 },
+                                    { wch: 20 },
+                                    { wch: 15 },
+                                    { wch: 15 },
+                                    { wch: 15 },
+                                    { wch: 20 },
                                   ];
 
                                   XLSX.utils.book_append_sheet(wb, ws, "Search Reports");
 
-                                  const excelBuffer = XLSX.write(wb, {
-                                    bookType: 'xlsx',
-                                    type: 'array',
-                                    cellStyles: true
-                                  });
+                                  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array", cellStyles: true });
+                                  const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                                  saveAs(data, `SearchReports_${new Date().toISOString().slice(0, 10)}.xlsx`);
 
-                                  const data = new Blob([excelBuffer], {
-                                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                                  });
-
-                                  saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
                                   toast.success("Export successful!");
-                                } catch(e) {
+                                } catch (e) {
                                   console.error("Export failed:", e);
                                   toast.error("Failed to export data.");
                                 }
@@ -860,96 +882,56 @@ const SearchReports = () => {
                           <table className="min-w-full text-[11px] sm:text-xs">
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Complaints No.
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Complainant
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
-                                  Department
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  District
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Nature
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Status
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Entry Date
-                                </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
-                                  Actions
-                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Complaints No.</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Complainant</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">Department</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">District</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Nature</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Status</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Entry Date</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Actions</th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
                               {paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
-                                  
-                                  <tr key={result.id}  className="hover:bg-gray-50">
-                                  <div 
-             className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105"
-
-                                   onClick={() => navigate(`view/${result.id}`)} >
+                                  <tr key={result.id} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
-                                      {result.complain_no || result.application_no || "N/A"}
+                                      <div className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105" onClick={() => navigate(`/view/${result.id}`)}>
+                                        {result.complain_no || "NA"}
+                                      </div>
                                     </td>
-
-                                  </div>
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700">{result.name || "NA"}</td>
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">{result.department_name || "NA"}</td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      {result.name || "N/A"}
-                                    </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
-                                      {result.department_name || "N/A"}
-                                    </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      <span 
-                                        className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" 
-                                        title={`District Code: ${result.district_id}`}
-                                      >
-                                        {result.district_name || "N/A"}
+                                      <span className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" title={`District ID: ${result.district_id}`}>
+                                        {result.district_name || "NA"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span
-                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${
-                                          result.complaintype_name === "Allegation"
-                                            ? "bg-red-100 text-red-800"
-                                            : "bg-gray-100 text-gray-800"
-                                        }`}
-                                      >
-                                        {result.complaintype_name || "N/A"}
+                                      <span className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${result.complaintype_name === "Allegation" ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}`}>
+                                        {result.complaintype_name || "NA"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span
-                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${getStatusColor(
-                                          result.status
-                                        )}`}
-                                      >
-                                        {result.status || "N/A"}
+                                      <span className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${getStatusColor(result.status)}`}>
+                                        {result.status || "NA"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span className="text-xs text-gray-600">
-                                        {result.created_at || "N/A"}
-                                      </span>
+                                      <span className="text-xs text-gray-600">{result.created_at || "NA"}</span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <div className="flex gap-1">
-                                        <button 
-                                          onClick={() => navigate(`view/${result.id}`)}
+                                        <button
+                                          onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
-                                        {/* Forward Button */}
-                                        <button 
+                                        {/* ✅ Forward Button */}
+                                        <button
                                           onClick={() => handleForward(result.id)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
@@ -999,86 +981,61 @@ const SearchReports = () => {
                     {/* KPI cards - Using new API data */}
                     <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Total Complaints
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-gray-900">
-                          {overallStats?.total_complaints || reportStats.total}
-                        </div>
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Total Complaints</h3>
+                        <div className="text-lg sm:text-2xl font-bold text-gray-900">{overallStats?.totalcomplaints || reportStats.total}</div>
                       </div>
+
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Approved
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-green-600">
-                          {overallStats?.total_approved || 0}
-                        </div>
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Approved</h3>
+                        <div className="text-lg sm:text-2xl font-bold text-green-600">{overallStats?.totalapproved || 0}</div>
                       </div>
+
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Rejected
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-red-600">
-                          {overallStats?.total_rejected || reportStats.rejected}
-                        </div>
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Rejected</h3>
+                        <div className="text-lg sm:text-2xl font-bold text-red-600">{overallStats?.totalrejected || reportStats.rejected}</div>
                       </div>
+
                       <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Pending
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-yellow-600">
-                          {overallStats?.total_pending || reportStats.inProgress}
-                        </div>
+                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">Pending</h3>
+                        <div className="text-lg sm:text-2xl font-bold text-yellow-600">{overallStats?.totalpending || reportStats.inProgress}</div>
                       </div>
                     </div>
 
                     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       {/* District-wise Report using new API */}
                       <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                           District-wise Report 
-                        </h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">District-wise Report</h3>
                         <div className="space-y-3 max-h-80 overflow-y-auto">
                           {districtWiseStats ? (
                             Object.entries(districtWiseStats).map(([districtName, count]) => (
                               <div key={districtName} className="flex justify-between items-center">
-                                <span className="truncate text-sm sm:text-base text-gray-700">
-                                  {districtName}
-                                </span>
+                                <span className="truncate text-sm sm:text-base text-gray-700">{districtName}</span>
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
                                   {count}
                                 </span>
                               </div>
                             ))
                           ) : (
-                            <div className="text-center text-gray-500 py-4">
-                              Loading district-wise data...
-                            </div>
+                            <div className="text-center text-gray-500 py-4">Loading district-wise data...</div>
                           )}
                         </div>
                       </div>
 
                       {/* Department-wise Report using new API */}
                       <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                           Department-wise Report 
-                        </h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Department-wise Report</h3>
                         <div className="space-y-3 max-h-80 overflow-y-auto">
                           {departmentWiseStats ? (
                             Object.entries(departmentWiseStats).map(([departmentName, count]) => (
                               <div key={departmentName} className="flex justify-between items-center">
-                                <span className="truncate text-sm sm:text-base text-gray-700">
-                                  {departmentName}
-                                </span>
+                                <span className="truncate text-sm sm:text-base text-gray-700">{departmentName}</span>
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
                                   {count}
                                 </span>
                               </div>
                             ))
                           ) : (
-                            <div className="text-center text-gray-500 py-4">
-                              Loading department-wise data...
-                            </div>
+                            <div className="text-center text-gray-500 py-4">Loading department-wise data...</div>
                           )}
                         </div>
                       </div>
@@ -1094,9 +1051,7 @@ const SearchReports = () => {
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <div className="flex items-center gap-2 mb-4">
                         <FaChartBar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Monthly Trends
-                        </h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Monthly Trends</h3>
                       </div>
                       <div className="space-y-4">
                         {monthlyTrends && monthlyTrends.length > 0 ? (
@@ -1123,35 +1078,27 @@ const SearchReports = () => {
                             </div>
                           ))
                         ) : (
-                          <div className="text-center text-gray-500 py-4">
-                            Loading monthly trends...
-                          </div>
+                          <div className="text-center text-gray-500 py-4">Loading monthly trends...</div>
                         )}
                       </div>
                     </div>
 
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                        Average Processing Time
-                      </h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Average Processing Time</h3>
                       <div className="space-y-4">
                         {avgProcessingTimes && avgProcessingTimes.length > 0 ? (
                           <>
                             {avgProcessingTimes.map((item, idx) => (
                               <div key={idx} className="flex justify-between">
-                                <span className="text-sm sm:text-base text-gray-700">
-                                  {item.name}s
-                                </span>
+                                <span className="text-sm sm:text-base text-gray-700">{item.names}</span>
                                 <span className="font-medium text-gray-900">
-                                  {item.avg_days !== null ? `${item.avg_days} days` : 'N/A'}
+                                  {item.avgdays !== null ? `${item.avgdays} days` : "NA"}
                                 </span>
                               </div>
                             ))}
                             <div className="flex justify-between border-t pt-2">
                               <span className="font-medium text-gray-900">Overall Average</span>
-                              <span className="font-bold text-gray-900">
-                                {calculateOverallAverage()} days
-                              </span>
+                              <span className="font-bold text-gray-900">{calculateOverallAverage()} days</span>
                             </div>
                           </>
                         ) : (
@@ -1181,27 +1128,25 @@ const SearchReports = () => {
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-4 sm:space-y-6 overflow-hidden">
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                        📈 Compliance Report 
-                      </h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Compliance Report</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {complianceReport ? (
                           <>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                                {parseFloat(complianceReport.approved_percentage).toFixed(1)}%
+                                {parseFloat(complianceReport.approvedpercentage).toFixed(1)}%
                               </div>
                               <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
                             </div>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                                {parseFloat(complianceReport.pending_percentage).toFixed(1)}%
+                                {parseFloat(complianceReport.pendingpercentage).toFixed(1)}%
                               </div>
                               <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
                             </div>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                                {parseFloat(complianceReport.rejected_percentage).toFixed(1)}%
+                                {parseFloat(complianceReport.rejectedpercentage).toFixed(1)}%
                               </div>
                               <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
                             </div>
@@ -1210,19 +1155,25 @@ const SearchReports = () => {
                           <>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                                {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_approved || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
+                                {overallStats?.totalcomplaints > 0
+                                  ? Math.round((Number(overallStats?.totalapproved || 0) / Number(overallStats?.totalcomplaints)) * 100)
+                                  : 0}%
                               </div>
                               <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
                             </div>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                                {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_pending || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
+                                {overallStats?.totalcomplaints > 0
+                                  ? Math.round((Number(overallStats?.totalpending || 0) / Number(overallStats?.totalcomplaints)) * 100)
+                                  : 0}%
                               </div>
                               <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
                             </div>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                                {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_rejected || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
+                                {overallStats?.totalcomplaints > 0
+                                  ? Math.round((Number(overallStats?.totalrejected || 0) / Number(overallStats?.totalcomplaints)) * 100)
+                                  : 0}%
                               </div>
                               <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
                             </div>
@@ -1236,15 +1187,15 @@ const SearchReports = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Updated Forward Modal with Dynamic API Data */}
-      <ForwardModal
-        isOpen={isForwardModalOpen}
-        onClose={() => setIsForwardModalOpen(false)}
-        complaintId={selectedComplaintId}
-        onSubmit={handleForwardSubmit}
-      />
+        {/* ✅ UPDATED: Forward Modal with Your Approach - Direct API Fields */}
+        <ForwardModal
+          isOpen={isForwardModalOpen}
+          onClose={() => setIsForwardModalOpen(false)}
+          complaintId={selectedComplaintId}
+          onSubmit={handleForwardSubmit}
+        />
+      </div>
     </div>
   );
 };
