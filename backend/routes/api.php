@@ -192,12 +192,13 @@ Route::middleware('auth:sanctum')->group(function(){
         
         Route::get('/all-district',[SupervisorCommonController::class,'fetch_district']);
         Route::get('/all-complaints',[SupervisorComplaintsController::class,'allComplains']);
-           Route::get('/all-pending-complaints',[SupervisorComplaintsController::class,'allComplainspending']);
+        Route::get('/all-pending-complaints',[SupervisorComplaintsController::class,'allComplainspending']);
         Route::get('/all-approved-complaints',[SupervisorComplaintsController::class,'allComplainsapproved']);
         Route::get('/view-complaint/{id}',[SupervisorComplaintsController::class,'viewComplaint']);
         Route::post('/forward-by-so/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbySO']);
-        Route::post('/forward-by-ds-js/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbyds_js']);
-        Route::post('/forward-report-by-ds-js/{complainId}',[SupervisorComplaintsController::class,'forwardReporttbyds_js']);
+        Route::post('/forward-by-ds-js/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbyds']);
+        Route::post('/forward-report-by-so/{complainId}',[SupervisorReportController::class,'forwardReporttbySo']);
+        Route::post('/forward-report-by-ds/{complainId}',[SupervisorReportController::class,'forwardReporttbyds']);
         Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
         Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
         Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);
