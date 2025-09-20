@@ -17,7 +17,7 @@ import {
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Pagination from "../Pagination";
+import Pagination from "../../Pagination";
 import * as XLSX from "xlsx-js-style";
 import { saveAs } from "file-saver";
 import { useNavigate } from "react-router-dom";
@@ -92,7 +92,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
-          error ? '' : 'border-gray-300'
+          error ? 'border-red-500' : 'border-gray-300'
         }`}
         required={required}
       >
@@ -315,7 +315,8 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+      {/* ✅ ONLY CHANGE: Changed max-w-md to max-w-3xl for bigger popup */}
+      <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h3 className="text-lg font-semibold">Forward Complaint</h3>
@@ -328,9 +329,9 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="p-4 space-y-4">
-            {/* ✅ Forward To Field - Using direct API field name */}
+        <form className="w-full max-w-5xl" onSubmit={handleSubmit}>
+          <div className="p-4 space-y-4 max-w-5xl ">
+          
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Forward To <span className="text-red-500">*</span>
@@ -351,7 +352,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
               />
             </div>
 
-            {/* ✅ Remarks Field - Using direct API field name */}
+           
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Remarks <span className="text-red-500">*</span>
@@ -367,7 +368,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                   }
                 }}
                 className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.remark ? '' : ''
+                  errors.remark ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter forwarding remarks..."
                 rows={3}
@@ -587,7 +588,7 @@ const SearchReports = () => {
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
-  // ✅ CORRECTED FILTERING LOGIC - Fixed field names to match API response
+  // CORRECTED FILTERING LOGIC - Fixed field names to match API response
   const filteredResults = ensureArray(searchResults).filter((result) => {
     // Search filter - UPDATED field names to match API response
     const matchesSearch =
@@ -858,7 +859,7 @@ const SearchReports = () => {
                                   const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
                                   saveAs(data, `SearchReports_${new Date().toISOString().slice(0, 10)}.xlsx`);
 
-                                  toast.success("Export successful!");
+                                  // toast.success("Export successful!");
                                 } catch (e) {
                                   console.error("Export failed:", e);
                                   toast.error("Failed to export data.");
@@ -897,7 +898,7 @@ const SearchReports = () => {
                                 paginatedResults.map((result, index) => (
                                   <tr key={result.id} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
-                                      <div className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105" onClick={() => navigate(`/view/${result.id}`)}>
+                                      <div className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105" onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}>
                                         {result.complain_no || "NA"}
                                       </div>
                                     </td>
@@ -924,7 +925,7 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3">
                                       <div className="flex gap-1">
                                         <button
-                                          onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}
+                                          onClick={() => navigate(`/view/${result.id}`)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
