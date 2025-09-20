@@ -737,7 +737,7 @@ const EditComplaints = () => {
                     </div>
                   )}
 
-                  <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
+                  <p className="mt-1 text-xs text-gray-500"></p>
                   {errors.file && (
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
                   )}

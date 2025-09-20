@@ -271,7 +271,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
       console.log("Forwarding complaint:", complaintId, "with payload:", forward);
 
       // ✅ YOUR APPROACH: Direct API call with exact field names
-      const response = await api.post(`/supervisor/forward-report-by-so/${complaintId}`, forward);
+      const response = await api.post(`/supervisor/forward-report-by-da/${complaintId}`, forward);
 
       console.log("Forward API Response:", response.data);
 

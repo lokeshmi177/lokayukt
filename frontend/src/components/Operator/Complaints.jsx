@@ -788,7 +788,7 @@ const Complaints = () => {
                   )}
 
                   {/*  Updated help text */}
-                  <p className="mt-1 text-xs text-gray-500">All file types allowed</p>
+                
                   {errors.file && (
                     <p className="mt-1 text-sm text-red-600">{errors.file}</p>
                   )}

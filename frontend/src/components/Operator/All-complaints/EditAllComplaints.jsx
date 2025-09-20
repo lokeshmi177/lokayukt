@@ -983,7 +983,7 @@ const AllComplaintsEdit = () => {
                         )}
                         <div className="flex justify-between">
 
-                        <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
+                        <p className="mt-1 text-xs text-gray-500"></p>
                         <button
                                   type="button"
                                   onClick={() => handleFileDownload(correspondingFile)}

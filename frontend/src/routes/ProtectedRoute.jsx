@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
     return children;
   }
 
-  return null; // or <div>Loading...</div>
+  return null; 
 };
 
 export default ProtectedRoute;

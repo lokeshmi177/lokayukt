@@ -649,7 +649,7 @@ let matchesDistrict = true;
                           <input
                             id="search-term"
                             type="text"
-                            placeholder="Search by Application No., Name, Officer, Department, District..."
+                            placeholder="Search by Complaints No, Name, Officer, Department, District..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-2.5 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -827,9 +827,13 @@ let matchesDistrict = true;
                               {paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
                                   <tr key={result.id} className="hover:bg-gray-50">
+                                   <div className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105" onClick={() => navigate(`/operator/search-reports/view/${result.id}`)}>
+
+                                 
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
                                       {result.complain_no || result.application_no || "N/A"}
                                     </td>
+                                      </div>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.name || "N/A"}
                                     </td>
