@@ -846,19 +846,19 @@ $blockdata = DB::table('district_master as dm')
         // Percentages
         DB::raw("ROUND(
             (SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
+             COUNT(cm.id)) * 100, 0
         ) as pending_percentage"),
           DB::raw("ROUND(
             (SUM(CASE WHEN cm.status = 'Under Investigation' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
+             COUNT(cm.id)) * 100, 0
         ) as investigation_percentage"),
           DB::raw("ROUND(
             (SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
+             COUNT(cm.id)) * 100, 0
         ) as approved_percentage"),
           DB::raw("ROUND(
             (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
+             COUNT(cm.id)) * 100, 0
         ) as rejected_percentage"),
     )
     ->first();
