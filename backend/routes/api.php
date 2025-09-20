@@ -128,6 +128,10 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/role-wise-reports',[AdminDashboardController::class,'getRolewisData']);
 
         Route::get('/status-distribution',[AdminDashboardController::class,'gestatusDistribution']);
+        Route::get('/get-compliance',[AdminDashboardController::class,'complianceDashboard']);
+        Route::get('/get-all-active-users',[AdminDashboardController::class,'allActiveUsers']);
+        Route::get('/get-all-department-count',[AdminDashboardController::class,'allDepartmentCount']);
+        Route::get('/get-performance-dashboard',[AdminDashboardController::class,'performanceDashboad']);
       
       
          // });

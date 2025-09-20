@@ -824,12 +824,50 @@ $blockdata = DB::table('district_master as dm')
         ]);
     }
     public function allDepartmentCount(){
-             $department = Department::where('status',1)->count();
+             $department = Department::where('status','1')->count();
             return response()->json([
             'status' => true,
             'message' => 'Records Fetch successfully',
             'data' => $department,
         ]);
+    }
+
+    
+      public function performanceDashboad(){
+         $complainDetails = DB::table('complaints as cm')
+    ->select(
+        DB::raw('COUNT(cm.id) as total_complaints'),
+
+        // Counts
+        // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
+        // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending"),
+        // DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected"),
+
+        // Percentages
+        DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as pending_percentage"),
+          DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'Under Investigation' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as investigation_percentage"),
+          DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as approved_percentage"),
+          DB::raw("ROUND(
+            (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
+             COUNT(cm.id)) * 100, 2
+        ) as rejected_percentage"),
+    )
+    ->first();
+    return response()->json([
+        'status' => true,
+        'message' => 'Records Fetch successfully',
+        'data' => $complainDetails,
+    ]);
+
     }
 
 }
