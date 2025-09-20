@@ -10,7 +10,7 @@ import {
   FaDownload,
   FaCalendarAlt,
 } from "react-icons/fa";
-import Pagination from "../Pagination"; // ✅ Import Pagination component
+import Pagination from "../Pagination"; //  Import Pagination component
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -30,7 +30,7 @@ const ProgressRegister = () => {
   const [complaintsData, setComplaintsData] = useState([]);
   const [error, setError] = useState(null);
 
-  // ✅ Pagination states
+  //  Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
@@ -41,6 +41,7 @@ const ProgressRegister = () => {
         const response = await api.get("/admin/complain-report");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
+          console.log("API Complaints Data:", response.data.data);
         } else {
           setError("Failed to fetch data");
         }
@@ -53,27 +54,103 @@ const ProgressRegister = () => {
     fetchComplaints();
   }, []);
 
-  // Transform API data to file movements format
-  const transformToFileMovements = (data) => {
-    return data.map((complaint, index) => ({
-      id: complaint.id.toString(),
-      complaintNo: complaint.complain_no,
-      complainant: complaint.name,
-      fromRole: getFromRole(complaint.status),
-      toRole: getToRole(complaint.status),
-      note: `${complaint.complaintype_name} - ${complaint.subject_name}`,
-      timestamp: formatDate(complaint.created_at),
-      status: getMovementStatus(complaint.status),
-    }));
+  //  UPDATED: Function to determine movement flow based on complaint status
+  const getMovementFlow = (complaint) => {
+    // RO to Section Officer
+    if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
+      return {
+        from: "RO",
+        to: "Section Officer", 
+        status: "pending",
+        icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
+      };
+    }
+    
+    // Section Officer to DS/JS
+    // if (complaint.approved_rejected_by_so_us == 1 && complaint.approved_rejected_by_ds_js == 0) {
+    //   return {
+    //     from: "Section Officer",
+    //     to: "DS/JS",
+    //     status: "pending", 
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
+
+    // DS/JS to Secretary
+    // if (complaint.approved_rejected_by_ds_js == 1 && complaint.status_sec == 0) {
+    //   return {
+    //     from: "DS/JS",
+    //     to: "Secretary",
+    //     status: "pending",
+    //     icon: <FaArrowRight className="w-3 h-3 text-yellow-600" />
+    //   };
+    // }
+
+    // Forwarded to Lokayukt
+    // if (complaint.forward_to_lokayukt == 1 && complaint.status_lokayukt == 1) {
+    //   return {
+    //     from: "System",
+    //     to: "Lokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-purple-600" />
+    //   };
+    // }
+
+    // Forwarded to Up-Lokayukt  
+    // if (complaint.forward_to_uplokayukt == 1 && complaint.status_uplokayukt == 1) {
+    //   return {
+    //     from: "System", 
+    //     to: "Up-Lokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-indigo-600" />
+    //   };
+    // }
+
+    // Case Rejected
+    // if (complaint.status === "Rejected") {
+    //   return {
+    //     from: "Officer",
+    //     to: "Rejected",
+    //     status: "overdue", 
+    //     icon: <FaArrowRight className="w-3 h-3 text-red-600" />
+    //   };
+    // }
+
+    // Default case
+    return {
+      from: "RO",
+      to: "Section Officer",
+      status: "pending",
+      icon: <FaArrowRight className="w-3 h-3 text-gray-600" />
+    };
   };
 
-  // Transform API data to complaint status format
+  //  UPDATED: Transform API data to file movements format with proper movement flow
+  const transformToFileMovements = (data) => {
+    return data.map((complaint, index) => {
+      const movement = getMovementFlow(complaint);
+      return {
+        id: complaint.id.toString(),
+        complaintNo: complaint.complain_no,
+        complainant: complaint.name,
+        fromRole: movement.from,
+        toRole: movement.to,
+        movementIcon: movement.icon,
+        note: `${complaint.complaintype_name} - ${complaint.subject_name}`,
+        timestamp: formatDate(complaint.created_at),
+        status: complaint.status, //  Show actual API status
+        movementStatus: movement.status, // Internal movement status
+      };
+    });
+  };
+
+  //  UPDATED: Transform API data to complaint status format - Direct API Status
   const transformToComplaintStatus = (data) => {
     return data.map((complaint) => ({
       complaintNo: complaint.complain_no,
       complainant: complaint.name,
       subject: `${complaint.complaintype_name} - ${complaint.subject_name}`,
-      currentStage: getCurrentStage(complaint.status),
+      currentStage: complaint.status || 'N/A', //  CHANGED: Direct API status instead of mapped
       assignedTo: `${complaint.department_name} - ${complaint.officer_name}`,
       receivedDate: formatDateOnly(complaint.created_at),
       targetDate: getTargetDate(complaint.created_at),
@@ -83,27 +160,6 @@ const ProgressRegister = () => {
   };
 
   // Helper functions
-  const getFromRole = (status) => {
-    if (status === "In Progress") return "RO";
-    if (status === "Disposed - Accepted") return "Section Officer";
-    if (status === "Rejected") return "DS";
-    return "Initial";
-  };
-
-  const getToRole = (status) => {
-    if (status === "In Progress") return "Section Officer";
-    if (status === "Disposed - Accepted") return "LokAyukta";
-    if (status === "Rejected") return "Archive";
-    return "RO";
-  };
-
-  const getMovementStatus = (status) => {
-    if (status === "In Progress") return "pending";
-    if (status === "Disposed - Accepted") return "completed";
-    if (status === "Rejected") return "overdue";
-    return "pending";
-  };
-
   const getCurrentStage = (status) => {
     const stages = {
       "In Progress": "Under Investigation",
@@ -150,8 +206,15 @@ const ProgressRegister = () => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  //  UPDATED: Status colors for API status + Stage colors
   const getStatusColor = (status) => {
     switch (status) {
+      case "Disposed - Accepted":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "In Progress":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "Rejected":
+        return "bg-red-100 text-red-800 border-red-200";
       case "completed":
       case "on-track":
         return "bg-green-100 text-green-800 border-green-200";
@@ -166,8 +229,28 @@ const ProgressRegister = () => {
     }
   };
 
+  //  NEW: Stage color function for Current Stage column
+  const getStageColor = (status) => {
+    switch (status) {
+      case "In Progress":
+        return "bg-blue-50 text-blue-800 border border-blue-200";
+      case "Rejected":
+        return "bg-red-50 text-red-800 border border-red-200";
+      case "Disposed - Accepted":
+        return "bg-green-50 text-green-800 border border-green-200";
+      default:
+        return "bg-gray-50 text-gray-800 border border-gray-200";
+    }
+  };
+
   const getStatusText = (status) => {
     switch (status) {
+      case "Disposed - Accepted":
+        return "Completed";
+      case "In Progress": 
+        return "In Progress";
+      case "Rejected":
+        return "Rejected";
       case "completed":
         return "Completed";
       case "pending":
@@ -202,12 +285,12 @@ const ProgressRegister = () => {
       status.complainant.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ✅ Reset current page when filters change
+  //  Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, activeTab]);
 
-  // ✅ Calculate pagination for current active tab
+  //  Calculate pagination for current active tab
   const getCurrentData = () => {
     if (activeTab === "movements") return filteredMovements;
     if (activeTab === "status") return filteredStatus;
@@ -306,7 +389,7 @@ const ProgressRegister = () => {
           </div>
         </div>
 
-        {/* ✅ FIXED Tabs Component - Consistent text sizes */}
+        {/*  FIXED Tabs Component */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="space-y-6">
             <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
@@ -346,25 +429,23 @@ const ProgressRegister = () => {
 
             {/* Tab Content */}
             <div className="p-3 sm:p-6 overflow-hidden">
-              {/* File Movements Tab */}
+              {/*  UPDATED: File Movements Tab with proper movement display */}
               {activeTab === "movements" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
                       <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Recent File Movements
+                        Recent File Movements ({complaintsData.length} records)
                       </h3>
                     </div>
 
                     <div className="flow-root">
                       <div className="overflow-x-auto">
                         <div className="inline-block min-w-full align-middle">
-                          {/* ✅ FIXED: Consistent text size */}
                           <table className="min-w-full table-auto text-[11px] sm:text-xs">
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
-                                {/* ✅ FIXED: Consistent padding */}
                                 <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Complaint No.
                                 </th>
@@ -392,7 +473,6 @@ const ProgressRegister = () => {
                                     key={movement.id}
                                     className="hover:bg-gray-50"
                                   >
-                                    {/* ✅ FIXED: Consistent padding with headers */}
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                       {movement.complaintNo}
                                     </td>
@@ -400,7 +480,12 @@ const ProgressRegister = () => {
                                       {movement.complainant}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3">
-                                      NA
+                                      {/*  FIXED: Show proper movement flow */}
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-gray-700 text-xs">{movement.fromRole}</span>
+                                        {movement.movementIcon}
+                                        <span className="text-gray-700 text-xs">{movement.toRole}</span>
+                                      </div>
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[14rem] truncate hidden lg:table-cell">
                                       {movement.note}
@@ -409,6 +494,7 @@ const ProgressRegister = () => {
                                       {movement.timestamp}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
+                                      {/*  Show actual API status */}
                                       <span
                                         className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getStatusColor(
                                           movement.status
@@ -452,7 +538,7 @@ const ProgressRegister = () => {
                 </div>
               )}
 
-              {/* Current Status Tab */}
+              {/*  UPDATED: Current Status Tab - Direct API Status in Current Stage */}
               {activeTab === "status" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
@@ -465,11 +551,9 @@ const ProgressRegister = () => {
 
                     <div className="overflow-x-auto">
                       <div className="min-w-full">
-                        {/* ✅ FIXED: Same text size as File Movements */}
                         <table className="w-full text-[11px] sm:text-xs">
                           <thead className="bg-gray-50">
                             <tr className="border-b border-gray-200">
-                              {/* ✅ FIXED: Consistent padding */}
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                 Complaint No.
                               </th>
@@ -500,7 +584,6 @@ const ProgressRegister = () => {
                                   key={complaint.complaintNo}
                                   className="border-b border-gray-100 hover:bg-gray-50"
                                 >
-                                  {/* ✅ FIXED: Consistent padding with headers */}
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900">
                                     {complaint.complaintNo}
                                   </td>
@@ -508,7 +591,10 @@ const ProgressRegister = () => {
                                     {complaint.complainant}
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
-                                    {complaint.currentStage}
+                                    {/*  FIXED: Show direct API status with proper badge styling */}
+                                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStageColor(complaint.currentStage)}`}>
+                                      {complaint.currentStage}
+                                    </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 hidden xl:table-cell">
                                     {complaint.assignedTo}
