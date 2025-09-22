@@ -459,22 +459,14 @@ const PendingComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // ✅ Handle forward submit with local state update
+  // ✅ UPDATED: Remove forwarded complaint from UI completely
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // ✅ Update local state immediately without API call
+    // ✅ Remove complaint from list completely - UI se data hat jayega
     setComplaintsData(prevComplaints => 
-      prevComplaints.map(complaint => 
-        complaint.id === forwardedComplaintId 
-          ? { 
-              ...complaint, 
-              approved_rejected_by_ds_js: 1, // Set forwarded status
-              status: 'Forwarded' // Update status if needed
-            }
-          : complaint
-      )
+      prevComplaints.filter(complaint => complaint.id !== forwardedComplaintId)
     );
     
-    console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
+    console.log(`Complaint ${forwardedComplaintId} removed from pending list`);
   };
 
   // Format date helper
@@ -487,18 +479,9 @@ const PendingComplaints = () => {
     });
   };
 
-  // ✅ NEW: Full text approval badges in green background - Jo jiski value 1 hai
+  // ✅ Full text approval badges in green background - Jo jiski value 1 hai
   const getApprovalStatuses = (complaint) => {
     const statuses = [];
-    
-    // // ✅ DA approval - Full text with green background
-    // if (complaint.approved_rejected_by_d_a === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_da',
-    //     label: 'Approved by DA',
-    //     color: 'bg-green-500'
-    //   });
-    // }
     
     // ✅ RO approval - Full text with green background
     if (complaint.approved_rejected_by_ro === 1) {
@@ -509,30 +492,7 @@ const PendingComplaints = () => {
       });
     }
     
-    // // ✅ SO approval - Full text with green background
-    // if (complaint.approved_rejected_by_ds_js === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_so',
-    //     label: 'Approved by SO',
-    //     color: 'bg-green-500'
-    //   });
-    // }
-    
-    // // ✅ DS approval - Full text with green background
-    // if (complaint.approved_rejected_by_ds_js === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_ds',
-    //     label: 'Approved by DS',
-    //     color: 'bg-green-500'
-    //   });
-    // }
-    
     return statuses;
-  };
-
-  // Forward status helper
-  const isForwarded = (complaint) => {
-    return complaint.approved_rejected_by_ds_js === 1;
   };
 
   if (error) {
@@ -568,14 +528,14 @@ const PendingComplaints = () => {
 
         <div className="space-y-3 sm:space-y-4">
           {complaintsData.map((complaint) => {
-            const approvalStatuses = getApprovalStatuses(complaint); // ✅ Full text badges
+            const approvalStatuses = getApprovalStatuses(complaint);
             
             return (
               <div
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/* ✅ Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {/* ✅ Full Text Approval Status Badges in Green */}
                 {approvalStatuses.length > 0 && (
                   <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
                     {approvalStatuses.map((status, index) => (
@@ -627,7 +587,7 @@ const PendingComplaints = () => {
                 </div>
 
                 {/* Row 4 - Action Buttons */}
-                <div className="px-3 sm:px-4 pb-12 sm:pb-4"> {/* Extra bottom padding for mobile to avoid overlap with badge */}
+                <div className="px-3 sm:px-4 pb-12 sm:pb-4">
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                     <button
                       onClick={(e) => handleViewDetails(e, complaint.id)}
@@ -635,22 +595,13 @@ const PendingComplaints = () => {
                     >
                       View Details
                     </button>
-                    {/* ✅ Dynamic button based on forward status */}
-                    {isForwarded(complaint) ? (
-                      <button
-                        disabled
-                        className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-                      >
-                        ✓ Forwarded
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => handleForward(e, complaint.id)}
-                        className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-                      >
-                        Forward
-                      </button>
-                    )}
+                    {/* ✅ Only Forward button - no conditional rendering needed */}
+                    <button
+                      onClick={(e) => handleForward(e, complaint.id)}
+                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                    >
+                      Forward
+                    </button>
                   </div>
                 </div>
               </div>
@@ -660,7 +611,7 @@ const PendingComplaints = () => {
 
         {complaintsData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">No pending complaints found</p>
           </div>
         )}
       </div>
