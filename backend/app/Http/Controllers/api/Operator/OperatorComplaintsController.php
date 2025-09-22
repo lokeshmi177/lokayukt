@@ -491,6 +491,7 @@ $cmpedit->details = DB::table('complaints_details as cd')
             $complaint->fee_exempted = $request->fee_exempted;
             $complaint->save(); // ✅ Insert into DB
 
+            // $data = [];
             foreach ($request->department as $i => $departName) {
                 
                 $data[] = [
@@ -507,43 +508,29 @@ $cmpedit->details = DB::table('complaints_details as cd')
                      
                 ];
 
+                  $filePath = null;
+              
+                if($request->hasFile("files.$i")){
+                    $file = $request->file("files.$i");
+                    $filename = 'letter_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('letters', $filename, 'public');
+                }
+                // dd($request->hasFile("files.$i"), $filePath);
+                
+                if (!empty($filePath)) {
+                    $data[$i]['file'] = $filename;
+                }
 
             }
-
-            
-            // $complaint->department_id = $request->department;
-            // $complaint->officer_name = $request->officer_name;
-            // $complaint->designation_id = $request->designation;
-            // $complaint->category = $request->category;
-            // $complaint->added_by = $added_by;
-            // $complaint->subject_id = $request->subject;
-            // $complaint->complaintype_id = $request->nature;
-            // $complaint->description = $request->description;
-            // $complaint->title = $request->title;
-
-            //   $pathPassbook= null;
-            // if ($request->hasFile("upload_bank_passbook.$i")) {
-            //     $file = $request->file("upload_bank_passbook.$i");
-            //     $filename = 'passbook_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            //     $pathPassbook = $file->storeAs('housing', $filename, 'public');
-
-            // }
-            $filePath = null;
-            if($request->hasFile("file.$i")){
-                $file = $request->file("file.$i");
-                $filename = 'letter_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = $file->storeAs('letters', $filename, 'public');
-            }
-
-            
-              if (!empty($filePath)) {
-                 $data['file'] = $filename;
-              }
+            // dd($data);
+          
             
               $dataList = $data;
-                // return response()->json($dataList);
-            //  dd($dataList);
+            //   dd($dataList);
+                
+             
                foreach($dataList as $key => $value){
+                // dd($value['id']);
             
                      DB::table('complaints_details')
                          ->where('id', $value['id'])
@@ -567,7 +554,8 @@ $cmpedit->details = DB::table('complaints_details as cd')
             return response()->json([
                 'status' => true,
                 'message' => 'Complaint update successfully.',
-                'data' => $complaint
+                'data' => $complaint,
+                // 'dataList' => $dataList
             ], 201);
     }
 
