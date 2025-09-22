@@ -337,10 +337,11 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 Forward To <span className="text-red-500">*</span>
               </label>
               <CustomSearchableDropdown
+              name="forward_to"
                 value={forward.forward_to}
                 onChange={(value) => {
                   setForward((prev) => ({ ...prev, forward_to: value }));
-                  // Clear error when user selects value
+                
                   if (errors.forward_to) {
                     setErrors((prev) => ({ ...prev, forward_to: null }));
                   }
@@ -348,7 +349,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 options={buildDropdownOptions()}
                 placeholder="Select LokAyukta/UpLokAyukta"
                
-                error={errors.forward_to && errors.forward_to[0]} // ✅ Show error message
+                error={errors.forward_to && errors.forward_to[0]} 
               />
             </div>
 

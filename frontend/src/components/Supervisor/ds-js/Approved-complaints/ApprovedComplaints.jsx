@@ -465,7 +465,7 @@ const ApprovedComplaints = () => {
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              approved_rejected_by_so_us: 1, 
+              approved_rejected_by_ds_js: 1, 
               status: 'Forwarded'
             }
           : complaint

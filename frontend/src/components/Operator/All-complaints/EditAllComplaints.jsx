@@ -371,7 +371,7 @@ const handleFileChange = (index, e) => {
       const updated = [...prev];
       updated[index] = {
         ...updated[index],
-        file: file,              
+        file: file,            
         uploadProgress: 0,
         isUploading: true,
         uploadSuccess: false,
