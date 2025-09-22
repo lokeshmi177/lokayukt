@@ -238,7 +238,7 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      const response = await api.post(`/supervisor/forward-by-so/${complaintId}`, {
+      const response = await api.post(`/supervisor/forward-by-ds-js/${complaintId}`, {
         forward_to_d_a: parseInt(formData.forwardTo),
         remarks: formData.remarks
       });
@@ -487,66 +487,47 @@ const PendingComplaints = () => {
     });
   };
 
-  // Status color helper
-  const getStatusTextColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'in progress':
-        return 'text-yellow-600 border-yellow-300 bg-yellow-50';
-      case 'rejected':
-        return 'text-red-600 border-red-300 bg-red-50';
-      case 'approved':
-        return 'text-green-600 border-green-300 bg-green-50';
-      case 'forwarded':
-        return 'text-blue-600 border-blue-300 bg-blue-50';
-      default:
-        return 'text-gray-600 border-gray-300 bg-gray-50';
-    }
-  };
-
-  // Check approval status - यहाँ चारों conditions हैं
-  const getApprovalStatus = (complaint) => {
-    // Check DA approval (Dealing Assistant) - First priority
-    if (complaint.approved_rejected_by_d_a === 1) {
-      return {
-        status: 'approved_by_da',
-        label: 'Approved by DA',
-        color: 'bg-green-500'
-      };
-    }
+  // ✅ NEW: Full text approval badges in green background - Jo jiski value 1 hai
+  const getApprovalStatuses = (complaint) => {
+    const statuses = [];
     
-    // Check RO approval (Revenue Officer)
+    // // ✅ DA approval - Full text with green background
+    // if (complaint.approved_rejected_by_d_a === 1) {
+    //   statuses.push({
+    //     status: 'approved_by_da',
+    //     label: 'Approved by DA',
+    //     color: 'bg-green-500'
+    //   });
+    // }
+    
+    // ✅ RO approval - Full text with green background
     if (complaint.approved_rejected_by_ro === 1) {
-      return {
-        status: 'approved_by_ro',
+      statuses.push({
+        status: 'approved_by_ro', 
         label: 'Approved by RO',
         color: 'bg-green-500'
-      };
+      });
     }
     
-    // Check SO/US approval (Sub Officer/Under Secretary)
-    if (complaint.approved_rejected_by_so_us === 1) {
-      return {
+    // ✅ SO approval - Full text with green background
+    if (complaint.approved_rejected_by_ds_js === 1) {
+      statuses.push({
         status: 'approved_by_so',
         label: 'Approved by SO',
         color: 'bg-green-500'
-      };
+      });
     }
     
-    // Check DS/JS approval (District Supervisor/Joint Secretary)
+    // ✅ DS approval - Full text with green background
     if (complaint.approved_rejected_by_ds_js === 1) {
-      return {
+      statuses.push({
         status: 'approved_by_ds',
         label: 'Approved by DS',
         color: 'bg-green-500'
-      };
+      });
     }
     
-    // If no approvals
-    return {
-      status: 'pending',
-      label: 'Pending Approval',
-      color: 'bg-yellow-500'
-    };
+    return statuses;
   };
 
   // Forward status helper
@@ -587,24 +568,31 @@ const PendingComplaints = () => {
 
         <div className="space-y-3 sm:space-y-4">
           {complaintsData.map((complaint) => {
-            const approvalStatus = getApprovalStatus(complaint);
+            const approvalStatuses = getApprovalStatuses(complaint); // ✅ Full text badges
             
             return (
               <div
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/* Approval Status Badge - Left Bottom Corner */}
-                <div className="absolute bottom-2 left-2 z-10">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${approvalStatus.color}`}>
-                    <FaCheck className="w-3 h-3 mr-1" />
-                    {approvalStatus.label}
-                  </span>
-                </div>
+                {/* ✅ Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {approvalStatuses.length > 0 && (
+                  <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
+                    {approvalStatuses.map((status, index) => (
+                      <span 
+                        key={index}
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${status.color}`}
+                      >
+                        <FaCheck className="w-3 h-3 mr-1" />
+                        {status.label}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
+                    <span className="text-black text-xs sm:text-sm mb-1 sm:mb-0">
                       Complaint No:
                     </span>
                     <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
