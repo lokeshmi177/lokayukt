@@ -339,6 +339,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $complainCounts = Complaint::select('district_master.district_name', DB::raw('count(*) as complain_count'))
             ->join('district_master', 'complaints.district_id', '=', 'district_master.district_code')
             ->groupBy('district_master.district_code', 'district_master.district_name')
+            ->limit(5)
             //  ->having('complain_count', '>', 0)
             ->pluck('complain_count', 'district_master.district_name');
        return response()->json([
@@ -352,8 +353,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
     {
        
         $complainCounts = Complaint::select('departments.name', DB::raw('count(*) as complain_count'))
-            ->join('departments', 'complaints.department_id', '=', 'departments.id')
-            ->groupBy('departments.id', 'departments.name')
+        ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')    
+        ->leftJoin('departments', 'cd.department_id', '=', 'departments.id')
+            ->groupBy('departments.id', 'departments.name','department_id')
              
             ->pluck('complain_count', 'departments.name');
        return response()->json([
@@ -419,7 +421,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
     //        ]);
 
         $complaintData = DB::table('complaints as cm')
-         ->leftjoin('complaintype', 'cm.complaintype_id', '=', 'complaintype.id')
+        ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+         ->leftjoin('complaintype', 'cd.complaintype_id', '=', 'complaintype.id')
     ->select(
     
         'complaintype.name',
