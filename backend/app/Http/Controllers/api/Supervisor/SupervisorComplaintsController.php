@@ -96,7 +96,7 @@ class SupervisorComplaintsController extends Controller
         case "ds-js":
           $query->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                  ->whereOr('approved_rejected_by_so', 1);
+                  ->where('approved_rejected_by_so_us', 0);
                 //   ->where('forward_so', 1)
                 //   ->whereOr('forward_to_uplokayukt', 1);
             break;
@@ -461,6 +461,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // ->leftJoin('subjects as sub', 'cm.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
                 ->select(
                     'cm.*',
+                     'dd.district_name as district_name',
                     // 'dd.district_name',
                     // 'dp.name as department_name',
                     // 'ds.name as designation_name',
@@ -483,7 +484,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
         case "ds-js":
           $complainDetails->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                  ->whereOr('approved_rejected_by_so', 1);
+                  ->where('approved_rejected_by_so_us', 0)
+                  ->where('approved_rejected_by_ds_js', 0);
                 //   ->where('forward_so', 1)
                 //   ->whereOr('forward_to_uplokayukt', 1);
             break;
