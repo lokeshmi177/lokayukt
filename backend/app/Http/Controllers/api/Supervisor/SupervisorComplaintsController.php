@@ -539,6 +539,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 ->select(
                     'cm.*',
                     'dd.district_name',
+                     'dd.district_name as district_name',
                     // 'dp.name as department_name',
                     // 'ds.name as designation_name',
                     // 'ct.name as complaintype_name',
