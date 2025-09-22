@@ -194,7 +194,7 @@ const ProgressRegister = () => {
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-        note: complaint.remarks || complaint.description || 'N/A',
+        note: complaint.remark || complaint.description || 'N/A',
         timestamp: formatDate(complaint.created_at),
         status: complaint.status || 'N/A', //  CHANGED: Direct API status
       };

@@ -512,14 +512,14 @@ const AllComplaints = () => {
       });
     }
     
-    // ✅ DS approval - Full text with green background
-    if (complaint.approved_rejected_by_ds_js === 1) {
-      statuses.push({
-        status: 'approved_by_ds',
-        label: 'Approved by DS',
-        color: 'bg-green-500'
-      });
-    }
+    // // ✅ DS approval - Full text with green background
+    // if (complaint.approved_rejected_by_ds_js === 1) {
+    //   statuses.push({
+    //     status: 'approved_by_ds',
+    //     label: 'Approved by DS',
+    //     color: 'bg-green-500'
+    //   });
+    // }
     //  if (complaint.approved_rejected_by_d_a === 1) {
     //   statuses.push({
     //     status: 'approved_by_da',
