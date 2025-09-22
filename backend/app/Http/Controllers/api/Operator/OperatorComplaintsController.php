@@ -531,6 +531,7 @@ $cmpedit->details = DB::table('complaints_details as cd')
              
                foreach($dataList as $key => $value){
                 // dd($value['id']);
+                
             
                      DB::table('complaints_details')
                          ->where('id', $value['id'])

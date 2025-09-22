@@ -117,9 +117,9 @@ class SupervisorComplaintsController extends Controller
 
         case "dea-assis":
           $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('approved_rejected_by_so', 1)
-                //     ->whereOr('approved_rejected_by_ds_js', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                   ->where('approved_rejected_by_so_us', 1)
+                    ->whereOr('approved_rejected_by_ds_js', 1);
             break;
 
         default:
@@ -342,14 +342,91 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmp =  Complaint::findOrFail($complainId);
 
             if($cmp){
-                $cmpAction =new ComplaintAction();
-                $cmpAction->complaint_id = $complainId;
-                $cmpAction->forward_by_ds_js = $user;
-                $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
-                $cmpAction->status_ds_js = 1;
-                $cmpAction->action_type = "Forwarded";
-                $cmpAction->remarks = $request->remarks;
-                $cmpAction->save();
+                $cmp->approved_rejected_by_ds_js = 1;
+                $cmp->forward_to_d_a = $request->forward_to_d_a;
+                $remark ='Remark By Deputy Secretary / Joint Secretary';
+                $remark.='\n';
+                $remark.= $request->remarks;
+                $remark.='\n';
+                $cmp->remark = $remark;
+                $cmp->save();
+                // $cmpAction =new ComplaintAction();
+                // $cmpAction->complaint_id = $complainId;
+                // $cmpAction->forward_by_ds_js = $user;
+                // $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
+                // $cmpAction->status_ds_js = 1;
+                // $cmpAction->action_type = "Forwarded";
+                // $cmpAction->remarks = $request->remarks;
+                // $cmpAction->save();
+            }
+            // $cmp->forward_by = $request->forward_by;
+            // $cmp->forward_to_d_a = $request->forward_to_d_a;
+            // $cmp->sup_status = 1;
+            // $cmp->save();
+    
+             return response()->json([
+                    'status' => true,
+                    'message' => 'Forwarded Successfully',
+                    'data' => $cmp
+                ], 200);
+        }else{
+            
+             return response()->json([
+                    'status' => false,
+                    'message' => 'Please check Id'
+                ], 401);
+        }
+
+    }
+
+      public function forwardComplaintbyda(Request $request,$complainId){
+        //    dd($request->all());
+        $user = Auth::user()->id;
+        // dd($usersubrole);
+   
+
+        $validation = Validator::make($request->all(), [
+            // 'forward_by_ds_js' => 'required|exists:users,id',
+            'forward_to_d_a' => 'required|exists:users,id',
+            // 'remark' => 'required',
+         
+          
+        ], [
+            // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
+            // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
+            'forward_to_d_a.required' => 'Forward to user is required.',
+            'forward_to_d_a.exists' => 'Forward to user does not exist.',
+            // 'remark.required' => 'Remark is required.',
+           
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+        if(isset($complainId) && $request->isMethod('post')){
+
+             $cmp =  Complaint::findOrFail($complainId);
+
+            if($cmp){
+                 $cmp->approved_rejected_by_d_a = 1;
+                $cmp->forward_to_d_a = $request->forward_to_d_a;
+                $remark ='Remark By Dealing Assistant';
+                $remark.='\n';
+                $remark.= $request->remarks;
+                $remark.='\n';
+                $cmp->remark = $remark;
+                $cmp->save();
+                // $cmpAction =new ComplaintAction();
+                // $cmpAction->complaint_id = $complainId;
+                // $cmpAction->forward_by_ds_js = $user;
+                // $cmpAction->forward_to_d_a = $request->forward_to_d_a; //add supervisor user_id 
+                // $cmpAction->status_ds_js = 1;
+                // $cmpAction->action_type = "Forwarded";
+                // $cmpAction->remarks = $request->remarks;
+                // $cmpAction->save();
             }
             // $cmp->forward_by = $request->forward_by;
             // $cmp->forward_to_d_a = $request->forward_to_d_a;
@@ -372,8 +449,10 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
 
 
+
     public function allComplainspending(){
-       
+
+        $userSubrole = Auth::user()->subrole->name; 
            $complainDetails = DB::table('complaints as cm')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
                 // ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
@@ -387,11 +466,57 @@ $complainDetails->details = DB::table('complaints_details as cd')
                     // 'ds.name as designation_name',
                     // 'ct.name as complaintype_name',
                     // 'sub.name as subject_name'
-                )
-                ->where('form_status',1)
-                ->where('approved_rejected_by_ro',1)
-                ->where('approved_rejected_by_so_us',0)
-                ->get();
+                );
+                // ->where('form_status',1)
+                // ->where('approved_rejected_by_ro',1)
+                // ->where('approved_rejected_by_so_us',0)
+                // ->get();
+                
+    switch ($userSubrole) {
+        case "so-us":
+            $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1);
+                //   ->where('approved_by_ro', 1);
+            // $complainDetails->where('complaints.added_by', $user);
+            break;
+
+        case "ds-js":
+          $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                  ->whereOr('approved_rejected_by_so', 1);
+                //   ->where('forward_so', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "sec":
+           $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1);
+                //    ->where('forward_to_lokayukt', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "cio-io":
+           $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1);
+                //    ->where('forward_to_lokayukt', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "dea-assis":
+          $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                   ->where('approved_rejected_by_so_us', 1)
+                    ->whereOr('approved_rejected_by_ds_js', 1);
+            break;
+
+        default:
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid subrole',
+                'data' => [],
+            ], 400);
+    }
+    $complainDetails = $complainDetails->get();
         // dd($deadpersondetails);
 
           return response()->json([
@@ -402,7 +527,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
 
      public function allComplainsapproved(){
-       
+       $userSubrole = Auth::user()->subrole->name; 
            $complainDetails = DB::table('complaints as cm')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
                 // ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
@@ -416,11 +541,60 @@ $complainDetails->details = DB::table('complaints_details as cd')
                     // 'ds.name as designation_name',
                     // 'ct.name as complaintype_name',
                     // 'sub.name as subject_name'
-                )
-                ->where('form_status',1)
-                ->where('approved_rejected_by_ro',1)
-                ->where('approved_rejected_by_so_us',1)
-                ->get();
+                );
+
+                
+    switch ($userSubrole) {
+        case "so-us":
+            $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1);
+                //   ->where('approved_by_ro', 1);
+            // $complainDetails->where('complaints.added_by', $user);
+            break;
+
+        case "ds-js":
+          $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                //   ->whereOr('approved_rejected_by_so_us', 1)
+                  ->where('approved_rejected_by_ds_js', 1);
+                //   ->where('forward_so', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "sec":
+           $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1);
+                //    ->where('forward_to_lokayukt', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "cio-io":
+           $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1);
+                //    ->where('forward_to_lokayukt', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "dea-assis":
+          $complainDetails->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                   ->where('approved_rejected_by_so_us', 1)
+                    ->whereOr('approved_rejected_by_ds_js', 1);
+            break;
+
+        default:
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid subrole',
+                'data' => [],
+            ], 400);
+    }
+    $complainDetails = $complainDetails->get();
+
+                // ->where('form_status',1)
+                // ->where('approved_rejected_by_ro',1)
+                // ->where('approved_rejected_by_so_us',1)
+                // ->get();
         // dd($deadpersondetails);
 
           return response()->json([

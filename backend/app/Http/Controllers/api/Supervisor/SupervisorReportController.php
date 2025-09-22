@@ -81,15 +81,15 @@ class SupervisorReportController extends Controller
                     }
                       switch ($userSubrole) {
                         case "so-us":
-                            $records->where('form_status', 1)
-                                ->where('approved_rejected_by_ro', 1);
+                            $records->where('form_status', 1);
+                                // ->where('approved_rejected_by_ro', 1);
                                 //   ->where('approved_by_ro', 1);
                             // $records->where('complaints.added_by', $user);
                             break;
 
                         case "ds-js":
                         $records->where('form_status', 1)
-                                ->where('approved_rejected_by_ro', 1)
+                                // ->where('approved_rejected_by_ro', 1)
                                 ->whereOr('approved_rejected_by_so', 1);
                                 //   ->where('forward_so', 1)
                                 //   ->whereOr('forward_to_uplokayukt', 1);
@@ -97,21 +97,21 @@ class SupervisorReportController extends Controller
 
                         case "sec":
                         $records->where('form_status', 1)
-                                ->where('approved_rejected_by_ro', 1)
+                                // ->where('approved_rejected_by_ro', 1)
                                 ->where('forward_to_lokayukt', 1)
                                 ->whereOr('forward_to_uplokayukt', 1);
                             break;
 
                         case "cio-io":
                         $records->where('form_status', 1)
-                                ->where('approved_rejected_by_ro', 1)
+                                // ->where('approved_rejected_by_ro', 1)
                                 ->where('forward_to_lokayukt', 1)
                                 ->whereOr('forward_to_uplokayukt', 1);
                             break;
 
                         case "dea-assis":
                         $records->where('form_status', 1)
-                                ->where('approved_rejected_by_ro', 1)
+                                // ->where('approved_rejected_by_ro', 1)
                                 ->where('approved_rejected_by_so', 1)
                                     ->whereOr('approved_rejected_by_ds_js', 1);
                             break;
