@@ -509,14 +509,14 @@ const PendingComplaints = () => {
       });
     }
     
-    // ✅ SO approval - Full text with green background
-    if (complaint.approved_rejected_by_ds_js === 1) {
-      statuses.push({
-        status: 'approved_by_so',
-        label: 'Approved by SO',
-        color: 'bg-green-500'
-      });
-    }
+    // // ✅ SO approval - Full text with green background
+    // if (complaint.approved_rejected_by_ds_js === 1) {
+    //   statuses.push({
+    //     status: 'approved_by_so',
+    //     label: 'Approved by SO',
+    //     color: 'bg-green-500'
+    //   });
+    // }
     
     // ✅ DS approval - Full text with green background
     if (complaint.approved_rejected_by_ds_js === 1) {
@@ -532,7 +532,7 @@ const PendingComplaints = () => {
 
   // Forward status helper
   const isForwarded = (complaint) => {
-    return complaint.approved_rejected_by_so_us === 1;
+    return complaint.approved_rejected_by_ds_js === 1;
   };
 
   if (error) {
