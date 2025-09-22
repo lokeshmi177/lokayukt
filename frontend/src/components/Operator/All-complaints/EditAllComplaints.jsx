@@ -333,29 +333,45 @@ const AllComplaintsEdit = () => {
     }
   };
 
-  // Handle file change for specific detail
-  const handleFileChange = (index, e) => {
-    const file = e.target.files[0];
-    
-    if (!file) return;
+// Handle file change for specific detail - COMPLETE REPLACEMENT
+const handleFileChange = (index, e) => {
+  const file = e.target.files[0];
+  
+  if (!file) return;
 
-    // Validate file type (only PDF allowed)
-    if (file.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed');
-      return;
-    }
+  
+  if (file.type !== 'application/pdf') {
+    toast.error('Only PDF files are allowed');
+    return;
+  }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size should not exceed 5MB');
-      return;
-    }
 
-    // Update the specific detail
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error('File size should not exceed 5MB');
+    return;
+  }
+
+  // COMPLETELY REPLACE - Clear all previous states first
+  setComplaintDetails(prev => {
+    const updated = [...prev];
+    updated[index] = {
+      ...updated[index],
+      file: null,              
+      uploadProgress: 0,       
+      isUploading: false,     
+      uploadSuccess: false,    
+      uploadError: ''          
+    };
+    return updated;
+  });
+
+  // Small delay then set new file (ensures UI updates)
+  setTimeout(() => {
     setComplaintDetails(prev => {
       const updated = [...prev];
       updated[index] = {
         ...updated[index],
+        file: file,              
         uploadProgress: 0,
         isUploading: true,
         uploadSuccess: false,
@@ -364,7 +380,7 @@ const AllComplaintsEdit = () => {
       return updated;
     });
 
-    // Simulate upload progress
+    // Simulate upload progress for new file
     const simulateUpload = () => {
       let progress = 0;
       const interval = setInterval(() => {
@@ -375,7 +391,6 @@ const AllComplaintsEdit = () => {
             const updated = [...prev];
             updated[index] = {
               ...updated[index],
-              file: file,
               uploadProgress: 100,
               isUploading: false,
               uploadSuccess: true
@@ -397,7 +412,9 @@ const AllComplaintsEdit = () => {
     };
 
     simulateUpload();
-  };
+  }, 100); // Small delay for smooth transition
+};
+
 
   // Remove file for specific detail
   const handleRemoveFile = (index) => {
@@ -619,123 +636,136 @@ const AllComplaintsEdit = () => {
           {/* Top Row: Complainant Details + Security Fee */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             {/* Complainant Details */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <FaUser className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
-                <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Complainant Details</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">शिकायतकर्ता विवरण</p>
-                </div>
-              </div>
+           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+  <div className="flex items-center gap-3 mb-6">
+    <FaUser className="w-5 h-5 text-blue-600 flex-shrink-0" />
+    <div>
+      <h2 className="text-lg font-semibold text-gray-900">Complainant Details</h2>
+      <p className="text-sm text-gray-500">शिकायतकर्ता विवरण</p>
+    </div>
+  </div>
 
-              <div className="space-y-3 sm:space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Name / नाम *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter full name"
-                  />
-                  {/* Only backend error display */}
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
+  <div className="space-y-4">
+    {/* Name and Mobile Row */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Name */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Name / नाम *
+        </label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+            errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+          }`}
+          placeholder="Enter full name"
+        />
+        {errors.name && (
+          <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+        )}
+      </div>
 
-                {/* Mobile */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Mobile / मोबाइल *
-                  </label>
-                  <input
-                    type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                      errors.mobile ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="10-digit mobile number"
-                  />
-                  {errors.mobile && (
-                    <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
-                  )}
-                </div>
+      {/* Mobile */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Mobile / मोबाइल *
+        </label>
+        <input
+          type="tel"
+          name="mobile"
+          value={formData.mobile}
+          onChange={handleInputChange}
+          className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+            errors.mobile ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+          }`}
+          placeholder="10-digit mobile number"
+        />
+        {errors.mobile && (
+          <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
+        )}
+      </div>
+    </div>
 
-                {/* Address */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Address / पता *
-                  </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
-                      errors.address ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter complete address"
-                  />
-                  {errors.address && (
-                    <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-                  )}
-                </div>
+    {/* Address */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Address / पता *
+      </label>
+      <textarea
+        name="address"
+        value={formData.address}
+        onChange={handleInputChange}
+        rows={3}
+        className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-colors ${
+          errors.address ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+        }`}
+        placeholder="Enter complete address"
+      />
+      {errors.address && (
+        <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+      )}
+    </div>
 
-                {/* District */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    District / जिला *
-                  </label>
-                  <select
-                    name="district_id"
-                    value={formData.district_id}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                      errors.district_id ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="">Select District</option>
-                    {districts.map(district => (
-                      <option key={district.id} value={district.district_code}>
-                        {district.district_name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.district_id && (
-                    <p className="mt-1 text-sm text-red-600">{errors.district_id}</p>
-                  )}
-                </div>
+    {/* District and Email Row */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* District */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          District / जिला *
+        </label>
+        <select
+          name="district_id"
+          value={formData.district_id}
+          onChange={handleInputChange}
+          className={`w-full px-3 py-2.5 cursor-pointer text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white appearance-none transition-colors ${
+            errors.district_id ? 'border-red-500 bg-red-50' : 'border-gray-300'
+          }`}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+            backgroundPosition: 'right 0.5rem center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '1.5em 1.5em',
+            paddingRight: '2.5rem'
+          }}
+        >
+          <option value="">Select District</option>
+          {districts.map(district => (
+            <option key={district.id} value={district.district_code}>
+              {district.district_name}
+            </option>
+          ))}
+        </select>
+        {errors.district_id && (
+          <p className="mt-1 text-sm text-red-600">{errors.district_id}</p>
+        )}
+      </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="example@email.com"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
-                </div>
-              </div>
-            </div>
+      {/* Email */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Email *
+        </label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+            errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+          }`}
+          placeholder="example@email.com"
+        />
+        {errors.email && (
+          <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
+
 
             {/* Security Fee */}
             <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">

@@ -6,7 +6,7 @@ import {
   FaFileAlt,
   FaChartBar,
   FaSpinner,
-  FaArrowRight, // Added Forward icon
+  FaArrowRight, 
   FaChevronDown,
   FaUser,
   FaUserTie,
