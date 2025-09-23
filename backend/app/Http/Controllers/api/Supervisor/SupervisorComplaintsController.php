@@ -119,7 +119,8 @@ class SupervisorComplaintsController extends Controller
           $query->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
                    ->where('approved_rejected_by_so_us', 1)
-                    ->whereOr('approved_rejected_by_ds_js', 1);
+                    ->orWhere('approved_rejected_by_ds_js', 1)
+                    ->whereNotNull('forward_to_d_a');
             break;
 
         default:
@@ -558,6 +559,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         case "ds-js":
           $complainDetails->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_so_us', 0)
                 //   ->whereOr('approved_rejected_by_so_us', 1)
                   ->where('approved_rejected_by_ds_js', 1);
                 //   ->where('forward_so', 1)

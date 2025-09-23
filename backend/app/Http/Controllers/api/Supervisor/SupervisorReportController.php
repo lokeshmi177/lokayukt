@@ -390,10 +390,13 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
             if($cmp){
+                 $cmp->report_status = "Forwarded";
+                 $cmp->save();
                 if($cmpAct){
 
                 $cmpAct->complaint_id = $complainId;
                 $cmpAct->forward_by_so_us = $userId;
+                // $cmpAct->report_status = "Forwarded";
                 if($roleFwd == "lok-ayukt"){
                     $cmpAct->forward_to_lokayukt = $request->forward_to;
                     $cmpAct->status_lokayukt = 1;
@@ -403,7 +406,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAct->action_type = "Forwarded";
+                //
                 $remark ='Remark By Section Officer / Under Secretary';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -428,7 +431,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAction->action_type = "Forwarded";
+                // $cmpAction->action_type = "Forwarded";
                 $remark ='Remark By Section Officer / Under Secretary';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -494,6 +497,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
             if($cmp){
+                  $cmp->report_status = "Forwarded";
+                 $cmp->save();
                 if($cmpAct){
 
                 $cmpAct->complaint_id = $complainId;
@@ -507,7 +512,6 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAct->action_type = "Forwarded";
                 $remark ='Remark By Deputy Secretary / Joint Secretary';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -532,7 +536,6 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAction->action_type = "Forwarded";
                 $remark ='Remark By Deputy Secretary / Joint Secretary';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -599,6 +602,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
             if($cmp){
+                  $cmp->report_status = "Forwarded";
+                 $cmp->save();
                 if($cmpAct){
 
                 $cmpAct->complaint_id = $complainId;
@@ -612,7 +617,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAct->action_type = "Forwarded";
+               
                $remark ='Remark By Secretary';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -696,6 +701,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
             if($cmp){
+                  $cmp->report_status = "Forwarded";
+                 $cmp->save();
                 if($cmpAct){
 
                 $cmpAct->complaint_id = $complainId;
@@ -709,7 +716,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAct->action_type = "Forwarded";
+               
                 $remark ='Remark By CIO / Investigation Officer';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -801,6 +808,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
             if($cmp){
+                  $cmp->report_status = "Forwarded";
+                 $cmp->save();
                 if($cmpAct){
 
                 $cmpAct->complaint_id = $complainId;
@@ -814,7 +823,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAct->action_type = "Forwarded";
+               
                 $remark ='Remark By Dealing Assistant';
                 $remark.='\n';
                 $remark.= $request->remark;
@@ -839,7 +848,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 }
                 // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
                 
-                $cmpAction->action_type = "Forwarded";
+       
                 $remark ='Remark By Dealing Assistant';
                 $remark.='\n';
                 $remark.= $request->remark;
