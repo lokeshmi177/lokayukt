@@ -120,31 +120,65 @@ const CustomSearchableSelect = ({
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions().length > 0 ? (
               <>
-                {/* Dealing Assistant Header */}
-                <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
-                  <FaUsers className="w-4 h-4 text-blue-500" />
-                  <span className="ml-2">Dealing Assistant</span>
-                </div>
-                
-                {/* Dealing Assistant Options - केवल name दिखेगा */}
-                {filteredOptions()
-                  .filter(option => option.type === 'assistant')
-                  .map((item) => (
-                    <button
-                      key={item.value}
-                      type="button"
-                      onClick={() => handleSelect(item.value)}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-sm border-b border-gray-100 last:border-b-0"
-                    >
-                      {item.icon}
-                      <span className="ml-2 font-medium text-gray-800">
-                        {item.displayName}
-                      </span>
-                      {value === item.value && (
-                        <FaUsers className="ml-auto w-4 h-4 text-blue-600" />
-                      )}
-                    </button>
-                  ))}
+                {/* LokAyukta Header */}
+                {filteredOptions().some(option => option.type === 'lokayukt') && (
+                  <>
+                    <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
+                      {/* <FaCrown className="w-4 h-4 text-yellow-500" /> */}
+                      <span className="ml-2">Hon'ble LokAyukta</span>
+                    </div>
+                    
+                    {/* LokAyukta Options */}
+                    {filteredOptions()
+                      .filter(option => option.type === 'lokayukt')
+                      .map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => handleSelect(item.value)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-sm border-b border-gray-100 last:border-b-0"
+                        >
+                          {item.icon}
+                          <span className="ml-2 font-medium text-gray-800">
+                            {item.displayName}
+                          </span>
+                          {value === item.value && (
+                            <FaCheck className="ml-auto w-4 h-4 text-blue-600" />
+                          )}
+                        </button>
+                      ))}
+                  </>
+                )}
+
+                {/* UpLokAyukta Header */}
+                {filteredOptions().some(option => option.type === 'uplokayukt') && (
+                  <>
+                    <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
+                      {/* <FaCrown className="w-4 h-4 text-blue-500" /> */}
+                      <span className="ml-2">Hon'ble UpLokAyukta</span>
+                    </div>
+                    
+                    {/* UpLokAyukta Options */}
+                    {filteredOptions()
+                      .filter(option => option.type === 'uplokayukt')
+                      .map((item) => (
+                        <button
+                          key={item.value}
+                          type="button"
+                          onClick={() => handleSelect(item.value)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-sm border-b border-gray-100 last:border-b-0"
+                        >
+                          {item.icon}
+                          <span className="ml-2 font-medium text-gray-800">
+                            {item.displayName}
+                          </span>
+                          {value === item.value && (
+                            <FaCheck className="ml-auto w-4 h-4 text-blue-600" />
+                          )}
+                        </button>
+                      ))}
+                  </>
+                )}
               </>
             ) : (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">
@@ -158,7 +192,7 @@ const CustomSearchableSelect = ({
   );
 };
 
-// Forward Modal Component
+// Forward Modal Component - Updated with 2 APIs
 const ForwardModal = ({ 
   isOpen, 
   onClose, 
@@ -173,44 +207,65 @@ const ForwardModal = ({
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
-  // Fetch dealing assistants from API
+  // Fetch both LokAyukta and UpLokAyukta from API
   useEffect(() => {
-    const fetchDealingAssistants = async () => {
+    const fetchForwardingOptions = async () => {
       if (!isOpen) return;
       
       setIsLoadingOptions(true);
       try {
-        const response = await api.get("/supervisor/get-dealing-assistant");
+        // Call both APIs parallely
+        const [lokayuktResponse, upLokayuktResponse] = await Promise.all([
+          api.get("/supervisor/get-lokayukt"),
+          api.get("/supervisor/get-uplokayukt")
+        ]);
         
-        if (response.data && Array.isArray(response.data)) {
-          // Options बनाते time: value में ID (string), display में name
-          const assistantOptions = response.data.map(assistant => ({
-            value: assistant.id.toString(), 
-            displayName: assistant.name,    
-            icon: <FaUser className="w-4 h-4 text-blue-500" />,
-            type: 'assistant'
-          }));
-       
-          setDropdownOptions(assistantOptions);
-        } else {
-          // अगर data नहीं मिला या empty है
-          setDropdownOptions([]);
-          toast.warning("No dealing assistants found");
+        console.log("LokAyukta Response:", lokayuktResponse.data);
+        console.log("UpLokAyukta Response:", upLokayuktResponse.data);
+        
+        // Build dropdown options from both APIs
+        const options = [];
+        
+        // Add LokAyukta options
+        if (lokayuktResponse.data && Array.isArray(lokayuktResponse.data)) {
+          lokayuktResponse.data.forEach(user => {
+            options.push({
+              value: user.id.toString(),
+              displayName: user.name,    
+              // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+              type: 'lokayukt'
+            });
+          });
         }
+        
+        // Add UpLokAyukta options
+        if (upLokayuktResponse.data && Array.isArray(upLokayuktResponse.data)) {
+          upLokayuktResponse.data.forEach(user => {
+            options.push({
+              value: user.id.toString(), 
+              displayName: user.name,    
+              // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
+              type: 'uplokayukt'
+            });
+          });
+        }
+        
+        setDropdownOptions(options);
+        
+        if (options.length === 0) {
+          toast.warning("No LokAyukta/UpLokAyukta found");
+        }
+        
       } catch (error) {
-        console.error("Error fetching dealing assistants:", error);
-        
-        // Error के case में empty array set करें
+        console.error("Error fetching forwarding options:", error);
         setDropdownOptions([]);
-        
-        // User को error message दें
-        toast.error("Failed to load dealing assistants. Please try again.");
+        toast.error("Failed to load forwarding options. Please try again.");
       } finally {
         setIsLoadingOptions(false);
       }
     };
 
-    fetchDealingAssistants();
+    fetchForwardingOptions();
   }, [isOpen]);
 
   useEffect(() => {
@@ -239,7 +294,7 @@ const ForwardModal = ({
     
     try {
       const response = await api.post(`/supervisor/forward-by-da/${complaintId}`, {
-        forward_to_d_a: parseInt(formData.forwardTo),
+        forward_to_d_a: parseInt(formData.forwardTo), // ID भेजेगे as integer
         remarks: formData.remarks
       });
 
@@ -487,65 +542,58 @@ const AllComplaints = () => {
     });
   };
 
- //  NEW: Full text approval badges in green background - Jo jiski value 1 hai
-const getApprovalStatuses = (complaint) => {
-  const statuses = [];
+  // Helper function for consistent checking
+  const isApproved = (value) => {
+    return value == 1 || value === "1" || parseInt(value) === 1;
+  };
 
-  //  Debug: Console log करके actual values देखते हैं
-  console.log("Complaint approval values:", {
-    ro: complaint.approved_rejected_by_ro, 
-    ro_type: typeof complaint.approved_rejected_by_ro,
-    so: complaint.approved_rejected_by_so_us,
-    so_type: typeof complaint.approved_rejected_by_so_us,
-    ds: complaint.approved_rejected_by_ds_js,
-    ds_type: typeof complaint.approved_rejected_by_ds_js,
-    da: complaint.approved_rejected_by_d_a,
-    da_type: typeof complaint.approved_rejected_by_d_a
-  });
+  // NEW: Full text approval badges in green background - Jo jiski value 1 hai
+  const getApprovalStatuses = (complaint) => {
+    const statuses = [];
 
-  //  RO approval - Handle both string and number
-  if (complaint.approved_rejected_by_ro == 1 || complaint.approved_rejected_by_ro === "1") {
-    statuses.push({
-      status: 'approved_by_ro', 
-      label: 'Approved by RO',
-      color: 'bg-green-500'
-    });
-  }
-  
-  //  SO approval - Handle both string and number  
-  if (complaint.approved_rejected_by_so_us == 1 || complaint.approved_rejected_by_so_us === "1") {
-    statuses.push({
-      status: 'approved_by_so',
-      label: 'Approved by SO',
-      color: 'bg-green-500'
-    });
-  }
-  
-  //  DS approval - Handle both string and number
-  if (complaint.approved_rejected_by_ds_js == 1 || complaint.approved_rejected_by_ds_js === "1") {
-    statuses.push({
-      status: 'approved_by_ds',
-      label: 'Approved by DS',  
-      color: 'bg-green-500'
-    });
-  }
-  
-  //  DA approval - Handle both string and number
-  if (complaint.approved_rejected_by_d_a == 1 || complaint.approved_rejected_by_d_a === "1") {
-    statuses.push({
-      status: 'approved_by_da',
-      label: 'Approved by DA',
-      color: 'bg-green-500'
-    });
-  }
-  
-  return statuses;
-};
+    // RO approval - Handle both string and number
+    if (isApproved(complaint.approved_rejected_by_ro)) {
+      statuses.push({
+        status: 'approved_by_ro', 
+        label: 'Approved by RO',
+        color: 'bg-green-500'
+      });
+    }
+    
+    // SO approval - Handle both string and number  
+    if (isApproved(complaint.approved_rejected_by_so_us)) {
+      statuses.push({
+        status: 'approved_by_so',
+        label: 'Approved by SO',
+        color: 'bg-green-500'
+      });
+    }
+    
+    // DS approval - Handle both string and number
+    if (isApproved(complaint.approved_rejected_by_ds_js)) {
+      statuses.push({
+        status: 'approved_by_ds',
+        label: 'Approved by DS',  
+        color: 'bg-green-500'
+      });
+    }
+    
+    // DA approval - Handle both string and number
+    if (isApproved(complaint.approved_rejected_by_d_a)) {
+      statuses.push({
+        status: 'approved_by_da',
+        label: 'Approved by DA',
+        color: 'bg-green-500'
+      });
+    }
+    
+    return statuses;
+  };
 
-//  Forward status helper - Updated with same logic
-const isForwarded = (complaint) => {
-  return complaint.approved_rejected_by_d_a == 1 || complaint.approved_rejected_by_d_a === "1";
-};
+  // Forward status helper - Updated with same logic
+  const isForwarded = (complaint) => {
+    return isApproved(complaint.approved_rejected_by_d_a);
+  };
 
   if (error) {
     return (
@@ -580,14 +628,14 @@ const isForwarded = (complaint) => {
 
         <div className="space-y-3 sm:space-y-4">
           {complaintsData.map((complaint) => {
-            const approvalStatuses = getApprovalStatuses(complaint); //  Full text badges
+            const approvalStatuses = getApprovalStatuses(complaint); // Full text badges
             
             return (
               <div
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/*  Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {/* Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
                 {approvalStatuses.length > 0 && (
                   <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
                     {approvalStatuses.map((status, index) => (

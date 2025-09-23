@@ -118,23 +118,23 @@ import SupervisorEditComplaintscio from './components/Supervisor/cio-io/All-comp
 
 // Supervisor 
 // SubRole -> dea-assis
-import SupervisorLayoutdea from './components/Supervisor/so-us/Layout';
-import SupervisorDashboarddea from './components/Supervisor/so-us/Dashboard';
-import SupervisorComplaintsdea from './components/Supervisor/so-us/Complaints';
-import SupervisorProgressRegisterdea from './components/Supervisor/so-us/ProgressRegister';
-import SupervisorSearchReportsdea from './components/Supervisor/so-us/SearchReports';
-import SupervisorViewComplaintsdea from './components/Supervisor/so-us/ViewComplaints';
-import SupervisorPendingComplaintsdea from './components/Supervisor/so-us/Pending-complaints/PendingComplaints';
-import SupervisorEditPendingComplaintsdea from './components/Supervisor/so-us/Pending-complaints/EditPendingComplaints';
-import SupervisorViewPendingComplaintsdea from './components/Supervisor/so-us/Pending-complaints/ViewPendingComplaints';
+import SupervisorLayoutdea from './components/Supervisor/dea-assis/Layout';
+import SupervisorDashboarddea from './components/Supervisor/dea-assis/Dashboard';
+import SupervisorComplaintsdea from './components/Supervisor/dea-assis/Complaints';
+import SupervisorProgressRegisterdea from './components/Supervisor/dea-assis/ProgressRegister';
+import SupervisorSearchReportsdea from './components/Supervisor/dea-assis/SearchReports';
+import SupervisorViewComplaintsdea from './components/Supervisor/dea-assis/ViewComplaints';
+import SupervisorPendingComplaintsdea from './components/Supervisor/dea-assis/Pending-complaints/PendingComplaints';
+import SupervisorEditPendingComplaintsdea from './components/Supervisor/dea-assis/Pending-complaints/EditPendingComplaints';
+import SupervisorViewPendingComplaintsdea from './components/Supervisor/dea-assis/Pending-complaints/ViewPendingComplaints';
 
-import SupervisorApprovedComplaintsdea from './components/Supervisor/so-us/Approved-complaints/ApprovedComplaints';
-import SupervisorViewApprovedComplaintsdea from './components/Supervisor/so-us/Approved-complaints/ViewApprovedComplaints';
-import SupervisorEditApprovedComplaintsdea from './components/Supervisor/so-us/Approved-complaints/EditApprovedComplaints';
+import SupervisorApprovedComplaintsdea from './components/Supervisor/dea-assis/Approved-complaints/ApprovedComplaints';
+import SupervisorViewApprovedComplaintsdea from './components/Supervisor/dea-assis/Approved-complaints/ViewApprovedComplaints';
+import SupervisorEditApprovedComplaintsdea from './components/Supervisor/dea-assis/Approved-complaints/EditApprovedComplaints';
 
-import SupervisorAllComplaitsdea from './components/Supervisor/so-us/All-complaints/AllComplaits';
-import SupervisorViewAllComplaintdea from './components/Supervisor/so-us/All-complaints/ViewwAllComplaint';
-import SupervisorEditComplaintsdea from './components/Supervisor/so-us/All-complaints/EditAllComplaints';
+import SupervisorAllComplaitsdea from './components/Supervisor/dea-assis/All-complaints/AllComplaits';
+import SupervisorViewAllComplaintdea from './components/Supervisor/dea-assis/All-complaints/ViewwAllComplaint';
+import SupervisorEditComplaintsdea from './components/Supervisor/dea-assis/All-complaints/EditAllComplaints';
 
 // //Lok-ayukt
 // import LokayuktLayout from './components/Supervisor/Layout';
