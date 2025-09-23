@@ -245,7 +245,7 @@ const ForwardModal = ({
 
       console.log("API Response:", response.data);
 
-      // ✅ Check for success response based on your API
+      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
         toast.success(response.data.message || 'Complaint forwarded successfully!', {
           position: "top-right",
@@ -256,7 +256,7 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // ✅ Pass the complaint ID to parent for local update
+        // Pass the complaint ID to parent for local update
         onSubmit(complaintId); // Pass complaint ID to parent
         onClose(); // Close modal
       } else {
@@ -340,7 +340,7 @@ const ForwardModal = ({
                     setFormData(prev => ({ ...prev, forwardTo: value }))
                   }}
                   options={dropdownOptions}
-                  placeholder="Select"
+                  placeholder="Select LokAyukta/UpLokAyukta"
                   required
                 />
               )}
@@ -424,7 +424,7 @@ const PendingComplaints = () => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const response = await api.get("/supervisor/all-pending-complaints");
+        const response = await api.get("/supervisor/all-complaints");
         if (response.data.status === true) {
           setComplaintsData(response.data.data);
         } else {
@@ -442,7 +442,7 @@ const PendingComplaints = () => {
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
-    navigate(`/supervisor/pending-complaints/view/${complaintId}`);
+    navigate(`/supervisor/all-complaints/view/${complaintId}`);
   };
 
   // Handle modal view
@@ -459,15 +459,15 @@ const PendingComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // ✅ Handle forward submit with local state update
+  // Handle forward submit with local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // ✅ Update local state immediately without API call
+    // Update local state immediately without API call
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              approved_rejected_by_d_a: 1, // Set forwarded status
+              approved_rejected_by_d_a: 1, 
               status: 'Forwarded' // Update status if needed
             }
           : complaint
@@ -487,53 +487,65 @@ const PendingComplaints = () => {
     });
   };
 
-  // ✅ NEW: Full text approval badges in green background - Jo jiski value 1 hai
-  const getApprovalStatuses = (complaint) => {
-    const statuses = [];
-    
-    // // ✅ DA approval - Full text with green background
-    // if (complaint.approved_rejected_by_d_a === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_da',
-    //     label: 'Approved by DA',
-    //     color: 'bg-green-500'
-    //   });
-    // }
-    
-    // ✅ RO approval - Full text with green background
-    if (complaint.approved_rejected_by_ro === 1) {
-      statuses.push({
-        status: 'approved_by_ro', 
-        label: 'Approved by RO',
-        color: 'bg-green-500'
-      });
-    }
-    
-    // ✅ SO approval - Full text with green background
-    if (complaint.approved_rejected_by_d_a === 1) {
-      statuses.push({
-        status: 'approved_by_so',
-        label: 'Approved by SO',
-        color: 'bg-green-500'
-      });
-    }
-    
-    // ✅ DS approval - Full text with green background
-    if (complaint.approved_rejected_by_ds_js === 1) {
-      statuses.push({
-        status: 'approved_by_ds',
-        label: 'Approved by DS',
-        color: 'bg-green-500'
-      });
-    }
-    
-    return statuses;
-  };
+ //  NEW: Full text approval badges in green background - Jo jiski value 1 hai
+const getApprovalStatuses = (complaint) => {
+  const statuses = [];
 
-  // Forward status helper
-  const isForwarded = (complaint) => {
-    return complaint.approved_rejected_by_so_us === 1;
-  };
+  //  Debug: Console log करके actual values देखते हैं
+  console.log("Complaint approval values:", {
+    ro: complaint.approved_rejected_by_ro, 
+    ro_type: typeof complaint.approved_rejected_by_ro,
+    so: complaint.approved_rejected_by_so_us,
+    so_type: typeof complaint.approved_rejected_by_so_us,
+    ds: complaint.approved_rejected_by_ds_js,
+    ds_type: typeof complaint.approved_rejected_by_ds_js,
+    da: complaint.approved_rejected_by_d_a,
+    da_type: typeof complaint.approved_rejected_by_d_a
+  });
+
+  //  RO approval - Handle both string and number
+  if (complaint.approved_rejected_by_ro == 1 || complaint.approved_rejected_by_ro === "1") {
+    statuses.push({
+      status: 'approved_by_ro', 
+      label: 'Approved by RO',
+      color: 'bg-green-500'
+    });
+  }
+  
+  //  SO approval - Handle both string and number  
+  if (complaint.approved_rejected_by_so_us == 1 || complaint.approved_rejected_by_so_us === "1") {
+    statuses.push({
+      status: 'approved_by_so',
+      label: 'Approved by SO',
+      color: 'bg-green-500'
+    });
+  }
+  
+  //  DS approval - Handle both string and number
+  if (complaint.approved_rejected_by_ds_js == 1 || complaint.approved_rejected_by_ds_js === "1") {
+    statuses.push({
+      status: 'approved_by_ds',
+      label: 'Approved by DS',  
+      color: 'bg-green-500'
+    });
+  }
+  
+  //  DA approval - Handle both string and number
+  if (complaint.approved_rejected_by_d_a == 1 || complaint.approved_rejected_by_d_a === "1") {
+    statuses.push({
+      status: 'approved_by_da',
+      label: 'Approved by DA',
+      color: 'bg-green-500'
+    });
+  }
+  
+  return statuses;
+};
+
+//  Forward status helper - Updated with same logic
+const isForwarded = (complaint) => {
+  return complaint.approved_rejected_by_d_a == 1 || complaint.approved_rejected_by_d_a === "1";
+};
 
   if (error) {
     return (
@@ -563,19 +575,19 @@ const PendingComplaints = () => {
 
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pending Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">All Complaints</h1>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
           {complaintsData.map((complaint) => {
-            const approvalStatuses = getApprovalStatuses(complaint); // ✅ Full text badges
+            const approvalStatuses = getApprovalStatuses(complaint); //  Full text badges
             
             return (
               <div
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/* ✅ Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {/*  Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
                 {approvalStatuses.length > 0 && (
                   <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
                     {approvalStatuses.map((status, index) => (
@@ -635,7 +647,7 @@ const PendingComplaints = () => {
                     >
                       View Details
                     </button>
-                    {/* ✅ Dynamic button based on forward status */}
+                    {/* Dynamic button based on forward status */}
                     {isForwarded(complaint) ? (
                       <button
                         disabled

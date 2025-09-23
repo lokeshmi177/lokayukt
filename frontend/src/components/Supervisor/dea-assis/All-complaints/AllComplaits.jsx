@@ -340,7 +340,7 @@ const ForwardModal = ({
                     setFormData(prev => ({ ...prev, forwardTo: value }))
                   }}
                   options={dropdownOptions}
-                  placeholder="Select Dealing Assistant"
+                  placeholder="Select LokAyukta/UpLokAyukta"
                   required
                 />
               )}
@@ -487,54 +487,65 @@ const AllComplaints = () => {
     });
   };
 
-  // ✅ NEW: Full text approval badges in green background - Jo jiski value 1 hai
-  const getApprovalStatuses = (complaint) => {
-    const statuses = [];
-    
-    // ✅ DA approval - Full text with green background
-   
-    
-    // ✅ RO approval - Full text with green background
-    if (complaint.approved_rejected_by_ro === 1) {
-      statuses.push({
-        status: 'approved_by_ro', 
-        label: 'Approved by RO',
-        color: 'bg-green-500'
-      });
-    }
-    
-    // ✅ SO approval - Full text with green background
-    if (complaint.approved_rejected_by_so_us === 1) {
-      statuses.push({
-        status: 'approved_by_so',
-        label: 'Approved by SO',
-        color: 'bg-green-500'
-      });
-    }
-    
-    // ✅ DS approval - Full text with green background
-    if (complaint.approved_rejected_by_ds_js === 1) {
-      statuses.push({
-        status: 'approved_by_ds',
-        label: 'Approved by DS',
-        color: 'bg-green-500'
-      });
-    }
-    //  if (complaint.approved_rejected_by_d_a === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_da',
-    //     label: 'Approved by DA',
-    //     color: 'bg-green-500'
-    //   });
-    // }
-    
-    return statuses;
-  };
+ //  NEW: Full text approval badges in green background - Jo jiski value 1 hai
+const getApprovalStatuses = (complaint) => {
+  const statuses = [];
 
-  // Forward status helper - Updated logic
-  const isForwarded = (complaint) => {
-    return complaint.approved_rejected_by_d_a === 1;
-  };
+  //  Debug: Console log करके actual values देखते हैं
+  console.log("Complaint approval values:", {
+    ro: complaint.approved_rejected_by_ro, 
+    ro_type: typeof complaint.approved_rejected_by_ro,
+    so: complaint.approved_rejected_by_so_us,
+    so_type: typeof complaint.approved_rejected_by_so_us,
+    ds: complaint.approved_rejected_by_ds_js,
+    ds_type: typeof complaint.approved_rejected_by_ds_js,
+    da: complaint.approved_rejected_by_d_a,
+    da_type: typeof complaint.approved_rejected_by_d_a
+  });
+
+  //  RO approval - Handle both string and number
+  if (complaint.approved_rejected_by_ro == 1 || complaint.approved_rejected_by_ro === "1") {
+    statuses.push({
+      status: 'approved_by_ro', 
+      label: 'Approved by RO',
+      color: 'bg-green-500'
+    });
+  }
+  
+  //  SO approval - Handle both string and number  
+  if (complaint.approved_rejected_by_so_us == 1 || complaint.approved_rejected_by_so_us === "1") {
+    statuses.push({
+      status: 'approved_by_so',
+      label: 'Approved by SO',
+      color: 'bg-green-500'
+    });
+  }
+  
+  //  DS approval - Handle both string and number
+  if (complaint.approved_rejected_by_ds_js == 1 || complaint.approved_rejected_by_ds_js === "1") {
+    statuses.push({
+      status: 'approved_by_ds',
+      label: 'Approved by DS',  
+      color: 'bg-green-500'
+    });
+  }
+  
+  //  DA approval - Handle both string and number
+  if (complaint.approved_rejected_by_d_a == 1 || complaint.approved_rejected_by_d_a === "1") {
+    statuses.push({
+      status: 'approved_by_da',
+      label: 'Approved by DA',
+      color: 'bg-green-500'
+    });
+  }
+  
+  return statuses;
+};
+
+//  Forward status helper - Updated with same logic
+const isForwarded = (complaint) => {
+  return complaint.approved_rejected_by_d_a == 1 || complaint.approved_rejected_by_d_a === "1";
+};
 
   if (error) {
     return (
@@ -569,14 +580,14 @@ const AllComplaints = () => {
 
         <div className="space-y-3 sm:space-y-4">
           {complaintsData.map((complaint) => {
-            const approvalStatuses = getApprovalStatuses(complaint); // ✅ Full text badges
+            const approvalStatuses = getApprovalStatuses(complaint); //  Full text badges
             
             return (
               <div
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/* ✅ Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {/*  Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
                 {approvalStatuses.length > 0 && (
                   <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
                     {approvalStatuses.map((status, index) => (
