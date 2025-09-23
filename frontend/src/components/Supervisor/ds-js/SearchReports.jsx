@@ -178,9 +178,8 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// ✅ UPDATED: Forward Modal Component with Your Approach - Direct API Fields
+// ✅ UPDATED: Forward Modal Component - ID bhejega backend mein, Name dikhega frontend mein
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
-  // ✅ YOUR APPROACH: Direct API field names
   const [forward, setForward] = useState({
     forward_to: "",
     remark: ""
@@ -190,8 +189,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [lokayuktData, setLokayuktData] = useState([]);
   const [upLokayuktData, setUpLokayuktData] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
-  
-  // ✅ NEW: Error state for form validation
   const [errors, setErrors] = useState({});
 
   // Fetch LokAyukta and UpLokAyukta data
@@ -219,7 +216,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     }
   };
 
-  // Build dropdown options dynamically from API data
+  // ✅ UPDATED: Build dropdown options - ID as value, Name as label for display
   const buildDropdownOptions = () => {
     const options = [];
 
@@ -227,11 +224,12 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (lokayuktData.length > 0) {
       options.push({
         label: "Hon'ble LokAyukta",
-        icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
+        // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
         items: lokayuktData.map((item) => ({
-          value: `lokayukt_${item.id}`,
-          label: item.name,
-          icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+          value: item.id, // ✅ ID bhejenge backend mein
+          label: item.name, // ✅ Name dikhayenge frontend mein
+          // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+          type: "lokayukt" // Optional: type tracking ke liye
         })),
       });
     }
@@ -240,11 +238,12 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (upLokayuktData.length > 0) {
       options.push({
         label: "Hon'ble UpLokAyukta",
-        icon: <FaCrown className="w-4 h-4 text-blue-500" />,
+        // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
         items: upLokayuktData.map((item) => ({
-          value: `uplokayukt_${item.id}`,
-          label: item.name,
-          icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
+          value: item.id, // ✅ ID bhejenge backend mein
+          label: item.name, // ✅ Name dikhayenge frontend mein
+          // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
+          type: "uplokayukt" // Optional: type tracking ke liye
         })),
       });
     }
@@ -254,34 +253,31 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
 
   useEffect(() => {
     if (isOpen) {
-      // ✅ Reset with direct API field names
       setForward({ forward_to: "", remark: "" });
-      setErrors({}); // Clear errors when modal opens
+      setErrors({});
       fetchForwardingData();
     }
   }, [isOpen]);
 
-  // ✅ UPDATED: Handle Submit with Your Approach - Direct API Usage
+  // ✅ UPDATED: Handle Submit - Only ID send hoga backend mein
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({}); // Clear previous errors
+    setErrors({});
 
     try {
       console.log("Forwarding complaint:", complaintId, "with payload:", forward);
 
-      // ✅ YOUR APPROACH: Direct API call with exact field names
-      const response = await api.post(`/supervisor/forward-report-by-ds/${complaintId}`, forward);
+      // ✅ forward.forward_to mein ab sirf ID hai, name nahi
+      const response = await api.post(`/supervisor/forward-report-by-so/${complaintId}`, forward);
 
       console.log("Forward API Response:", response.data);
 
-      // ✅ Handle successful response
       if (response.data.status !== false) {
         toast.success("Complaint forwarded successfully!");
         onSubmit && onSubmit();
         onClose();
       } else {
-        // Handle validation errors from API
         if (response.data.errors) {
           setErrors(response.data.errors);
           console.log("Validation errors:", response.data.errors);
@@ -292,7 +288,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     } catch (error) {
       console.error("Error forwarding complaint:", error);
       
-      // ✅ Handle API validation errors
       if (error.response && error.response.data && error.response.data.errors) {
         setErrors(error.response.data.errors);
         console.log("API Validation Errors:", error.response.data.errors);
@@ -304,7 +299,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     }
   };
 
-  // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -315,7 +309,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
-      {/* ✅ ONLY CHANGE: Changed max-w-md to max-w-3xl for bigger popup */}
       <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="px-4 py-3 border-b flex items-center justify-between">
@@ -337,22 +330,22 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 Forward To <span className="text-red-500">*</span>
               </label>
               <CustomSearchableDropdown
+                name="forward_to"
                 value={forward.forward_to}
                 onChange={(value) => {
+                  // ✅ Yahan sirf ID set hogi, name nahi
                   setForward((prev) => ({ ...prev, forward_to: value }));
-                  // Clear error when user selects value
+                
                   if (errors.forward_to) {
                     setErrors((prev) => ({ ...prev, forward_to: null }));
                   }
                 }}
                 options={buildDropdownOptions()}
                 placeholder="Select LokAyukta/UpLokAyukta"
-               
-                error={errors.forward_to && errors.forward_to[0]} // ✅ Show error message
+                error={errors.forward_to && errors.forward_to[0]} 
               />
             </div>
 
-           
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Remarks <span className="text-red-500">*</span>
@@ -362,7 +355,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 value={forward.remark}
                 onChange={(e) => {
                   setForward((prev) => ({ ...prev, remark: e.target.value }));
-                  // Clear error when user types
                   if (errors.remark) {
                     setErrors((prev) => ({ ...prev, remark: null }));
                   }
@@ -372,9 +364,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 }`}
                 placeholder="Enter forwarding remarks..."
                 rows={3}
-              
               />
-              {/* ✅ Show remark error */}
               {errors.remark && (
                 <div className="mt-1 text-sm text-red-600">
                   {errors.remark[0]}
@@ -859,7 +849,7 @@ const SearchReports = () => {
                                   const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
                                   saveAs(data, `SearchReports_${new Date().toISOString().slice(0, 10)}.xlsx`);
 
-                                  // toast.success("Export successful!");
+                                  toast.success("Export successful!");
                                 } catch (e) {
                                   console.error("Export failed:", e);
                                   toast.error("Failed to export data.");
@@ -925,7 +915,7 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3">
                                       <div className="flex gap-1">
                                         <button
-                                          onClick={() => navigate(`/view/${result.id}`)}
+                                          onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
@@ -1189,7 +1179,7 @@ const SearchReports = () => {
           </div>
         </div>
 
-        {/* ✅ UPDATED: Forward Modal with Your Approach - Direct API Fields */}
+        {/* ✅ UPDATED: Forward Modal with ID backend submission */}
         <ForwardModal
           isOpen={isForwardModalOpen}
           onClose={() => setIsForwardModalOpen(false)}
