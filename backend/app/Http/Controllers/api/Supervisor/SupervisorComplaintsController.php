@@ -88,7 +88,8 @@ class SupervisorComplaintsController extends Controller
     switch ($userSubrole) {
         case "so-us":
             $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                  ->Orwhere('approved_rejected_by_ds_js', 0);
                 //   ->where('approved_by_ro', 1);
             // $query->where('complaints.added_by', $user);
             break;
