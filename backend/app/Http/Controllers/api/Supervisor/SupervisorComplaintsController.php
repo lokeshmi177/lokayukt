@@ -88,7 +88,8 @@ class SupervisorComplaintsController extends Controller
     switch ($userSubrole) {
         case "so-us":
             $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_ds_js', 0);
                 //   ->where('approved_by_ro', 1);
             // $query->where('complaints.added_by', $user);
             break;
@@ -320,7 +321,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
             'forward_to_d_a' => 'required|exists:users,id',
-            // 'remark' => 'required',
+            'remark' => 'required',
          
           
         ], [
@@ -328,7 +329,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
             'forward_to_d_a.required' => 'Forward to user is required.',
             'forward_to_d_a.exists' => 'Forward to user does not exist.',
-            // 'remark.required' => 'Remark is required.',
+            'remark.required' => 'Remark is required.',
            
         ]);
 
@@ -388,16 +389,16 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
-            'forward_to_d_a' => 'required|exists:users,id',
-            // 'remark' => 'required',
+            'forward_to' => 'required|exists:users,id',
+            'remark' => 'required',
          
           
         ], [
             // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
             // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
-            'forward_to_d_a.required' => 'Forward to user is required.',
-            'forward_to_d_a.exists' => 'Forward to user does not exist.',
-            // 'remark.required' => 'Remark is required.',
+            'forward_to.required' => 'Forward to user is required.',
+            'forward_to.exists' => 'Forward to user does not exist.',
+            'remark.required' => 'Remark is required.',
            
         ]);
 
@@ -409,11 +410,21 @@ $complainDetails->details = DB::table('complaints_details as cd')
         }
         if(isset($complainId) && $request->isMethod('post')){
 
-             $cmp =  Complaint::findOrFail($complainId);
+             $user = User::with('role')->where('id',$request->forward_to)->get();
+            // dd($user[0]->role->name);
+            $roleFwd = $user[0]->role->name;
 
+              
+             $cmp =  Complaint::findOrFail($complainId);
+            
             if($cmp){
-                 $cmp->approved_rejected_by_d_a = 1;
-                $cmp->forward_to_d_a = $request->forward_to_d_a;
+                $cmp->approved_rejected_by_d_a = 1;
+                // $cmp->forward_to_d_a = $request->forward_to_d_a;
+                if($roleFwd == "lok-ayukt"){
+                    $cmp->forward_to_lokayukt = $request->forward_to;
+                }elseif($roleFwd =="up-lok-ayukt"){
+                    $cmp->forward_to_uplokayukt = $request->forward_to;
+                }
                 $remark ='Remark By Dealing Assistant';
                 $remark.='\n';
                 $remark.= $request->remarks;
@@ -477,7 +488,10 @@ $complainDetails->details = DB::table('complaints_details as cd')
     switch ($userSubrole) {
         case "so-us":
             $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_so_us', 0)
+                  ->whereNot('approved_rejected_by_ds_js', 1);
+                  
                 //   ->where('approved_by_ro', 1);
             // $complainDetails->where('complaints.added_by', $user);
             break;
@@ -551,7 +565,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
     switch ($userSubrole) {
         case "so-us":
             $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_so_us', 1);
                 //   ->where('approved_by_ro', 1);
             // $complainDetails->where('complaints.added_by', $user);
             break;
