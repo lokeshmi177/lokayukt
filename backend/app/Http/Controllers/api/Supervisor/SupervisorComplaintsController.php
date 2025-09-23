@@ -489,7 +489,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
         case "so-us":
             $complainDetails->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                  ->Orwhere('approved_rejected_by_ds_js', 0);
+                  ->where('approved_rejected_by_so_us', 0)
+                  ->whereNot('approved_rejected_by_ds_js', 1);
+                  
                 //   ->where('approved_by_ro', 1);
             // $complainDetails->where('complaints.added_by', $user);
             break;
@@ -563,7 +565,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
     switch ($userSubrole) {
         case "so-us":
             $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_so_us', 1);
                 //   ->where('approved_by_ro', 1);
             // $complainDetails->where('complaints.added_by', $user);
             break;
