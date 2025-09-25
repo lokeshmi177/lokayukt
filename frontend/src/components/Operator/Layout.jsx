@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from "./Sidebar"
 import Header from './Header';
+import Footer from '../Footer'; // Footer import करें
 
 const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,6 +63,16 @@ const Layout = () => {
         }}>
           <Outlet />
         </main>
+      </div>
+      
+      {/* Footer को यहाँ add करें - sidebar के साथ sync होगा */}
+      <div 
+        className="transition-all duration-300"
+        style={{
+          marginLeft: !isMobile ? (isCollapsed ? '4rem' : '18rem') : '0'
+        }}
+      >
+        <Footer />
       </div>
     </div>
   );

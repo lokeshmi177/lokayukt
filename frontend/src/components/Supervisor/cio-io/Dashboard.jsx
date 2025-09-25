@@ -33,6 +33,7 @@ import {
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
@@ -256,13 +257,15 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 // Main Dashboard Component
 const Dashboard = ({ userRole = "supervisor" }) => {
+
+  const navigate = useNavigate()
   //  API State Management + Date Picker State
   const [dashboardData, setDashboardData] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
   const [statusData, setStatusData] = useState([]);
   const [departmentData, setDepartmentData] = useState([]);
   const [districtData, setDistrictData] = useState([]);
-  const [weeklyData, setWeeklyData] = useState([]); //  Weekly data state
+  const [weeklyData, setWeeklyData] = useState([]); 
   const [showMonthlyTab, setShowMonthlyTab] = useState(false);
   
   //  Date Picker State
@@ -275,7 +278,7 @@ const Dashboard = ({ userRole = "supervisor" }) => {
   const fetchWeeklyData = async () => {
     try {
       console.log('Fetching weekly graph data...');
-      const response = await api.get('/supervisor/getWeeklyGraph');
+      const response = await api.get('/admin/getWeeklyGraph');
       console.log('Weekly API Response:', response.data);
       
       if (response.data && response.data.labels) {
@@ -603,11 +606,15 @@ const Dashboard = ({ userRole = "supervisor" }) => {
 
 
       {/* Key Performance Indicators */}
-     
-
  <div className="grid grid-cols-1 sm:grid-cols-5 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+
+
         {/* Total Complaints */}
-        <div className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+        onClick={()=>{
+          navigate("/supervisor/all-complaints ")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaFileAlt className="text-2xl text-blue-600" />
@@ -623,7 +630,11 @@ const Dashboard = ({ userRole = "supervisor" }) => {
 
 
         {/* Today's Entry */}
-        <div className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+         onClick={()=>{
+          navigate("/supervisor/pending-complaints")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaClock className="text-2xl text-indigo-600" />
@@ -639,7 +650,11 @@ const Dashboard = ({ userRole = "supervisor" }) => {
 
 
         {/* Approved */}
-        <div className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div 
+          onClick={()=>{
+          navigate("/supervisor/approved-complaints")
+        }}
+        className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaCheckCircle className="text-2xl text-green-600" />
@@ -671,7 +686,11 @@ const Dashboard = ({ userRole = "supervisor" }) => {
 
 
         {/* Pending */}
-        <div className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+          onClick={()=>{
+          navigate("/supervisor/pending-complaints")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaExclamationTriangle className="text-2xl text-yellow-600" />
@@ -686,7 +705,11 @@ const Dashboard = ({ userRole = "supervisor" }) => {
 
 
         {/* Avg. Processing */}
-        <div className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+          onClick={()=>{
+          navigate("/supervisor/pending-complaints")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaClock className="text-2xl text-teal-600" />

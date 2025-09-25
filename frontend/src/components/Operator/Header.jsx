@@ -6,13 +6,16 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
+
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
+
 
 const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
   const navigate = useNavigate();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [isMobile, setIsMobile] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
 
   // Create axios instance with token
   const getApiInstance = () => {
@@ -25,6 +28,7 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
       },
     });
   };
+
 
   // Check screen size
   useEffect(() => {
@@ -40,6 +44,7 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
     };
   }, []);
 
+
   // Update time every minute
   useEffect(() => {
     const timer = setInterval(() => {
@@ -49,20 +54,24 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Format date and time
+
+  // Format date and time exactly like in image: "25 Sep 2025, 12:48 am"
   const formatDateTime = () => {
     const now = currentDateTime;
     const day = now.getDate();
     const month = now.toLocaleDateString('en-US', { month: 'short' });
     const year = now.getFullYear();
-    const time = now.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
     
-    return `${day} ${month} ${year}, ${time}`;
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    
+    return `${day} ${month} ${year}, ${hours}:${minutesStr} ${ampm}`;
   };
+
 
   // Logout function with API call
   const handleLogout = async () => {
@@ -119,9 +128,9 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
   const getUserRole = () => {
     try {
       const role = localStorage.getItem('role');
-      return role || 'Operator';
+      return role || 'operator';
     } catch (error) {
-      return 'Operator';
+      return 'operator';
     }
   };
 
@@ -144,79 +153,98 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
         style={{ zIndex: 9999 }}
       />
 
+      {/* Header exactly matching the image with proper spacing */}
       <header 
-        className="bg-white border-b border-gray-200 px-4 sm:px-6 transition-all duration-300 sm:py-5 md:py-5 lg:py-5 py-3"
+        className="bg-white border-b border-gray-200 px-6 py-4"
         style={{
           marginLeft: !isMobile ? (isCollapsed ? '4rem' : '18rem') : '0',
           width: !isMobile ? (isCollapsed ? 'calc(100% - 4rem)' : 'calc(100% - 18rem)') : '100%'
         }}
       >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-          {/* Left side - Mobile menu button, Date & Time with orange dot */}
+        <div className="flex justify-between items-center">
+          {/* Left side - Clock icon and Date Time */}
           <div className="flex items-center gap-3">
-            {isMobile ? (
-              <button
-                onClick={toggleMobileMenu}
-                className="p-2 text-gray-600 sm:hidden md:hidden lg:hidden hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <FaBars className="w-5 h-5" />
-              </button>
-            ) : (
-              <button
-                onClick={toggleSidebar}
-                className="p-2 text-gray-600 sm:hidden md:hidden lg:hidden hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <FaBars className="w-5 h-5" />
-              </button>
-            )}
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></span>
-              <span className="font-medium">{formatDateTime()}</span>
-            </div>
-          </div>
-
-          {/* Right side - Simple User Info */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
-            {/* User Name and Role */}
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-900">
-                {user?.name || 'Relief Commissioner'}
-              </span>
-              {/* ✅ Fixed: Safe role rendering */}
-              <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded font-medium">
-                {typeof user?.role === 'object' ? user.role.name : userRole}
-              </span>
-            </div>
-
-            {/* Contact Info and Actions */}
-            <div className="flex items-center gap-3">
-              {/* Email */}
-              <p
-                href={`mailto:${user?.email || 'test@gmail.com'}`}
-                className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
-                title="Send Email"
-              >
-                <FaEnvelope className="w-3 h-3" />
-                <span className="hidden sm:inline">{user?.email || 'test@gmail.com'}</span>
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <button 
-                  className={`p-1.5 text-gray-500 hover:text-red-600 transition-colors rounded-md hover:bg-gray-100 flex items-center gap-1 ${
-                    isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  title="Logout"
-                >
-                  <FaSignOutAlt className={`w-4 h-4 ${isLoggingOut ? 'animate-pulse' : ''}`} />
-                  <span className="text-xs hidden sm:inline">
-                    {isLoggingOut ? 'Logging out...' : 'Sign Out'}
-                  </span>
-                </button>
+            {/* Clock Icon */}
+            <div className="flex items-center justify-center w-6 h-6">
+              <div className="w-4 h-4 border-2 border-gray-400 rounded-full relative">
+                <div className="absolute top-0 left-1/2 w-0.5 h-1.5 bg-gray-400 transform -translate-x-1/2"></div>
+                <div className="absolute top-1/2 left-1/2 w-1 h-0.5 bg-gray-400 transform -translate-x-1/2 -translate-y-1/2"></div>
               </div>
             </div>
+            
+            {/* Date Time Text */}
+            <span className="text-sm text-gray-600 font-medium">
+              {formatDateTime()}
+            </span>
+          </div>
+
+          {/* Right side - User Info with reduced spacing */}
+          <div className="flex items-center gap-2">
+            {/* User Icon */}
+
+            {/* <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full">
+              <FaUser className="w-4 h-4 text-gray-600" />
+            </div> */}
+            
+            {/* User Name and Email - Reduced gap */}
+            {/* <div className="flex flex-col">
+            <div className="flex">
+ <span className="text-sm font-medium text-gray-900">
+                {user?.name || 'sahil'}
+              </span>
+
+               <span className="ml-2 px-2 py-1 bg-blue-600 text-white text-xs rounded  font-medium">
+              {typeof user?.role === 'object' ? user.role.name : userRole}
+            </span>
+              <span className="text-xs text-gray-500">
+                {user?.email || 'sahil@gmail.com'}
+              </span>
+            </div>
+             
+            </div> */}
+          <div className="flex flex-col">
+  {/* User Name & Role */}
+  <div className="flex items-center">
+    <FaUser className="w-4 h-4 mr-2 text-gray-600" />
+    <span className="text-sm font-medium text-gray-900">
+      {user?.name}
+    </span>
+    <span className="ml-2 px-2 py-0.5 border text-black text-xs rounded font-medium">
+      {typeof user?.role === "object" ? user.role.name : userRole}
+    </span>
+  </div>
+
+  {/* User Email */}
+  <div>
+    <span className="text-xs text-gray-500">
+      {user?.email || "sahil@gmail.com"}
+    </span>
+  </div>
+</div>
+
+            {/* Role Badge - Reduced gap */}
+           
+
+            {/* Refresh Icon */}
+            <button
+              onClick={handleRefresh}
+              className="ml-3 p-2 text-blue-500 rounded-lg hover:bg-gray-100 transition-colors"
+              title="Refresh"
+            >
+              <FaSync className="w-4 h-4" />
+            </button>
+
+            {/* Logout Icon */}
+            <button 
+              className={`p-2  text-red-600 transition-colors rounded-lg hover:bg-gray-100 ${
+                isLoggingOut ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              title="Logout"
+            >
+              <FaSignOutAlt className={`w-4 h-4 ${isLoggingOut ? 'animate-pulse' : ''}`} />
+            </button>
           </div>
         </div>
       </header>

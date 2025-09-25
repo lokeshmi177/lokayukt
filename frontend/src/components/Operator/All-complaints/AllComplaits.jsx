@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,7 +19,13 @@ const api = axios.create({
 
 const AllComplaints = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // State for tabs and data
+  const [activeTab, setActiveTab] = useState("all");
   const [complaintsData, setComplaintsData] = useState([]);
+  const [pendingData, setPendingData] = useState([]);
+  const [approvedData, setApprovedData] = useState([]);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -27,25 +33,116 @@ const AllComplaints = () => {
   const [complaintToApprove, setComplaintToApprove] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
 
-  // Fetch complaints data from API
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        const response = await api.get("/operator/all-complaints");
-        
-        if (response.data.status === true) {
-          setComplaintsData(response.data.data);
-        } else {
-          setError("Failed to fetch complaints data");
-        }
-      } catch (error) {
-        console.error("API Error:", error);
-        setError("Error fetching data");
-      }
-    };
+  // Determine active tab from URL
+  const getActiveTabFromURL = () => {
+    if (location.pathname.includes('/pending-complaints')) return 'pending';
+    if (location.pathname.includes('/approved-complaints')) return 'approved';
+    return 'all'; // default
+  };
 
-    fetchComplaints();
-  }, []);
+  // Set active tab based on URL on mount
+  useEffect(() => {
+    setActiveTab(getActiveTabFromURL());
+  }, [location.pathname]);
+
+  // Handle tab change with routing
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    
+    // Route navigation
+    switch(tab) {
+      case 'all':
+        navigate('/all-complaints'); // Default route
+        break;
+      case 'pending':
+        navigate('/operator/pending-complaints');
+        break;
+      case 'approved':
+        navigate('/operator/approved-complaints');
+        break;
+      default:
+        navigate('/all-complaints');
+    }
+  };
+
+  // Fetch all complaints data from API
+  const fetchAllComplaints = async () => {
+    try {
+      const response = await api.get("/operator/all-complaints");
+      
+      if (response.data.status === true) {
+        setComplaintsData(response.data.data);
+      } else {
+        setError("Failed to fetch complaints data");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      setError("Error fetching data");
+    }
+  };
+
+  // Fetch pending complaints data
+  const fetchPendingComplaints = async () => {
+    try {
+      const response = await api.get("/operator/pending-complaints");
+      
+      if (response.data.status === true) {
+        setPendingData(response.data.data);
+      } else {
+        setPendingData([]);
+      }
+    } catch (error) {
+      console.error("Pending API Error:", error);
+      setPendingData([]);
+    }
+  };
+
+  // Fetch approved complaints data
+  const fetchApprovedComplaints = async () => {
+    try {
+      const response = await api.get("/operator/approved-complaints");
+      
+      if (response.data.status === true) {
+        setApprovedData(response.data.data);
+      } else {
+        setApprovedData([]);
+      }
+    } catch (error) {
+      console.error("Approved API Error:", error);
+      setApprovedData([]);
+    }
+  };
+
+  // Fetch data based on active tab
+  useEffect(() => {
+    switch(activeTab) {
+      case 'all':
+        fetchAllComplaints();
+        break;
+      case 'pending':
+        fetchPendingComplaints();
+        break;
+      case 'approved':
+        fetchApprovedComplaints();
+        break;
+      default:
+        fetchAllComplaints();
+    }
+  }, [activeTab]);
+
+  // Get current data based on active tab
+  const getCurrentData = () => {
+    switch(activeTab) {
+      case 'all':
+        return complaintsData;
+      case 'pending':
+        return pendingData;
+      case 'approved':
+        return approvedData;
+      default:
+        return complaintsData;
+    }
+  };
 
   // Handle view details with navigation - Only button click
   const handleViewDetails = (e, complaintId) => {
@@ -87,34 +184,37 @@ const AllComplaints = () => {
         });
         
         // Update complaint approved_by_ro status in local state
-        setComplaintsData(prevData => 
+        const updateData = (prevData) => 
           prevData.map(complaint => 
             complaint.id === complaintToApprove.id 
-              // CORRECTED LINE: Use the correct field name
               ? { ...complaint, approved_rejected_by_ro: 1 }
               : complaint
-          )
-        );
+          );
+
+        // Update all relevant data arrays
+        setComplaintsData(updateData);
+        setPendingData(updateData);
+        setApprovedData(updateData);
+
+        // Refresh current tab data
+        switch(activeTab) {
+          case 'all':
+            fetchAllComplaints();
+            break;
+          case 'pending':
+            fetchPendingComplaints();
+            break;
+          case 'approved':
+            fetchApprovedComplaints();
+            break;
+        }
+
       } else {
-        toast.error("Failed to approve complaint", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.error("Failed to approve complaint");
       }
     } catch (error) {
       console.error("Approval Error:", error);
-      toast.error("Failed to approve complaint", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error("Failed to approve complaint");
     } finally {
       setIsApproving(false);
       setIsConfirmModalOpen(false);
@@ -157,6 +257,25 @@ const AllComplaints = () => {
     return complaint.approved_rejected_by_ro === 1;
   };
 
+  // Get tab title based on active tab
+  const getTabTitle = () => {
+    switch(activeTab) {
+      case 'all':
+        return 'All Complaints';
+      case 'pending':
+        return 'Pending Complaints';
+      case 'approved':
+        return 'Approved Complaints';
+      default:
+        return 'All Complaints';
+    }
+  };
+
+  // Get current data count
+  const getCurrentDataCount = () => {
+    return getCurrentData().length;
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -166,6 +285,8 @@ const AllComplaints = () => {
       </div>
     );
   }
+
+  const currentData = getCurrentData();
 
   return (
     <>
@@ -187,12 +308,54 @@ const AllComplaints = () => {
       <div className="min-h-screen p-2 sm:p-4">
         {/* Header - Responsive */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">All Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            {getTabTitle()} / सभी शिकायतें
+          </h1>
+        
+        </div>
+
+        {/* JUSTIFY-BETWEEN TABS COMPONENT */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
+          <div className="">
+            {/* JUSTIFY-BETWEEN Tab Navigation */}
+            <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
+              <button
+                onClick={() => handleTabChange('all')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "all"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                All Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('pending')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "pending"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Pending Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('approved')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "approved"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Approved Complaints
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Mobile-First Responsive Card Layout */}
         <div className="space-y-3 sm:space-y-4">
-          {complaintsData.map((complaint) => (
+          {currentData.map((complaint) => (
             <div
               key={complaint.id}
               className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
@@ -211,7 +374,7 @@ const AllComplaints = () => {
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
                   <span className="text-gray-700 text-sm">{complaint.name}</span>
                 </div>
-                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
                   <span className="text-gray-700 text-sm">{complaint.mobile}</span>
                 </div>
@@ -219,11 +382,11 @@ const AllComplaints = () => {
 
               {/* Row 2 */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
                   <span className="text-gray-700 text-sm">{complaint.email}</span>
                 </div>
-               
+                
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
                   <span className="text-gray-700 text-sm">{complaint.district_name}</span>
@@ -234,7 +397,6 @@ const AllComplaints = () => {
                 </div>
               </div>
 
-          
               {/* Row 4 - Action Buttons */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
@@ -246,7 +408,7 @@ const AllComplaints = () => {
                   </button>
                   
                   {/* Conditional rendering for Verify button */}
-                  { subRole === "entry-operator" ? null : (
+                  {subRole === "entry-operator" ? null : (
                     isApprovedByRO(complaint) ? (
                       <button
                         disabled
@@ -270,9 +432,11 @@ const AllComplaints = () => {
         </div>
 
         {/* Empty State */}
-        {complaintsData.length === 0 && (
+        {currentData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">
+              No {activeTab === 'all' ? '' : activeTab} complaints found
+            </p>
           </div>
         )}
       </div>
@@ -356,4 +520,3 @@ const AllComplaints = () => {
 };
 
 export default AllComplaints;
-

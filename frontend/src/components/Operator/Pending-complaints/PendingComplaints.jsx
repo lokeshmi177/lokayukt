@@ -18,7 +18,12 @@ const api = axios.create({
 
 const PendingComplaints = () => {
   const navigate = useNavigate();
+  
+  // State for tabs and data
+  const [activeTab, setActiveTab] = useState("pending"); // Default to pending since this is PendingComplaints
   const [complaintsData, setComplaintsData] = useState([]);
+  const [allComplaintsData, setAllComplaintsData] = useState([]);
+  const [approvedData, setApprovedData] = useState([]);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -26,26 +31,114 @@ const PendingComplaints = () => {
   const [complaintToApprove, setComplaintToApprove] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
 
-  // ✅ Fetch complaints data from API
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        const response = await api.get("/operator/all-pending-complaints");
-        
-        if (response.data.status === true) {
-          setComplaintsData(response.data.data);
-          console.log(response.data.data);
-        } else {
-          setError("Failed to fetch complaints data");
-        }
-      } catch (error) {
-        console.error("API Error:", error);
-        setError("Error fetching data");
-      }
-    };
+  // Handle tab change with routing
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    
+    // Route navigation
+    switch(tab) {
+      case 'all':
+        navigate('/operator/all-complaints');
+        break;
+      case 'pending':
+        navigate('/operator/pending-complaints');
+        break;
+      case 'approved':
+        navigate('/operator/approved-complaints');
+        break;
+      default:
+        navigate('/operator/pending-complaints');
+    }
+  };
 
-    fetchComplaints();
+  // Fetch all complaints data
+  const fetchAllComplaints = async () => {
+    try {
+      const response = await api.get("/operator/all-complaints");
+      
+      if (response.data.status === true) {
+        setAllComplaintsData(response.data.data);
+      } else {
+        setAllComplaintsData([]);
+      }
+    } catch (error) {
+      console.error("All Complaints API Error:", error);
+      setAllComplaintsData([]);
+    }
+  };
+
+  // Fetch pending complaints data
+  const fetchPendingComplaints = async () => {
+    try {
+      const response = await api.get("/operator/all-pending-complaints");
+      
+      if (response.data.status === true) {
+        setComplaintsData(response.data.data);
+        console.log(response.data.data);
+      } else {
+        setError("Failed to fetch complaints data");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      setError("Error fetching data");
+    }
+  };
+
+  // Fetch approved complaints data
+  const fetchApprovedComplaints = async () => {
+    try {
+      const response = await api.get("/operator/all-approved-complaints");
+      
+      if (response.data.status === true) {
+        setApprovedData(response.data.data);
+      } else {
+        setApprovedData([]);
+      }
+    } catch (error) {
+      console.error("Approved API Error:", error);
+      setApprovedData([]);
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchPendingComplaints(); // Load pending by default
+    fetchAllComplaints(); // Load all complaints data
+    fetchApprovedComplaints(); // Load approved data
   }, []);
+
+  // Get current data based on active tab
+  const getCurrentData = () => {
+    switch(activeTab) {
+      case 'all':
+        return allComplaintsData;
+      case 'pending':
+        return complaintsData;
+      case 'approved':
+        return approvedData;
+      default:
+        return complaintsData;
+    }
+  };
+
+  // Get tab title based on active tab
+  const getTabTitle = () => {
+    switch(activeTab) {
+      case 'all':
+        return 'All Complaints';
+      case 'pending':
+        return 'Pending Complaints';
+      case 'approved':
+        return 'Approved Complaints';
+      default:
+        return 'Pending Complaints';
+    }
+  };
+
+  // Get current data count
+  const getCurrentDataCount = () => {
+    return getCurrentData().length;
+  };
 
   // ✅ Handle view details with navigation - Only button click
   const handleViewDetails = (e, complaintId) => {
@@ -87,7 +180,7 @@ const PendingComplaints = () => {
         });
         
         // ✅ **STEP 1: First update to show as verified**
-        setComplaintsData(prevData => 
+        const updateData = (prevData) => 
           prevData.map(complaint => 
             complaint.id === complaintToApprove.id 
               ? { 
@@ -95,8 +188,11 @@ const PendingComplaints = () => {
                   approved_rejected_by_ro: 1  // ✅ Show as verified first
                 }
               : complaint
-          )
-        );
+          );
+
+        setComplaintsData(updateData);
+        setAllComplaintsData(updateData);
+        setApprovedData(updateData);
 
         // ✅ **STEP 2: Remove from list after 2 seconds**
         setTimeout(() => {
@@ -104,6 +200,13 @@ const PendingComplaints = () => {
             prevData.filter(complaint => complaint.id !== complaintToApprove.id)
           );
         }, 2000); // 2 seconds delay to show "Verified" status
+
+        // Refresh data
+        setTimeout(() => {
+          fetchPendingComplaints();
+          fetchAllComplaints();
+          fetchApprovedComplaints();
+        }, 2500);
 
       } else {
         toast.error("Failed to verify complaint", {
@@ -177,6 +280,8 @@ const PendingComplaints = () => {
     );
   }
 
+  const currentData = getCurrentData();
+
   return (
     <>
       {/* ✅ React-Toastify Container */}
@@ -197,12 +302,54 @@ const PendingComplaints = () => {
       <div className="min-h-screen p-2 sm:p-4">
         {/* ✅ Header - Responsive */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pending Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            {getTabTitle()} / लंबित शिकायतें
+          </h1>
+        
+        </div>
+
+        {/* TABS COMPONENT - ALWAYS VISIBLE */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
+          <div className="">
+            {/* JUSTIFY-BETWEEN Tab Navigation */}
+            <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
+              <button
+                onClick={() => handleTabChange('all')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "all"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                All Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('pending')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "pending"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Pending Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('approved')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "approved"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Approved Complaints
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* ✅ Mobile-First Responsive Card Layout */}
         <div className="space-y-3 sm:space-y-4">
-          {complaintsData.map((complaint) => (
+          {currentData.map((complaint) => (
             <div
               key={complaint.id}
               className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
@@ -244,11 +391,6 @@ const PendingComplaints = () => {
                 </div>
               </div>
 
-              {/* ✅ Row 3 - All labels normal (not bold) */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 border-b sm:border-b-0 border-gray-100">
-                <div className="hidden sm:block"></div>
-              </div>
-
               {/* ✅ **UPDATED: Row 4 - Action Buttons with real-time conditional rendering** */}
               <div className="px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
@@ -283,9 +425,11 @@ const PendingComplaints = () => {
         </div>
 
         {/* ✅ Empty State */}
-        {complaintsData.length === 0 && (
+        {currentData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No pending complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">
+              No {activeTab === 'all' ? '' : activeTab} complaints found
+            </p>
           </div>
         )}
       </div>

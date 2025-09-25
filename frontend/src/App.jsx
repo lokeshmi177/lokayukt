@@ -296,7 +296,7 @@ function App() {
           <Route path="all-complaints/view/:id" element={<SupervisorViewAllComplaintcio />} />
           <Route path="all-complaints/edit/:id" element={<SupervisorEditComplaintscio />} />
 
-          <Route path="pending-complaints" element={<cio />} />
+          {/* <Route path="pending-complaints" element={<SupervisorPendingComplaintscio />} /> */}
           <Route path="pending-complaints/view/:id" element={<SupervisorViewPendingComplaintscio />} />
           <Route path="pending-complaints/edit/:id" element={<SupervisorEditPendingComplaintscio />} />
 
