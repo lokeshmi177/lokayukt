@@ -130,9 +130,9 @@ class OperatorComplaintsController extends Controller
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         
-        // if($complaint->action === "1"){
-        //     $complaint->in_draft = 1;
-        // }
+     if($request->action == "1"){
+            $complaint->in_draft = 1;
+        }
 
         if($complaint->save()){
 
@@ -603,8 +603,14 @@ $cmpedit->details = DB::table('complaints_details as cd')
             // dd($existingComplaint);
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
-                $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
-                
+                // $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
+                $percent = null;
+                if($request->name === $existingComplaint->name && $request->title === $existingComplaint->title){
+                    $percent+=100;
+                }else{
+                    $percent= 0;
+                }
+                $existingComplaint->match = $percent;
                 // Add new description entry with timestamp
                 // $descriptions[] = [
                 //     'text' => $request->description,

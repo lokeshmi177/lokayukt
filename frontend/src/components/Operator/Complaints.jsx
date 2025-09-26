@@ -1,4 +1,4 @@
-// pages/Complaints.js
+// pages/Complaints.js - Save Draft Updated with All Values
 import React, { useState, useEffect } from 'react';
 import { 
   FaUser, 
@@ -68,6 +68,8 @@ const Complaints = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
+  const [showMatch, setShowMatch] = useState(false);
+
   // Duplicate check states
   const [duplicate, setDuplicate] = useState(null);
   const [checkingDuplicate, setCheckingDuplicate] = useState(false);
@@ -115,6 +117,34 @@ const Complaints = () => {
 
     fetchAllData();
   }, []);
+
+  // ✅ FIXED: Compare button handler
+  const handleCompare = () => {
+    console.log("Comparing duplicate...");
+    // Match visible karo
+    setShowMatch(true);
+  };
+
+  const handleMergeeDuplicate = () => {
+    // Original merge function (aapka existing logic)
+    if (duplicateData) {
+      setFormData(prev => ({
+        ...prev,
+        name: duplicateData.name || '',
+        mobile: duplicateData.mobile || '',
+        address: duplicateData.address || '',
+        district_id: duplicateData.district_id || '',
+        email: duplicateData.email || '',
+        complaint_id: duplicateData.id.toString() 
+      }));
+      
+      toast.success('Data merged successfully!');
+      setDuplicate(null); 
+      setDuplicateData(null); 
+    } else {
+      toast.warning('No duplicate data found to merge');
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -225,26 +255,6 @@ const Complaints = () => {
     setModalErrors({});
   };
 
-  const handleMergeDuplicate = () => {
-    if (duplicateData) {
-      setFormData(prev => ({
-        ...prev,
-        name: duplicateData.name || '',
-        mobile: duplicateData.mobile || '',
-        address: duplicateData.address || '',
-        district_id: duplicateData.district_id || '',
-        email: duplicateData.email || '',
-        complaint_id: duplicateData.id.toString() 
-      }));
-      
-      toast.success('Data merged successfully!');
-      setDuplicate(null); 
-      setDuplicateData(null); 
-    } else {
-      toast.warning('No duplicate data found to merge');
-    }
-  };
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     
@@ -296,37 +306,49 @@ const Complaints = () => {
     setUploadError('');
   };
 
-  // ✅ UPDATED: Save Draft - Let backend handle validation, no frontend toast warning
+  // ✅ UPDATED: Save Draft - Sabhi values DB mein save honge
   const handleSaveDraft = async () => {
     setIsDraftSaving(true);
-    setErrors({}); // Clear existing errors
+    setErrors({});
 
     try {
-      // ✅ Set action to '1' when Save Draft is clicked (regardless of field completion)
-      setFormData(prev => ({
-        ...prev,
-        action: '1'
-      }));
-
+      // ✅ Create FormData with action = '1' for draft
       const submitFormData = new FormData();
-
-      // Use updated formData with action = '1'
-      const updatedFormData = { ...formData, action: '1' };
       
-      Object.keys(updatedFormData).forEach((key) => {
-        if (key === 'file' && updatedFormData.file) {
-          submitFormData.append('file', updatedFormData.file);
-        } else if (updatedFormData[key] !== null && updatedFormData[key] !== '') {
-          submitFormData.append(key, updatedFormData[key]);
+      // ✅ Sabhi form data values ko FormData mein add karo, empty values bhi
+      Object.keys(formData).forEach((key) => {
+        if (key === 'file') {
+          // File handle karo if available
+          if (formData.file) {
+            submitFormData.append('file', formData.file);
+          }
+        } else if (key === 'fee_exempted') {
+          // Boolean value handle karo
+          submitFormData.append('fee_exempted', formData.fee_exempted ? '1' : '0');
+        } else {
+          // Baaki sabhi values - empty strings bhi include karo
+          submitFormData.append(key, formData[key] || '');
         }
       });
 
-      const response = await api.post('/operator/add-complaint', submitFormData);
+      // ✅ Action ko '1' set karo for draft save
+      submitFormData.set('action', '1');
+
+      console.log('Draft FormData being sent:');
+      for (let [key, value] of submitFormData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      const response = await api.post('/operator/add-complaint', submitFormData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       
       if (response.data.status === true) {
-        toast.success('Draft saved successfully!');
+        toast.success('Draft saved successfully with all values!');
         
-        // ✅ Clear ALL fields after successful save BUT keep action = '1'
+        // ✅ Clear ALL fields after successful save
         setFormData({
           name: '',
           mobile: '',
@@ -347,7 +369,7 @@ const Complaints = () => {
           nature: '',
           description: '',
           complaint_id: '',
-          action: '1'  // ✅ Keep action = '1' permanently until refresh
+          action: '0'  // ✅ Reset to '0' after save draft success
         });
 
         // Reset file upload states
@@ -365,60 +387,48 @@ const Complaints = () => {
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
-        // ✅ Handle backend validation errors - Show them below input fields
         const backendErrors = {};
         Object.keys(error.response.data.errors).forEach((field) => {
           backendErrors[field] = error.response.data.errors[field];
         });
         setErrors(backendErrors);
-        // toast.error('Please fix the errors below');
+        toast.error('Please fix the validation errors');
       } else {
         toast.error('Something went wrong. Please try again.');
       }
       console.error('Save Draft error:', error);
-      
-      // ✅ Keep action as '0' if save failed
-      setFormData(prev => ({
-        ...prev,
-        action: '0'
-      }));
     } finally {
       setIsDraftSaving(false);
     }
   };
 
-  // ✅ UPDATED: Submit function - Let backend handle validation 
+  // Submit for Review function - Action should be '2' for review
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrors({}); // Clear existing errors
+    setErrors({});
 
     try {
-      // Set action to '1' for submit
-      setFormData(prev => ({
-        ...prev,
-        action: '1'
-      }));
-
+      // ✅ Create FormData with action = '2' for submit for review
       const submitFormData = new FormData();
-
-      // Use updated formData with action = '1'
-      const updatedFormData = { ...formData, action: '1' };
       
-      Object.keys(updatedFormData).forEach((key) => {
-        if (key === 'file' && updatedFormData.file) {
-          submitFormData.append('file', updatedFormData.file);
-        } else if (updatedFormData[key] !== null && updatedFormData[key] !== '') {
-          submitFormData.append(key, updatedFormData[key]);
+      // साफ़ form data बनाएं और action '2' set करें for review
+      const reviewFormData = { ...formData, action: '2' };
+      
+      Object.keys(reviewFormData).forEach((key) => {
+        if (key === 'file' && reviewFormData.file) {
+          submitFormData.append('file', reviewFormData.file);
+        } else if (reviewFormData[key] !== null && reviewFormData[key] !== '') {
+          submitFormData.append(key, reviewFormData[key]);
         }
       });
 
       const response = await api.post('/operator/add-complaint', submitFormData);
       
       if (response.data.status === true) {
-        toast.success(response.data.message || 'Complaint registered successfully!');
+        toast.success(response.data.message || 'Complaint submitted for review successfully!');
 
-        // Clear all fields after successful submit - reset action to '0'
+        // Clear all fields after successful submit
         setFormData({
           name: '',
           mobile: '',
@@ -457,13 +467,11 @@ const Complaints = () => {
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
-        // ✅ Handle backend validation errors - Show them below input fields
         const backendErrors = {};
         Object.keys(error.response.data.errors).forEach((field) => {
           backendErrors[field] = error.response.data.errors[field];
         });
         setErrors(backendErrors);
-        // toast.error('Please fix the errors below');
       } else {
         toast.error('Something went wrong. Please try again.');
       }
@@ -625,7 +633,7 @@ const Complaints = () => {
               {isDraftSaving ? (
                 <>
                   <FaSpinner className="w-4 h-4 animate-spin" />
-                  Saving...
+                  Saving Draft...
                 </>
               ) : (
                 <>
@@ -690,14 +698,23 @@ const Complaints = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
-                85% Match
-              </span>
-              <button className="border text-black hover:text-blue-800 text-sm font-medium px-3 py-1 hover:bg-blue-50 rounded transition-colors">
+              {/* ✅ Match percentage - Shows when showMatch is true */}
+              {showMatch && (
+                <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+                  {duplicate.match}% Match
+                </span>
+              )}
+
+              {/* ✅ FIXED: Added onClick handler to Compare button */}
+              <button 
+                onClick={handleCompare}
+                className="border text-black hover:text-blue-800 text-sm font-medium px-3 py-1 hover:bg-blue-50 rounded transition-colors"
+              >
                 Compare
               </button>
+
               <button
-                onClick={handleMergeDuplicate}
+                onClick={handleMergeeDuplicate}
                 style={{ backgroundColor: "hsl(220, 70%, 25%)" }}
                 className="text-white px-4 py-1.5 rounded text-sm font-medium hover:opacity-90 transition-colors"
               >
@@ -980,10 +997,12 @@ const Complaints = () => {
               </div>
 
               <div>
+              <div className="flex justify-between">
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Choose File / फ़ाइल चुनें
                 </label>
-                
+               
+              </div>
                 {!formData.file ? (
                   <div className="flex items-center space-x-2">
                     <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">

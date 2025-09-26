@@ -1140,7 +1140,7 @@ const SearchReports = () => {
                             {avgProcessingTimes.map((item, idx) => (
                               <div key={idx} className="flex justify-between">
                                 <span className="text-sm sm:text-base text-gray-700">
-                                  {item.name}s
+                                  {item.name}
                                 </span>
                                 <span className="font-medium text-gray-900">
                                   {item.avg_days !== null ? `${item.avg_days} days` : 'N/A'}

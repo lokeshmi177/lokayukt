@@ -44,8 +44,8 @@ const Sidebar = ({
       searchReports: "Search & Reports",
       userManagement: "User Management",
       masterData: "Master Data",
-      copyright: "© 2025 LokAyukta Office",
-      version: "v1.0.0",
+      // copyright: "© 2025 LokAyukta Office",
+      // version: "v1.0.0",
     },
     hindi: {
       title: "लोकायुक्त",
@@ -61,8 +61,8 @@ const Sidebar = ({
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
       masterData: "मुख्य डेटा",
-      copyright: "© 2025 लोकायुक्त कार्यालय",
-      version: "v1.0.0",
+      // copyright: "© 2025 लोकायुक्त कार्यालय",
+      // version: "v1.0.0",
     },
   };
 
@@ -133,20 +133,20 @@ const Sidebar = ({
       {/* Custom Scrollbar Styles */}
       <style>{scrollbarStyles}</style>
 
-      {/* Mobile Overlay */}
+      {/* ✅ FIXED: Mobile Overlay with higher z-index */}
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
           onClick={toggleMobileMenu}
         />
       )}
 
-      {/* Sidebar */}
+      {/* ✅ FIXED: Sidebar with proper z-index and positioning */}
       <div
-        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col z-40 ${
+        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col ${
           isMobile
-            ? `w-72 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
-            : `${isCollapsed ? "w-16" : "w-72"}`
+            ? `w-72 z-50 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
+            : `${isCollapsed ? "w-16" : "w-72"} z-30`
         }`}
       >
         {/* Mobile Close Button */}
@@ -209,56 +209,51 @@ const Sidebar = ({
 
           {/* ✅ operator Badge (Fixed) */}
           <div className="flex justify-between">
-          <div>
-          {(isMobile || !isCollapsed) && (
-            <div className="mb-3 transition-all duration-300">
-              <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
-                {t.operator}
-              </span>
+            <div>
+              {(isMobile || !isCollapsed) && (
+                <div className="mb-3 transition-all duration-300">
+                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {t.operator}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
 
-          </div>
+            <div>
+              {/* Header Actions */}
+              {(isMobile || !isCollapsed) && (
+                <div className="flex gap-2 transition-all duration-300">
+                  <button
+                    onClick={toggleLanguage}
+                    className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                    {isHindi ? "EN" : "हि"}
+                  </button>
+                  <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
 
-
-          <div>
-             {/* Header Actions */}
-          {(isMobile || !isCollapsed) && (
-            <div className="flex gap-2 transition-all duration-300">
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-                {isHindi ? "EN" : "हि"}
-              </button>
-              <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
+              {/* Collapsed Header Actions */}
+              {!isMobile && isCollapsed && (
+                <div className="flex flex-col gap-2 items-center transition-all duration-300">
+                  <button
+                    onClick={toggleLanguage}
+                    className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                  </button>
+                  <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-
-          {/* Collapsed Header Actions */}
-          {!isMobile && isCollapsed && (
-            <div className="flex flex-col gap-2 items-center transition-all duration-300">
-              <button
-                onClick={toggleLanguage}
-                className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-              </button>
-              <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
-            </div>
-          )}
           </div>
-
-          </div>
-
-         
         </div>
 
         {/* ✅ Navigation Menu - Updated with custom-scrollbar */}
@@ -346,7 +341,7 @@ const Sidebar = ({
               </Link>
             </li>
 
-            {/* ✅ UPDATED: Pending Complaints */}
+            {/* ✅ COMMENTED: Pending Complaints */}
             {/* <li>
               <Link
                 to="/operator/pending-complaints"
@@ -371,7 +366,7 @@ const Sidebar = ({
               </Link>
             </li> */}
 
-            {/* ✅ UPDATED: Approved Complaints */}
+            {/* ✅ COMMENTED: Approved Complaints */}
             {/* <li>
               <Link
                 to="/operator/approved-complaints"

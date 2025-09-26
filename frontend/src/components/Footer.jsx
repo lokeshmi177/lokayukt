@@ -28,7 +28,7 @@ const Footer = () => {
             className="font-bold cursor-pointer text-black hover:text-gray-700 transition-colors duration-200">
             Office of the Relief Commissioner
           </span> */}
-          <span className="text-slate-600"> © Copyright 2025 | Developed by&nbsp;</span>
+          <span className="text-slate-600"> © Copyright 2025 LokAyukta Office | Developed by&nbsp;</span>
           <span 
             onClick={() => window.open("https://techsseract.com/")} 
             className="font-semibold cursor-pointer text-emerald-600 hover:text-emerald-700 transition-colors duration-200">

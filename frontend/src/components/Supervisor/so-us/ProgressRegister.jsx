@@ -637,12 +637,10 @@ const ProgressRegister = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl pt-1 font-bold text-gray-900 truncate">
               Progress Register / प्रगति रजिस्टर
             </h1>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              Track complaint progress and file movements
-            </p>
+
           </div>
           
           {/* Filter and Export buttons on the right */}
@@ -684,7 +682,7 @@ const ProgressRegister = () => {
                   placeholder="Complaint No. or Complainant"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none"
                 />
                 <FaSearch className="absolute left-2.5 sm:left-3 top-2.5 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
               </div>

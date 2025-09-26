@@ -160,15 +160,15 @@ const ViewAllComplaint = () => {
   };
 
   // Handle edit navigation
-  const handleEditNavigation = () => {
-    if (id && complaintData) {
-      console.log("Navigating to edit with ID:", id);
-      console.log("Complaint data:", complaintData);
-      navigate(`/supervisor/all-complaints/edit/${id}`);
-    } else {
-      toast.error("Unable to edit: Missing complaint data");
-    }
-  };
+  // const handleEditNavigation = () => {
+  //   if (id && complaintData) {
+  //     console.log("Navigating to edit with ID:", id);
+  //     console.log("Complaint data:", complaintData);
+  //     navigate(`/supervisor/all-complaints/edit/${id}`);
+  //   } else {
+  //     toast.error("Unable to edit: Missing complaint data");
+  //   }
+  // };
 
   // Check if file is PDF
   const isPDF = (filePath) => {
