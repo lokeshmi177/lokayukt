@@ -130,6 +130,10 @@ class OperatorComplaintsController extends Controller
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         
+        // if($complaint->action === "1"){
+        //     $complaint->in_draft = 1;
+        // }
+
         if($complaint->save()){
 
              $year = date('Y');

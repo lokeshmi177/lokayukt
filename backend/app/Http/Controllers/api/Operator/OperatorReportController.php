@@ -198,9 +198,9 @@ class OperatorReportController extends Controller
        $complainDetails =  DB::table('complaints as cm')
                 ->select(
                     DB::raw('COUNT(cm.id) as total_complaints'),
-                    DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
-                    DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending"),
-                      DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected")
+                    DB::raw("SUM(CASE WHEN cm.approved_rejected_by_ro = '1'  THEN 1 ELSE 0 END) as total_approved"),
+                    DB::raw("SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) as total_pending"),
+                    DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected")
                 )->first();
             
            
@@ -376,8 +376,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
     
         DB::raw('MONTH(created_at) as month, COUNT(*) as count'),
         DB::raw('COUNT(cm.id) as total_complaints'),
-        DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
-        DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending")
+        DB::raw("SUM(CASE WHEN cm.approved_rejected_by_ro = '1' THEN 1 ELSE 0 END) as total_approved"),
+        DB::raw("SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) as total_pending")
     )
   
     ->groupBy('month')
@@ -428,7 +428,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         'complaintype.name',
         //  DB::raw('count(*) as complain_count'),
         //  DB::raw('count(cm.id) as total_count'),
-          DB::raw('ROUND(AVG(DATEDIFF(NOW(), cm.created_at)), 1) as avg_days')
+          DB::raw('ROUND(AVG(DATEDIFF(NOW(), cd.created_at)), 1) as avg_days')
          
         // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
         // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending")
@@ -471,12 +471,12 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
         // Percentages
         DB::raw("ROUND(
-            (SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) / 
+            (SUM(CASE WHEN cm.approved_rejected_by_ro = '1' THEN 1 ELSE 0 END) / 
              COUNT(cm.id)) * 100, 2
         ) as approved_percentage"),
 
         DB::raw("ROUND(
-            (SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) / 
+            (SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) / 
              COUNT(cm.id)) * 100, 2
         ) as pending_percentage"),
 

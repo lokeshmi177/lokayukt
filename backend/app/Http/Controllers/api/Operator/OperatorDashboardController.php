@@ -33,7 +33,9 @@ class OperatorDashboardController extends Controller
             // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
             // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
             ->select('cmp.*')
-            ->where('cmp.status', 'In Progress')
+            // ->where('cmp.status', 'In Progress')
+             ->where('cmp.approved_rejected_by_ro', 0)
+            ->where('cmp.form_status', 0)
            ->whereDate('cmp.created_at', now()->toDateString()) // ✅ only today
             ->groupBy(DB::raw('DATE(cmp.created_at)'))
             // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
@@ -45,11 +47,12 @@ class OperatorDashboardController extends Controller
          $query1 = DB::table('complaints as cmp')
             // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
             ->select(DB::raw('COUNT(cmp.id) as total_complains'),DB::raw('AVG(DATEDIFF(now(), created_at)) as avg_days'))
-            // ->where('cmp.approved_rejected_by_ri', 1)
+            ->where('cmp.approved_rejected_by_ro', 0)
+            ->where('cmp.form_status', 0)
             // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
             // ->where('cmp.status', 2)
             // ->where('cmp.district_id', $user_district_code)
-            ->where('status','In Progress')
+            // ->where('status','In Progress')
              ->whereYear('created_at', $date->year)
             ->whereMonth('created_at', $date->month)
             ->groupBy(groups: 'cmp.status')
@@ -63,9 +66,11 @@ class OperatorDashboardController extends Controller
             // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
             // ->where('cmp.status', 2)
             // ->where('cmp.district_id', $user_district_code)
-            ->where('status','Disposed - Accepted')
-               ->whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
+             ->where('cmp.approved_rejected_by_ro', 1)
+            ->where('cmp.form_status', 1)
+            // ->where('cmp.status','Disposed - Accepted')
+               ->whereYear('cmp.created_at', $date->year)
+            ->whereMonth('cmp.created_at', $date->month)
             ->orderByDesc('cmp.id');
          $approvedcomplains = $query2->count();
 
@@ -96,7 +101,9 @@ class OperatorDashboardController extends Controller
                 $rejectedcomplains = $query4->count();
 
                 $avgPendingDays = DB::table('complaints as cmp')
-                    ->where('cmp.status', 'In Progress')
+                    // ->where('cmp.status', 'In Progress')
+                     ->where('cmp.approved_rejected_by_ro', 0)
+                    ->where('cmp.form_status', 0)
                     ->whereYear('cmp.created_at', $date->year)
                     ->whereMonth('cmp.created_at', $date->month)
                     ->selectRaw('Round(AVG(DATEDIFF(NOW(), cmp.created_at)),1) as avg_days')

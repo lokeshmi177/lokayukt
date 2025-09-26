@@ -81,7 +81,10 @@ class SupervisorReportController extends Controller
                     }
                       switch ($userSubrole) {
                         case "so-us":
-                            $records->where('form_status', 1);
+                            $records->where('form_status', 1)
+                    ->where('approved_rejected_by_ro', 1)
+                    ->where('approved_rejected_by_so_us', 0);
+                    // ->whereNot('approved_rejected_by_ds_js', 1);
                                 // ->where('approved_rejected_by_ro', 1);
                                 //   ->where('approved_by_ro', 1);
                             // $records->where('complaints.added_by', $user);
@@ -111,9 +114,10 @@ class SupervisorReportController extends Controller
 
                         case "dea-assis":
                         $records->where('form_status', 1)
-                                // ->where('approved_rejected_by_ro', 1)
-                                ->where('approved_rejected_by_so', 1)
-                                    ->whereOr('approved_rejected_by_ds_js', 1);
+                  ->where('approved_rejected_by_ro', 1)
+                   ->where('approved_rejected_by_so_us', 1)
+                    ->orWhere('approved_rejected_by_ds_js', 1)
+                    ->whereNotNull('forward_to_d_a');
                             break;
 
                         default:
@@ -263,7 +267,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
     
     public function progress_report(){
-        // $userSubroleRole = Auth::user()->subrole->name;
+        $user  = Auth::user()->name;
+        $userSubroleRole = Auth::user()->subrole->name;
         
          $records = DB::table('complaints')
             // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
@@ -278,7 +283,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
             ->select(
                 'complaints.*',
                 'u.id as user_id',
+                'u.name as user_name',
                 'srole.name as subrole_name',
+                // 'subrole_name.'-'.user_name as assigned_to'
                 // 'ca.*',
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
@@ -289,6 +296,10 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // ->groupBy('complaints.id','u.id','srole.name')
             ->where('approved_rejected_by_ro', 1)
             ->get();
+            // CIO - राज कुमार
+            //  $records->assigned_to = $records->subrole_name.'-'.$records->user_name;
+                                                                                
+            
               return response()->json([
                 'status' => true,
                 'message' => 'Records Fetch successfully',
@@ -296,6 +307,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             ]);
             // dd($records);
     }
+    
 
      public function current_report(){
         // $userSubroleRole = Auth::user()->subrole->name;
