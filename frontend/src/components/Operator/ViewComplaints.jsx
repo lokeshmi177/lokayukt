@@ -296,7 +296,7 @@ const ViewComplaints = () => {
             )}
             
             <button 
-              onClick={() => navigate("/operator/all-complaints")}
+              onClick={() => navigate("/operator/search-reports")}
               style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
               className="flex items-center justify-center gap-2 px-4 py-2 text-white rounded transition"
             >

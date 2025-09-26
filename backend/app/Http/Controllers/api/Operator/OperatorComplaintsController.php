@@ -412,7 +412,8 @@ $cmpedit->details = DB::table('complaints_details as cd')
                  'title.*' => 'required|string|max:255',
                   'file'   => 'array',
                  'file.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-                'officer_name' => 'required|array',
+                // 'officer_name.*' => 'required|array',
+                 'officer_name.*' => 'required|string|max:255',
                
             ], [
                 'name.required' => 'Name is required.',
@@ -551,7 +552,7 @@ $cmpedit->details = DB::table('complaints_details as cd')
             // $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
             // $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
         
-
+                // dd($request->data);
             return response()->json([
                 'status' => true,
                 'message' => 'Complaint update successfully.',

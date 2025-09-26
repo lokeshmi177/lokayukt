@@ -35,10 +35,9 @@ const Sidebar = ({
       description: "Complaint Management",
       supervisor: "Supervisor",
       dashboard: "Dashboard",
-      // complaints: "New Complaints",
-      allComplaints: "All Complaints",
-      pendingComplaints: "Pending Complaints",
-      approvedComplaints: "Approved Complaints",
+      allComplaints: "Complaints",
+      // pendingComplaints: "Pending Complaints",
+      // approvedComplaints: "Approved Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",
@@ -52,10 +51,9 @@ const Sidebar = ({
       description: "शिकायत प्रबंधन",
       supervisor: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
-      complaints: "शिकायतें",
-      allComplaints: "सभी शिकायतें",
-      pendingComplaints: "लंबित शिकायतें",
-      approvedComplaints: "स्वीकृत शिकायतें",
+      Complaints: "शिकायतें",
+      // pendingComplaints: "लंबित शिकायतें",
+      // approvedComplaints: "स्वीकृत शिकायतें",
       progressRegister: "प्रगति रजिस्टर",
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
@@ -88,7 +86,7 @@ const Sidebar = ({
     setIsHindi(!isHindi);
   };
 
-  // ✅ Simple isActive function for supervisor routes
+  // Simple isActive function for supervisor routes
   const isActive = (href) => {
     const fullPath = `/supervisor${href}`;
 
@@ -206,50 +204,57 @@ const Sidebar = ({
             )}
           </div>
 
-          {/* ✅ supervisor Badge (Fixed) */}
-          {(isMobile || !isCollapsed) && (
-            <div className="mb-3 transition-all duration-300">
-              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                {t.supervisor}
-              </span>
+          {/* Supervisor Badge & Header Actions Layout */}
+          <div className="flex justify-between">
+            <div>
+              {/* Supervisor Badge */}
+              {(isMobile || !isCollapsed) && (
+                <div className="mb-3 transition-all duration-300">
+                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {t.supervisor}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Header Actions */}
-          {(isMobile || !isCollapsed) && (
-            <div className="flex gap-2 transition-all duration-300">
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-                {isHindi ? "EN" : "हि"}
-              </button>
-              <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
-            </div>
-          )}
+            <div>
+              {/* Header Actions */}
+              {(isMobile || !isCollapsed) && (
+                <div className="flex gap-2 transition-all duration-300">
+                  <button
+                    onClick={toggleLanguage}
+                    className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                    {isHindi ? "EN" : "हि"}
+                  </button>
+                  <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
 
-          {/* Collapsed Header Actions */}
-          {!isMobile && isCollapsed && (
-            <div className="flex flex-col gap-2 items-center transition-all duration-300">
-              <button
-                onClick={toggleLanguage}
-                className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-              </button>
-              <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
+              {/* Collapsed Header Actions */}
+              {!isMobile && isCollapsed && (
+                <div className="flex flex-col gap-2 items-center transition-all duration-300">
+                  <button
+                    onClick={toggleLanguage}
+                    className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                  </button>
+                  <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* ✅ Navigation Menu - Updated with custom-scrollbar */}
+        {/* Navigation Menu - Updated with custom-scrollbar */}
         <nav
           className={`flex-1 transition-all duration-300 overflow-y-auto custom-scrollbar ${
             !isMobile && isCollapsed ? "py-4" : "py-6"
@@ -263,8 +268,8 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/dashboard")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -281,40 +286,18 @@ const Sidebar = ({
               </Link>
             </li>
 
-            {/* Complaints */}
-            {/* <li>
-              <Link
-                to="/supervisor/complaints"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/complaints")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                } ${
-                  !isMobile && isCollapsed
-                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
-                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
-                }`}
-                title={!isMobile && isCollapsed ? t.complaints : ""}
-              >
-                <FaFileAlt className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && (
-                  <span className="transition-all duration-300">
-                    {t.complaints}
-                  </span>
-                )}
-              </Link>
-            </li> */}
-
             {/* All Complaints */}
             <li>
               <Link
                 to="/supervisor/all-complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/all-complaints")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                  ["/all-complaints", "/pending-complaints", "/approved-complaints"].some(path =>
+                    isActive(path)
+                  )
+                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
+                  
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -331,15 +314,15 @@ const Sidebar = ({
               </Link>
             </li>
 
-            {/* ✅ UPDATED: Pending Complaints */}
-            <li>
+            {/* Pending Complaints */}
+            {/* <li>
               <Link
                 to="/supervisor/pending-complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/pending")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -354,17 +337,17 @@ const Sidebar = ({
                   </span>
                 )}
               </Link>
-            </li>
+            </li> */}
 
-            {/* ✅ UPDATED: Approved Complaints */}
-            <li>
+            {/* Approved Complaints */}
+            {/* <li>
               <Link
                 to="/supervisor/approved-complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/approved")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -379,7 +362,7 @@ const Sidebar = ({
                   </span>
                 )}
               </Link>
-            </li>
+            </li> */}
 
             {/* Progress Register */}
             <li>
@@ -388,8 +371,8 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/progress-register")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -413,8 +396,8 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/search-reports")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"

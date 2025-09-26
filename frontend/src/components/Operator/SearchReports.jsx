@@ -101,7 +101,7 @@ const CustomSearchableDropdown = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between"
+        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between"
         required={required}
       >
         <span className="flex items-center">
@@ -132,7 +132,7 @@ const CustomSearchableDropdown = ({
                 placeholder="Search options..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none text-sm"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -317,7 +317,7 @@ const ForwardModal = ({
                 name="remarks"
                 value={formData.remarks}
                 onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="Enter forwarding remarks..."
                 rows="3"
               />
@@ -688,7 +688,7 @@ const SearchReports = () => {
         {/* ✅ UPDATED: Header with Export Button */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-2 text-gray-900 truncate">
               Search & Reports / खोज और रिपोर्ट
             </h1>
           </div>
@@ -697,7 +697,7 @@ const SearchReports = () => {
           <div className="flex items-center flex-shrink-0">
             <button 
               onClick={handleHeaderExport}
-              className="flex items-center gap-2 px-4 py-2 border text-gray-700 rounded-lg transition-colors text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 border hover:bg-[#e69a0c] text-gray-700 rounded-lg transition-colors text-sm font-medium"
             >
               <FaDownload className="w-4 h-4" />
               Export
@@ -761,13 +761,14 @@ const SearchReports = () => {
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
                     {/* Search Criteria */}
-                   <div className="bg-white p-3 sm:p-4 shadow-sm">
-  <div className="flex items-center gap-2 mb-3">
-    <FaSearch className="w-4 h-4 text-blue-600" />
-    <h3 className="text-sm sm:text-base font-semibold text-gray-900">
-      Search Criteria
-    </h3>
-  </div>
+                   <div className="bg-white  sm:p-4 shadow-sm">
+ <div className="flex items-center gap-2 mb-3">
+  <FaSearch className="w-5 h-5 text-gray-700 relative bottom-3" /> {/* Icon thoda bada */}
+  <h3 className="text-2xl sm:text-xl md:text-2xl relative bottom-3 font-semibold text-gray-900">
+    Search Criteria
+  </h3>
+</div>
+
 
   {/* ✅ UPDATED: 4 Grid Layout with Equal Sizes */}
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -780,7 +781,7 @@ const SearchReports = () => {
         placeholder="Complaint No., Name, etc."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none"
       />
     </div>
 
@@ -791,7 +792,7 @@ const SearchReports = () => {
         id="district"
         value={selectedDistrict}
         onChange={(e) => setSelectedDistrict(e.target.value)}
-        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
       >
         <option value="all">All Districts</option>
         <option value="bhopal">Bhopal</option>
@@ -813,7 +814,7 @@ const SearchReports = () => {
         id="status"
         value={selectedStatus}
         onChange={(e) => setSelectedStatus(e.target.value)}
-        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
       >
         <option value="all">All Status</option>
         <option value="In Progress">In Progress</option>
@@ -855,7 +856,7 @@ const SearchReports = () => {
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-gray-900">
-                          Search Results ({filteredResults.length} found)
+                          Search Results 
                         </h3>
                       </div>
 
@@ -898,7 +899,7 @@ const SearchReports = () => {
                               {paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
                                   <tr key={result.id} className="hover:bg-gray-50">
-                                    <td className="py-2 px-2 sm:px-3 font-medium text-blue-600 hover:text-blue-800 hover:underline cursor-pointer" 
+                                    <td className="py-2 px-2 sm:px-3 font-medium text-gray-700 hover:text-blue-800 hover:underline cursor-pointer" 
                                         onClick={() => navigate(`/operator/search-reports/view/${result.id}`)}>
                                       {result.complain_no || result.application_no || "N/A"}
                                     </td>
@@ -962,7 +963,7 @@ const SearchReports = () => {
                                   <td colSpan="9" className="py-8 text-center text-gray-500">
                                     {searchTerm || selectedDistrict !== "all" || selectedStatus !== "all"
                                       ? "No results match your filter criteria. Try adjusting your filters."
-                                      : "No data available. Click Search to load data."}
+                                      : "Loading..."}
                                   </td>
                                 </tr>
                               )}

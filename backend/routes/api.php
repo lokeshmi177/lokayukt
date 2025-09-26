@@ -170,10 +170,9 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/current-report',[OperatorReportController::class,'current_report']);
         Route::get('/analytic-report',[OperatorReportController::class,'analytics']);
         Route::get('/complain-report',[OperatorReportController::class,'complainReports']);
-        // Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
+        Route::get('/all-complains',[OperatorReportController::class,'allComplains']);
 
         Route::get('/detail-by-complaintype',[OperatorReportController::class,'complainComplaintypeWise']);
-
         Route::get('/district-wise-complaint',[OperatorReportController::class,'complainDistrictWise']);
         Route::get('/department-wise-complaint',[OperatorReportController::class,'complainDepartmentWise']);
         Route::get('/montly-trends',[OperatorReportController::class,'getMontlyTrends']);
