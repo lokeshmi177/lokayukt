@@ -521,9 +521,12 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
         case "dea-assis":
           $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                   ->where('approved_rejected_by_so_us', 1)
-                    ->whereOr('approved_rejected_by_ds_js', 1);
+            ->where('approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',0)
+                         ->where(function($q){
+                            $q->where('approved_rejected_by_so_us',1)
+                            ->Orwhere('approved_rejected_by_ds_js', 1);               
+                         });
             break;
 
         default:
@@ -567,6 +570,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             $complainDetails->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
                   ->where('approved_rejected_by_so_us', 1);
+               
                 //   ->where('approved_by_ro', 1);
             // $complainDetails->where('complaints.added_by', $user);
             break;
@@ -578,7 +582,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 //   ->whereOr('approved_rejected_by_so_us', 1)
                   ->where('approved_rejected_by_ds_js', 1);
                 //   ->where('forward_so', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
+                //   ->whereOr('forward_to_uplokayukt', 1); 
             break;
 
         case "sec":
@@ -597,9 +601,14 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
         case "dea-assis":
           $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                   ->where('approved_rejected_by_so_us', 1)
-                    ->whereOr('approved_rejected_by_ds_js', 1);
+            ->where('approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',1)
+                         ->where(function($q){
+                            $q->where('approved_rejected_by_so_us',1)
+                            ->Orwhere('approved_rejected_by_ds_js', 1);               
+                         });
+                       
+                   
             break;
 
         default:
@@ -609,7 +618,10 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 'data' => [],
             ], 400);
     }
-    $complainDetails = $complainDetails->get();
+    $complainDetails = $complainDetails
+                      
+                        // ->toSql();
+                      ->get();
 
                 // ->where('form_status',1)
                 // ->where('approved_rejected_by_ro',1)

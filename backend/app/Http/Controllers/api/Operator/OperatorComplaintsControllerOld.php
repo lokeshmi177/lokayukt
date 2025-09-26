@@ -17,10 +17,10 @@ class OperatorComplaintsControllerOld extends Controller
         // dd($request->all());
         // $user = $request->user()->id;
         $added_by = Auth::user();
-        dd($added_by);
+        // dd($added_by);
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'mobile' => 'required|digits_between:10,15',
+            'mobile' => 'required|digits:10,15',
             'address' => 'required|string|max:255',
             'district_id' => 'required|exists:district_master,district_code',
             'email' => 'required|email|unique:complaints,email',
@@ -91,7 +91,9 @@ class OperatorComplaintsControllerOld extends Controller
                 $file = 'letter_' . uniqid() . '.' . $request->file('file')->getClientOriginalExtension();
                 $filePath = $request->file('file')->storeAs('letters', $file, 'public');
                 $compUpdate->file = $file;
-                
+            //     if(){
+            //         $compUpdate->in_draft = 1;
+            //    }
                 $compUpdate->save();
                 $year = date('Y');
                 if($request->nature){
@@ -374,8 +376,14 @@ class OperatorComplaintsControllerOld extends Controller
             // dd($existingComplaint);
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
-                $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
-                
+                // $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
+                $percent = null;
+                if($request->name == $existingComplaint->name){
+                    $percent+=50;
+                }elseif($request->title == $existingComplaint->title){
+                    $percent+=50;
+                }
+                $existingComplaint->match = $percent;
                 // Add new description entry with timestamp
                 // $descriptions[] = [
                 //     'text' => $request->description,

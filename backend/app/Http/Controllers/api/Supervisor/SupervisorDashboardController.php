@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class SupervisorDashboardController extends Controller
 {
@@ -13,28 +14,253 @@ class SupervisorDashboardController extends Controller
     {
         //  $user_district_code = Auth::user()->district_id ?? null;
         // $addedBy = Auth::user()->id ?? null;
+         $userSubrole = Auth::user()->subrole->name; 
+
+
         $year = now()->year;
         $date = Carbon::parse($d);
         // dd($date);
-        $query = DB::table('complaints as cmp')
+        $query = DB::table('complaints as cmp');
             // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
             // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-            ->where('cmp.approved_rejected_by_ro', 1)
+            // ->where('cmp.approved_rejected_by_ro', 1)
             // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
-            ->where('cmp.form_status', 1)
+            // ->where('cmp.form_status', 1)
             // ->where('cmp.district_id', $user_district_code)
-            ->whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
-            ->orderByDesc('cmp.id');
-         $totalcomplains = $query->count();
+           
 
          
         $queryDay = DB::table('complaints as cmp')
             // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
             // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-            ->select('cmp.*')
-            ->where('cmp.status', 'In Progress')
-             ->where('cmp.form_status', 1)
+            ->select('cmp.*');
+            // ->where('cmp.status', 'In Progress')
+            
+        
+
+         $query1 = DB::table('complaints as cmp')
+            // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
+            ->select(DB::raw('COUNT(cmp.id) as total_complains'),DB::raw('AVG(DATEDIFF(now(), created_at)) as avg_days'));
+            // ->where('cmp.approved_rejected_by_ri', 1)
+            // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
+            // ->where('cmp.status', 2)
+            // ->where('cmp.district_id', $user_district_code)
+          
+        
+
+           $query2 = DB::table('complaints as cmp');
+        
+           
+       
+
+        $query3 = DB::table('complaints as cmp')
+                    ->where('cmp.status','Under Investigation')
+                     ->where('cmp.form_status', 1)
+                      ->where('cmp.approved_rejected_by_ro', 1)
+                       ->whereYear('cmp.created_at', $date->year)
+                     ->whereMonth('cmp.created_at', $date->month)
+                    ->orderByDesc('cmp.id');
+              
+
+                    $query4 = DB::table('complaints as cmp');
+                   
+               
+
+                $avgPendingDays = DB::table('complaints as cmp')
+                    // ->where('cmp.status', 'In Progress')
+                    ->whereYear('cmp.created_at', $date->year)
+                    ->whereMonth('cmp.created_at', $date->month)
+                    ->selectRaw('Round(AVG(DATEDIFF(NOW(), cmp.created_at)),1) as avg_days');          
+
+    switch ($userSubrole) {
+        case "so-us":
+            $query->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_ds_js', 0);
+            $query1->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_so_us', 0)
+                  ->whereNot('approved_rejected_by_ds_js', 1);
+             $query2->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+            ->where('cmp.approved_rejected_by_so_us', 1)
+            ->where('cmp.approved_rejected_by_ds_js', 0)
+            ->where('cmp.approved_rejected_by_d_a', 0);
+            // ->where('approved_rejected_by_ds_js', 0);
+                        // ->where('approved_rejected_by_d_a',1)
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+
+            // $queryDay->where('');
+            // $query3->where('');
+            $query4 =  $query4->where('cmp.form_status', 1)
+                     ->where('cmp.approved_rejected_by_ro', 1);
+                        // ->where('approved_rejected_by_d_a',0)
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+            $avgPendingDays = $avgPendingDays->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_so_us',0);
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+            $queryDay = $queryDay->where('cmp.form_status', 1)
+                     ->where('cmp.approved_rejected_by_ro', 1)
+                     ->where('cmp.approved_rejected_by_so_us', 1);
+                        // ->where('approved_rejected_by_d_a',0)
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+                //   ->where('approved_by_ro', 1);
+            // $query->where('complaints.added_by', $user);
+            // $queryDay->where('');
+            // $query3->where('');
+            // $query4->where('');
+            // $avgPendingDays
+            break;
+
+        case "ds-js":
+        //   $query->where('cmp.form_status', 1)
+        //           ->where('cmp.approved_rejected_by_ro', 1)
+        //           ->where('cmp.approved_rejected_by_ds_js', 0);
+
+                   $query->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_ds_js', 0);
+            $query1->where('form_status', 1)
+                  ->where('approved_rejected_by_ro', 1)
+                  ->where('approved_rejected_by_ds_js', 0)
+                  ->whereNot('approved_rejected_by_so_us', 1);
+             $query2->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+            ->where('cmp.approved_rejected_by_so_us', 0)
+            ->where('cmp.approved_rejected_by_ds_js', 1)
+            ->where('cmp.approved_rejected_by_d_a', 0);
+            // ->where('approved_rejected_by_ds_js', 0);
+                        // ->where('approved_rejected_by_d_a',1)
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+
+            // $queryDay->where('');
+            // $query3->where('');
+            $query4 =  $query4->where('cmp.form_status', 1)
+                     ->where('cmp.approved_rejected_by_ro', 1);
+                        // ->where('approved_rejected_by_d_a',0)
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+            $avgPendingDays = $avgPendingDays->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_so_us',0);
+                        //  ->where(function($q){
+                        //     $q->where('cmp.approved_rejected_by_so_us',1)
+                        //     ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                        //  });
+            $queryDay = $queryDay->where('cmp.form_status', 1)
+                     ->where('cmp.approved_rejected_by_ro', 1)
+                     ->where('cmp.approved_rejected_by_so_us', 1);
+            // $query1->where('');
+            // $query2->where('');
+            // $queryDay->where('');
+            // $query3->where('');
+            // $query4->where('');
+            // $avgPendingDays
+                //   ->where('forward_so', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+            break;
+
+        case "sec":
+           $query->where('cmp.form_status', 1)
+                  ->where('cmp.approved_rejected_by_ro', 1);
+                //    ->where('forward_to_lokayukt', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+              // $query1->where('');
+            // $query2->where('');
+            // $queryDay->where('');
+            // $query3->where('');
+            // $query4->where('');
+            // $avgPendingDays
+            break;
+
+        case "cio-io":
+           $query->where('cmp.form_status', 1)
+                  ->where('cmp.approved_rejected_by_ro', 1);
+                //    ->where('forward_to_lokayukt', 1)
+                //   ->whereOr('forward_to_uplokayukt', 1);
+           // $query1->where('');
+            // $query2->where('');
+            // $queryDay->where('');
+            // $query3->where('');
+            // $query4->where('');
+            // $avgPendingDays
+            break;
+
+        case "dea-assis":
+          $query->where('cmp.form_status', 1)
+                  ->where('cmp.approved_rejected_by_ro', 1)
+                   ->where('cmp.approved_rejected_by_so_us', 1)
+                    ->orWhere('cmp.approved_rejected_by_ds_js', 1)
+                    ->whereNotNull('cmp.forward_to_d_a');
+            $query1->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',0)
+                         ->where(function($q){
+                            $q->where('cmp.approved_rejected_by_so_us',1)
+                            ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                         });
+            $query2->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',1)
+                         ->where(function($q){
+                            $q->where('cmp.approved_rejected_by_so_us',1)
+                            ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                         });
+
+            // $queryDay->where('');
+            // $query3->where('');
+            $query4 =  $query4->where('cmp.form_status', 1)
+                     ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',0)
+                         ->where(function($q){
+                            $q->where('cmp.approved_rejected_by_so_us',1)
+                            ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                         });
+            $avgPendingDays = $avgPendingDays->where('cmp.form_status', 1)
+            ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',0)
+                         ->where(function($q){
+                            $q->where('cmp.approved_rejected_by_so_us',1)
+                            ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                         });
+            $queryDay = $queryDay->where('cmp.form_status', 1)
+                     ->where('cmp.approved_rejected_by_ro', 1)
+                        ->where('approved_rejected_by_d_a',0)
+                         ->where(function($q){
+                            $q->where('cmp.approved_rejected_by_so_us',1)
+                            ->Orwhere('cmp.approved_rejected_by_ds_js', 1);               
+                         });
+            break;
+
+        default:
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid subrole',
+                'data' => [],
+            ], 400);
+    }
+          $query=$query->whereYear('cmp.created_at', $date->year)
+            ->whereMonth('cmp.created_at', $date->month)
+            ->orderByDesc('cmp.id');
+            $queryDay = $queryDay->where('cmp.form_status', 1)
               ->where('cmp.approved_rejected_by_ro', 1)
            ->whereDate('cmp.created_at', now()->toDateString()) // ✅ only today
             ->groupBy(DB::raw('DATE(cmp.created_at)'))
@@ -42,80 +268,32 @@ class SupervisorDashboardController extends Controller
             // ->where('cmp.status', 2)
             // ->where('cmp.district_id', $user_district_code)
             ->orderByDesc('cmp.id');
-         $todaycomplains = $queryDay->count();
-
-         $query1 = DB::table('complaints as cmp')
-            // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-            ->select(DB::raw('COUNT(cmp.id) as total_complains'),DB::raw('AVG(DATEDIFF(now(), created_at)) as avg_days'))
-            // ->where('cmp.approved_rejected_by_ri', 1)
-            // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
-            // ->where('cmp.status', 2)
-            // ->where('cmp.district_id', $user_district_code)
-            ->where('status','In Progress')
-             ->where('cmp.form_status', 1)
+            $query1 = $query1->where('cmp.form_status', 1)
               ->where('cmp.approved_rejected_by_ro', 1)
-             ->whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
+             ->whereYear('cmp.created_at', $date->year)
+            ->whereMonth('cmp.created_at', $date->month)
             ->groupBy(groups: 'cmp.status')
             ->orderByDesc('cmp.id');
-         $pendingcomplains = $query1->count();
-
-           $query2 = DB::table('complaints as cmp')
-            // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-            // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-            // ->where('cmp.approved_rejected_by_ri', 1)
-            // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
-            // ->where('cmp.status', 2)
-            // ->where('cmp.district_id', $user_district_code)
-             ->where('cmp.form_status', 1)
-              ->where('cmp.approved_rejected_by_ro', 1)
-              ->where('cmp.approved_rejected_by_so_us', 1)
-            ->where('status','Disposed - Accepted')
-               ->whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
+            $query2=$query2->whereYear('cmp.created_at', $date->year)
+            ->whereMonth('cmp.created_at', $date->month)
             ->orderByDesc('cmp.id');
-         $approvedcomplains = $query2->count();
-
-        $query3 = DB::table('complaints as cmp')
-                    // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-                    // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-                    // ->where('cmp.approved_rejected_by_ri', 1)
-                    // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
-                    // ->where('cmp.status', 2)
-                    // ->where('cmp.district_id', $user_district_code)
-                    ->where('status','Under Investigation')
+             $query4 = $query4->where('cmp.status','Rejected')
                      ->where('cmp.form_status', 1)
                       ->where('cmp.approved_rejected_by_ro', 1)
-                       ->whereYear('created_at', $date->year)
-                     ->whereMonth('created_at', $date->month)
+                       ->whereYear('cmp.created_at', $date->year)
+                  ->whereMonth('cmp.created_at', $date->month)
                     ->orderByDesc('cmp.id');
-                $underinvestigationcomplains = $query3->count();
-
-                    $query4 = DB::table('complaints as cmp')
-                    // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-                    // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-                    // ->where('cmp.approved_rejected_by_ri', 1)
-                    // ->whereIn('cmp.approved_rejected_by_naibtahsildar', [0, 1, 2])
-                    // ->where('cmp.status', 2)
-                    // ->where('cmp.district_id', $user_district_code)
-                    ->where('status','Rejected')
-                     ->where('cmp.form_status', 1)
-                      ->where('cmp.approved_rejected_by_ro', 1)
-                       ->whereYear('created_at', $date->year)
-                  ->whereMonth('created_at', $date->month)
-                    ->orderByDesc('cmp.id');
-                $rejectedcomplains = $query4->count();
-
-                $avgPendingDays = DB::table('complaints as cmp')
-                    ->where('cmp.status', 'In Progress')
-                    ->whereYear('cmp.created_at', $date->year)
-                    ->whereMonth('cmp.created_at', $date->month)
-                    ->selectRaw('Round(AVG(DATEDIFF(NOW(), cmp.created_at)),1) as avg_days')
-                    ->value('avg_days');
-
-
-         
-        $dataDashboard = array(
+    
+         $totalcomplains = $query->count();
+          $todaycomplains = $queryDay->count();
+           $pendingcomplains = $query1->count();
+           $approvedcomplains = $query2->count();
+        //    $approvedcomplains = $query2->toSql();
+           $underinvestigationcomplains = $query3->count();
+            $rejectedcomplains = $query4->count();
+            // $rejectedcomplains = $query4->toSql();
+            $avgPendingDays = $avgPendingDays->value('avg_days');
+     $dataDashboard = array(
            'totalcomplains'=> $totalcomplains,
            'pendingcomplains'=> $pendingcomplains,
           'approvedcomplains'=> $approvedcomplains,
@@ -123,299 +301,12 @@ class SupervisorDashboardController extends Controller
            'todaycomplains'=> $todaycomplains,
            'underinvestigationcomplains'=> $underinvestigationcomplains,
           'avgPendingDays'=>  $avgPendingDays);
-        
-        
-        // $totalhousing_benificiary_detail = DB::table('housing_benificiary_detail as hbd')
-        //     ->join('complaints as hd', 'hbd.h_id', '=', 'hd.id')
-        //     ->select(
-        //         'hbd.*',
-        //     )
-        //     ->where('hd.district_id', $user_district_code) // optional filter
-        //     ->count();
-
-        // pending
-        // $mutable = Carbon::now();
-    //     $averagePendingDaysLekhpal = DB::table('complaints as cmp')
-    //         // ->where('cmp.status', 2)
-    //         ->where('status', 'In Progress')
-    //         ->select(DB::raw('AVG(DATEDIFF(NOW(), cmp.created_at)) as avg_days'))
-    //         ->value('avg_days');
-    //     $averagePendingDaysRI = DB::table('complaints as cmp')
-    //         ->where('cmp.status', 'In Progress')
-    //         // ->where('application_status', 'pending')
-    //         ->select(DB::raw('AVG(DATEDIFF(NOW(), cmp.created_at)) as avg_days'))
-    //         ->value('avg_days');
-    //     $averagePendingDaysNT = DB::table('complaints as cmp')
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status', 'pending')
-    //         ->where('approved_rejected_by_ri', 1)
-    //         ->select(DB::raw('AVG(DATEDIFF(NOW(), cmp.created_at)) as avg_days'))
-    //         ->value('avg_days');
-    //     $averagePendingDaysT = DB::table('complaints as cmp')
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status', 'pending')
-    //             ->where('approved_rejected_by_ri', 1)
-    //     ->where('approved_rejected_by_naibtahsildar', 1)
-    //         ->select(DB::raw('AVG(DATEDIFF(NOW(), cmp.created_at)) as avg_days'))
-    //         ->value('avg_days');
-    //     $averagePendingDaysSDM = DB::table('complaints as cmp')
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status', 'pending')
-    //         ->where('approved_rejected_by_ri', 1)
-    //         ->where('approved_rejected_by_naibtahsildar', 1)
-    //          ->where('approved_rejected_by_tahsildar', 1)
-    //         ->select(DB::raw('AVG(DATEDIFF(NOW(), cmp.created_at)) as avg_days'))
-    //         ->value('avg_days');
-    //     $averagePendingDaysADM = DB::table('complaints as cmp')
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status', 'pending')
-    //         ->where('approved_rejected_by_ri', 1)
-    //         ->where('approved_rejected_by_naibtahsildar', 1)
-    //         ->where('approved_rejected_by_tahsildar', 1)
-    //         ->where('approved_rejected_by_sdm', 1)
-    //         ->select(DB::raw('AVG(DATEDIFF(NOW(), cmp.created_at)) as avg_days'))
-    //         ->value('avg_days');
-
-    // $averageDaysForPending = array($averagePendingDaysLekhpal,$averagePendingDaysRI,$averagePendingDaysNT, $averagePendingDaysT,$averagePendingDaysSDM,$averagePendingDaysADM);
-
-    //     $queryLekhpal = DB::table('complaints as cmp')
-    //         ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         //  ->where('approved_rejected_by_ri', 1)
-    //         // ->where('approved_rejected_by_naibtahsildar', 1)
-    //         // ->where('approved_rejected_by_tahsildar', 1)
-    //         // ->where('approved_rejected_by_sdm', 1)
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status','pending');
-    //     $pendingLekhpal = $queryLekhpal->orderByDesc('id')->count();
-
-    //      $queryRI = DB::table('complaints as cmp')
-    //         // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         //  ->where('approved_rejected_by_ri', 1)
-    //         // ->where('approved_rejected_by_naibtahsildar', 1)
-    //         // ->where('approved_rejected_by_tahsildar', 1)
-    //         // ->where('approved_rejected_by_sdm', 1)
-    //         // ->where('cmp.status', 2)
-    //         ->where('application_status','pending');
-    //     $pendingRI = $queryRI->orderByDesc('id')->count();
-
-    //      $queryNT = DB::table('complaints as cmp')
-    //         ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //          ->where('approved_rejected_by_ri', 1)
-    //         // ->where('approved_rejected_by_naibtahsildar', 1)
-    //         // ->where('approved_rejected_by_tahsildar', 1)
-    //         // ->where('approved_rejected_by_sdm', 1)
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status','pending');
-    //     $pendingNT = $queryNT->orderByDesc('id')->count();
-
-        
-    //     $queryT= DB::table('complaints as cmp')
-    //     ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //     ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //     ->where('approved_rejected_by_ri', 1)
-    //     ->where('approved_rejected_by_naibtahsildar', 1)
-    //     // ->where('approved_rejected_by_tahsildar', 1)
-    //     // ->where('approved_rejected_by_sdm', 1)
-    //     ->where('cmp.status', 2)
-    //     ->where('application_status','pending');
-    //     $pendingT = $queryT->orderByDesc('id')->count();
-        
-        
-        
-    //     $querySDM = DB::table('complaints as cmp')
-    //        ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //        ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         ->where('approved_rejected_by_ri', 1)
-    //        ->where('approved_rejected_by_naibtahsildar', 1)
-    //        ->where('approved_rejected_by_tahsildar', 1)
-    //        // ->where('approved_rejected_by_sdm', 1)
-    //        ->where('cmp.status', 2)
-    //        ->where('application_status','pending');
-    //    $pendingSDM = $querySDM->orderByDesc('id')->count();
-
-    //     $queryADM = DB::table('complaints as cmp')
-    //         ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //          ->where('approved_rejected_by_ri', 1)
-    //         ->where('approved_rejected_by_naibtahsildar', 1)
-    //         ->where('approved_rejected_by_tahsildar', 1)
-    //         ->where('approved_rejected_by_sdm', 1)
-    //         ->where('cmp.status', 2)
-    //         ->where('application_status','pending');
-    //     $pendingADM = $queryADM->orderByDesc('id')->count();
-        
-    //     $dataPending = array($pendingLekhpal,$pendingRI,$pendingNT,$pendingT,$pendingSDM,$pendingADM);
-       
-    //     $queryDamage = DB::table('complaints as cmp')
-    //         ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->join('m_tbl_relieftype as relief', function($join) {
-    //             $join->on('cmp.relief_type', '=', 'relief.id')
-    //                 ->where('relief.damage_type', '=', 'fully'); // Condition in join
-    //         })
-    //         ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         // ->select('relief.*')
-    //         ->where('cmp.status', 2);
-
-    //     $housedamageFully = $queryDamage->count();
-
-    //       $queryDamagePartially =  DB::table('complaints as cmp')
-    //         ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->join('m_tbl_relieftype as relief', function($join) {
-    //             $join->on('cmp.relief_type', '=', 'relief.id')
-    //                 ->where('relief.damage_type', '=', 'partially'); // Condition in join
-    //         })
-    //         ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         // ->select('relief.*')
-    //         ->where('cmp.status', 2);
-        
-    //      $housedamagePartially = $queryDamagePartially->count();
-    //         $dataMonth = array();
-    //      for($i = 1 ;$i<13;$i++)
-    //         {
-    //             if($i <= 9){
-    //                 $i = '0'.$i;
-    //             }
-    //              $submitted = DB::table('complaints')
-    //         ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
-    //         ->whereMonth('created_at', $i)
-    //         ->groupBy('month')
-    //         ->pluck('count', 'month')->toArray();
-
-    //         $housedamageFully = DB::table('complaints as cmp')
-    //         // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->join('m_tbl_relieftype as relief', function($join) {
-    //             $join->on('cmp.relief_type', '=', 'relief.id')
-    //                 ->where('relief.damage_type', '=', 'fully'); // Condition in join
-    //         })
-    //         // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         // ->select('relief.*')
-    //         ->where('cmp.status', 2)
-    //         ->whereMonth('created_at', $i)->count();
-
-    
-
-    //       $queryDamagePartially =  DB::table('complaints as cmp')
-    //         // ->leftJoin('users as u', 'cmp.added_by', '=', 'u.id')
-    //         ->join('m_tbl_relieftype as relief', function($join) {
-    //             $join->on('cmp.relief_type', '=', 'relief.id')
-    //                 ->where('relief.damage_type', '=', 'partially'); // Condition in join
-    //         })
-    //         // ->select('cmp.*', 'u.name as lekhpal_name', 'u.email')
-    //         ->select('relief.*')
-    //         ->where('cmp.status', 2)
-    //         ->whereMonth('created_at', $i)->count();
-
-    //           $damageFullData[] = $housedamageFully ?? 0;
-    //           $damagePartiallyData[] = $queryDamagePartially ?? 0;
-           
-            
-    //      }
-
-   
-
-
-//         $distNameData = [];
-//         $totalAppData = [];
-//         $approveAppData = [];
-//         for($i = 0 ;$i < count($districtdata); $i++){
-//                 $distNameData[] = $districtdata[$i]['dist_name'] ?? 0;
-//                 $totalAppData[] = $districtdata[$i]['total_applications'] ?? 0;
-//                 $approveAppData[] = $districtdata[$i]['total_approved_applications'] ?? 0;
-//         }
-
-//          $stages = [
-//             ['desg' => 'ri', 'title' => 'Revenue Inspector', 'column' => 'approved_rejected_by_ri', 'prev_column' => 'status', 'prev_value' => 2],
-//             ['desg' => 'nt', 'title' => 'Naib Tahsildar', 'column' => 'approved_rejected_by_naibtahsildar', 'prev_column' => 'approved_rejected_by_ri', 'prev_value' => 1],
-//             ['desg' => 't', 'title' => 'Tahsildar', 'column' => 'approved_rejected_by_tahsildar', 'prev_column' => 'approved_rejected_by_naibtahsildar', 'prev_value' => 1],
-//             ['desg' => 'sdm', 'title' => 'Sub Divisional Magistrate', 'column' => 'approved_rejected_by_sdm', 'prev_column' => 'approved_rejected_by_tahsildar', 'prev_value' => 1],
-//             ['desg' => 'adm', 'title' => 'Additional District Magistrate', 'column' => 'approved_rejected_by_adm', 'prev_column' => 'approved_rejected_by_sdm', 'prev_value' => 1],
-//         ];
-
-//         $results = [];
-
-//         foreach ($stages as $index => $stage) {
-//             $pending = DB::table('complaints')
-//                 ->where($stage['column'], 0)
-//                 ->where($stage['prev_column'], $stage['prev_value'])
-//                 ->count();
-
-//             $delayed = DB::table('complaints')
-//                 ->where($stage['column'], 0)
-//                 ->where($stage['prev_column'], $stage['prev_value'])
-//                 ->whereRaw('DATEDIFF(NOW(), created_at) > 5')
-//                 ->count();
-
-//             $averageDays = DB::table('complaints')
-//                 ->where($stage['column'], '!=', 0)
-//                 ->where($stage['prev_column'], $stage['prev_value'])
-//                 ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_days')
-//                 ->value('avg_days');
-
-//             $rejected = DB::table('complaints')
-//                 ->where($stage['column'], 2)
-//                 // ->where($stage['prev_column'], $stage['prev_value'])
-//                 ->count();
-
-
-//             $results[] = [
-//                 'index' => $index + 1,
-//                 'title' => $stage['title'],
-//                 'average' => round($averageDays ?? 0, 1),
-//                 'pending' => $pending,
-//                 'delayed' => $delayed,
-//                 'rejected' => $rejected,
-//                 'desg' => $stage['desg'],
-//             ];
-//         }
-
-        // $criticalDelay = DB::table('complaints')
-        //     ->whereRaw('DATEDIFF(NOW(), created_at) > 15')
-        //     ->whereNotIn('complaints.approved_rejected_by_adm', [1, 2])
-        //     ->count();
-        // $moderateDelay = DB::table('complaints')
-        //     ->whereRaw('DATEDIFF(NOW(), created_at) BETWEEN 8 AND 15')
-        //     ->whereNotIn('complaints.approved_rejected_by_adm', [1, 2])
-        //     ->count();
-        // $minorDelay = DB::table('complaints')
-        //     ->whereRaw('DATEDIFF(NOW(), created_at) BETWEEN 3 AND 7')
-        //     ->whereNotIn('complaints.approved_rejected_by_adm', [1, 2])
-        //     ->count();
-
-        // $stats =  DB::table('complaints')->select('cause_of_death')
-        //     ->selectRaw('count(*) as count')
-        //     ->groupBy('cause_of_death')
-        //     ->orderBy('count', 'desc')
-        //     ->get();
-
-        // $finalStats = [];
-        // foreach ($stats as $stat) {
-        //     $svgQuery = DB::table('disastertype')
-        //         ->select('svg')
-        //         ->whereRaw('? like CONCAT("%", DisasterType, "%")', [$stat->cause_of_death])
-        //         ->orWhereRaw('? like CONCAT("%", DisasterType_H, "%")', [$stat->cause_of_death])
-        //         ->value('svg');
-        //     $finalStats[] = [
-        //         'cause_of_death' => $stat->cause_of_death,
-        //         'death_count' => $stat->count,
-        //         'svg' => $svgQuery
-        //     ];
-        // }
-        // $finalStats = collect($finalStats);
-
-        // $form = cmpPerson::selectRaw("
-        //     COUNT(CASE WHEN status = 1 THEN 1 END) as form_a_count,
-        //     COUNT(CASE WHEN status = 2 THEN 1 END) as form_b_count,
-        //     COUNT(CASE WHEN status = 3 THEN 1 END) as form_c_count
-        // ")->first();
 
             return response()->json([
                 'status' => true,
                 'dataDashboard' => $dataDashboard,
             ]);
-        // return view('admin.housing.admin_housing_dashboard',compact('housepending','houseApproved','houseRejected','totalhousingapp','data','dataPending','averageDaysForPending','damageFullData','damagePartiallyData','distNameData','totalAppData','approveAppData','results'));
+        
     } 
 
     public function getDepartmentwisData(){
