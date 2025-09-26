@@ -124,7 +124,6 @@ const CustomSearchableSelect = ({
                 {filteredOptions().some(option => option.type === 'lokayukt') && (
                   <>
                     <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
-                      {/* <FaCrown className="w-4 h-4 text-yellow-500" /> */}
                       <span className="ml-2">Hon'ble LokAyukta</span>
                     </div>
                     
@@ -154,7 +153,6 @@ const CustomSearchableSelect = ({
                 {filteredOptions().some(option => option.type === 'uplokayukt') && (
                   <>
                     <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
-                      {/* <FaCrown className="w-4 h-4 text-blue-500" /> */}
                       <span className="ml-2">Hon'ble UpLokAyukta</span>
                     </div>
                     
@@ -230,9 +228,8 @@ const ForwardModal = ({
         if (lokayuktResponse.data && Array.isArray(lokayuktResponse.data)) {
           lokayuktResponse.data.forEach(user => {
             options.push({
-              value: user.id.toString(),
-              displayName: user.name,    
-              // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+              value: user.id.toString(), // ID भेजेगे database में
+              displayName: user.name,    // Name दिखायेगे dropdown में
               type: 'lokayukt'
             });
           });
@@ -244,7 +241,6 @@ const ForwardModal = ({
             options.push({
               value: user.id.toString(), 
               displayName: user.name,    
-              // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
               type: 'uplokayukt'
             });
           });
@@ -294,8 +290,8 @@ const ForwardModal = ({
     
     try {
       const response = await api.post(`/supervisor/forward-by-da/${complaintId}`, {
-        forward_to_d_a: parseInt(formData.forwardTo), // ID भेजेगे as integer
-        remarks: formData.remarks
+        forward_to: parseInt(formData.forwardTo), // ID भेजेगे as integer
+        remark: formData.remarks
       });
 
       console.log("API Response:", response.data);
@@ -516,20 +512,20 @@ const AllComplaints = () => {
 
   // Handle forward submit with local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // Update local state immediately without API call
+    // Update local state immediately - केवल DA approval set करते हैं
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              approved_rejected_by_d_a: 1, 
-              status: 'Forwarded' // Update status if needed
+              approved_rejected_by_d_a: 1, // केवल DA approval set करते हैं
+              status: 'Forwarded' 
             }
           : complaint
       )
     );
     
-    console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
+    console.log(`Complaint ${forwardedComplaintId} marked as DA approved locally`);
   };
 
   // Format date helper
@@ -547,12 +543,18 @@ const AllComplaints = () => {
     return value == 1 || value === "1" || parseInt(value) === 1;
   };
 
-  // NEW: Full text approval badges in green background - Jo jiski value 1 hai
+  // ✅ UPDATED: Only check DA approval for forwarded status
+  const isComplaintForwarded = (complaint) => {
+    // केवल DA approval check करते हैं
+    return complaint.approved_rejected_by_d_a === 1;
+  };
+
+  // Only check exact value === 1 for badges
   const getApprovalStatuses = (complaint) => {
     const statuses = [];
 
-    // RO approval - Handle both string and number
-    if (isApproved(complaint.approved_rejected_by_ro)) {
+    // RO approval - Only exact value 1
+    if (complaint.approved_rejected_by_ro === 1) {
       statuses.push({
         status: 'approved_by_ro', 
         label: 'Approved by RO',
@@ -560,8 +562,8 @@ const AllComplaints = () => {
       });
     }
     
-    // SO approval - Handle both string and number  
-    if (isApproved(complaint.approved_rejected_by_so_us)) {
+    // SO approval - Only exact value 1
+    if (complaint.approved_rejected_by_so_us === 1) {
       statuses.push({
         status: 'approved_by_so',
         label: 'Approved by SO',
@@ -569,8 +571,8 @@ const AllComplaints = () => {
       });
     }
     
-    // DS approval - Handle both string and number
-    if (isApproved(complaint.approved_rejected_by_ds_js)) {
+    // DS approval - Only exact value 1
+    if (complaint.approved_rejected_by_ds_js === 1) {
       statuses.push({
         status: 'approved_by_ds',
         label: 'Approved by DS',  
@@ -578,8 +580,8 @@ const AllComplaints = () => {
       });
     }
     
-    // DA approval - Handle both string and number
-    if (isApproved(complaint.approved_rejected_by_d_a)) {
+    // DA approval - Only exact value 1
+    if (complaint.approved_rejected_by_d_a === 1) {
       statuses.push({
         status: 'approved_by_da',
         label: 'Approved by DA',
@@ -588,11 +590,6 @@ const AllComplaints = () => {
     }
     
     return statuses;
-  };
-
-  // Forward status helper - Updated with same logic
-  const isForwarded = (complaint) => {
-    return isApproved(complaint.approved_rejected_by_d_a);
   };
 
   if (error) {
@@ -635,7 +632,7 @@ const AllComplaints = () => {
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/* Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {/* Full Text Approval Status Badges in Green - केवल exact value 1 पर */}
                 {approvalStatuses.length > 0 && (
                   <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
                     {approvalStatuses.map((status, index) => (
@@ -686,8 +683,8 @@ const AllComplaints = () => {
                   </div>
                 </div>
 
-                {/* Row 4 - Action Buttons */}
-                <div className="px-3 sm:px-4 pb-12 sm:pb-4"> {/* Extra bottom padding for mobile to avoid overlap with badge */}
+                {/* Row 4 - Action Buttons - ✅ UPDATED: केवल DA approval check */}
+                <div className="px-3 sm:px-4 pb-12 sm:pb-4">
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                     <button
                       onClick={(e) => handleViewDetails(e, complaint.id)}
@@ -695,8 +692,9 @@ const AllComplaints = () => {
                     >
                       View Details
                     </button>
-                    {/* Dynamic button based on forward status */}
-                    {isForwarded(complaint) ? (
+                    
+                    {/* ✅ केवल DA approval check - approved_rejected_by_d_a === 1 */}
+                    {isComplaintForwarded(complaint) ? (
                       <button
                         disabled
                         className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"

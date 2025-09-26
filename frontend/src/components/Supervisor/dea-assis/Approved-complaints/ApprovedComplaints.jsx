@@ -294,8 +294,8 @@ const ForwardModal = ({
     
     try {
       const response = await api.post(`/supervisor/forward-by-da/${complaintId}`, {
-        forward_to_d_a: parseInt(formData.forwardTo), // ID भेजेगे as integer
-        remarks: formData.remarks
+        forward_to: parseInt(formData.forwardTo), // ID भेजेगे as integer
+        remark: formData.remarks
       });
 
       console.log("API Response:", response.data);
@@ -623,7 +623,7 @@ const ApprovedComplaints = () => {
 
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">All Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Approved Complaints</h1>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
