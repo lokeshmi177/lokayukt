@@ -167,6 +167,7 @@ class OperatorReportController extends Controller
         'complaints.status',
         'dd.district_code'
     )
+     ->where('in_draft','0')
         ->get();
         // return json_encode($records->toSql());
         // $records = $records->paginate(50);
@@ -201,7 +202,9 @@ class OperatorReportController extends Controller
                     DB::raw("SUM(CASE WHEN cm.approved_rejected_by_ro = '1'  THEN 1 ELSE 0 END) as total_approved"),
                     DB::raw("SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) as total_pending"),
                     DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected")
-                )->first();
+                )
+                 ->where('in_draft','0')
+                ->first();
             
            
 
@@ -263,6 +266,59 @@ $complainDetails->details = DB::table('complaints_details as cd')
                'data' => $complainDetails,
            ]);
     }
+         public function viewDraft($id)
+  {
+    //    $complainDetails = DB::table('complaints as cm')
+    //    ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+    // ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+    // ->select(
+    //     'cm.*',
+    //     'dd.district_name',
+    //     'dp.name as department_name',
+    //     'ds.name as designation_name',
+    //     'ct.name as complaintype_name',
+    //     'sub.name as subject_name',
+    //     // 'cd.*'
+    // )
+    // ->where('cm.id', $id)
+    // ->first();
+
+    $complainDetails = DB::table('complaints as cm')
+    ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+    ->select(
+        'cm.*',
+        'dd.district_name'
+    )
+    ->where('cm.in_draft', '1')
+    ->where('cm.id', $id)
+    ->first();
+
+$complainDetails->details = DB::table('complaints_details as cd')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'cd.*',
+        'dp.name as department_name',
+        'ds.name as designation_name',
+        'ct.name as complaintype_name',
+        'sub.name as subject_name'
+    )
+    ->where('cd.complain_id', $id)
+    ->get();
+           
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
 
         public function getFilePreview($id){
         $cmp = Complaint::findOrFail($id);
@@ -283,7 +339,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
          public function allComplainsDashboard(){
        
            $query = DB::table('complaints');
-          $complainDetails = $query->count();
+          $complainDetails = $query
+           ->where('in_draft','0')
+          ->count();
         // dd($deadpersondetails);
 
           return response()->json([
@@ -296,6 +354,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
      public function allComplainsDashboardPending(){
        
            $query = DB::table('complaints')
+            ->where('in_draft','0')
            ->where('status','In Progress');
           $complainDetails = $query->count();
         // dd($deadpersondetails);
@@ -309,6 +368,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
      public function allComplainsDashboardApproved(){
                $query = DB::table('complaints')
+                ->where('in_draft','0')
            ->where('status','Disposed - Accepted');
           $complainDetails = $query->count();
         // dd($deadpersondetails);
@@ -322,6 +382,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
      public function allComplainsDashboardRejected(){
               $query = DB::table('complaints')
+               ->where('in_draft','0')
            ->where('status','Rejected');
           $complainDetails = $query->count();
         // dd($deadpersondetails);
@@ -339,6 +400,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $complainCounts = Complaint::select('district_master.district_name', DB::raw('count(*) as complain_count'))
             ->join('district_master', 'complaints.district_id', '=', 'district_master.district_code')
             ->groupBy('district_master.district_code', 'district_master.district_name')
+            ->where('in_draft','0')
             ->limit(5)
             //  ->having('complain_count', '>', 0)
             ->pluck('complain_count', 'district_master.district_name');
@@ -356,7 +418,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')    
         ->leftJoin('departments', 'cd.department_id', '=', 'departments.id')
             ->groupBy('departments.id', 'departments.name','department_id')
-             
+            ->where('in_draft','0')  
             ->pluck('complain_count', 'departments.name');
        return response()->json([
                'status' => true,
@@ -384,6 +446,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     // ->having('total_applications', '>', 0)
     ->orderBy('cm.name')
     ->limit(10)
+     ->where('in_draft','0')
     ->get();
     $complaintData = $complaintData->map(function ($item) {
         if($item->total_complaints){
@@ -437,6 +500,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     ->groupBy('complaintype.id', 'complaintype.name')
     // ->having('total_applications', '>', 0)
     // ->orderBy('cm.name')
+     ->where('in_draft','0')
     ->limit(10)
     ->get();
 //     $complaintData = $complaintData->map(function ($item) {
@@ -485,6 +549,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
              COUNT(cm.id)) * 100, 2
         ) as rejected_percentage")
     )
+     ->where('in_draft','0')
     ->first();
     return response()->json([
         'status' => true,
@@ -562,6 +627,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // 'sub.name as subject_name',
             )
             // ->groupBy('complaints.id','u.id','srole.name')
+             ->where('in_draft','0')
             ->orderBy('complaints.id','desc')
             ->get();
               return response()->json([
@@ -612,6 +678,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // 'ct.name as complaintype_name',
                 // 'sub.name as subject_name',
             )
+             ->where('in_draft','0')
             ->orderBy('complaints.id','desc')
             // ->groupBy('complaints.id','u.id','srole.name')
             ->get();
@@ -632,6 +699,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         SUM(CASE WHEN complaints.form_status = "1" THEN 1 ELSE 0 END) as files_in_transit,
         SUM(CASE WHEN ca.target_date < NOW()  THEN 1 ELSE 0 END) as overdue_files
     ')
+     ->where('in_draft','0')
     ->first();
               return response()->json([
                 'status' => true,

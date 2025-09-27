@@ -131,11 +131,7 @@ class OperatorComplaintsController extends Controller
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         
-<<<<<<< HEAD
         if($request->action == "1"){
-=======
-     if($request->action == "1"){
->>>>>>> 667b57e1f94deba23bb3f095857e0a2a259f5916
             $complaint->in_draft = 1;
         }
 
@@ -465,8 +461,7 @@ class OperatorComplaintsController extends Controller
                  'title.*' => 'required|string|max:255',
                   'file'   => 'array',
                  'file.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-                // 'officer_name.*' => 'required|array',
-                 'officer_name.*' => 'required|string|max:255',
+                'officer_name' => 'required|array',
                
             ], [
                 'name.required' => 'Name is required.',
@@ -605,7 +600,7 @@ class OperatorComplaintsController extends Controller
             // $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
             // $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
         
-                // dd($request->data);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Complaint update successfully.',
@@ -831,7 +826,6 @@ class OperatorComplaintsController extends Controller
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
                 // $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
-<<<<<<< HEAD
                   $percent = null;
                 // if($request->name == $existingComplaint->name){
                 //     $percent+=50;
@@ -839,9 +833,6 @@ class OperatorComplaintsController extends Controller
                 //     $percent+=50;
                 // }
                 // $existingComplaint->match = $percent;
-=======
-                $percent = null;
->>>>>>> 667b57e1f94deba23bb3f095857e0a2a259f5916
                 if($request->name === $existingComplaint->name && $request->title === $existingComplaint->title){
                     $percent+=100;
                 }else{
@@ -984,6 +975,45 @@ class OperatorComplaintsController extends Controller
                     // 'cd.description',
                   
                 )
+                 ->where('in_draft','0')
+                ->get();
+        // dd($deadpersondetails);
+
+          return response()->json([
+               'status' => true,
+               'message' => 'Records Fetch successfully',
+               'data' => $complainDetails,
+           ]);
+    }
+      public function allDraft(){
+       
+           $complainDetails = DB::table('complaints as cm')
+                // ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
+                ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+                // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+                // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+                // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+                // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
+                ->select(
+                    'cm.*',
+                    'dd.district_name',
+                    // 'dp.name as department_name',
+                    // 'ds.name as designation_name',
+                    // 'ct.name as complaintype_name',
+                    // 'sub.name as subject_name',
+                    // 'cd.department_id',
+                    // 'cd.officer_name',
+                    // 'cd.designation_id',
+                    // 'cd.designation_id',
+                    // 'cd.category',
+                    // 'cd.title',
+                    // 'cd.file',
+                    // 'cd.subject_id',
+                    // 'cd.complaintype_id',
+                    // 'cd.description',
+                  
+                )
+                ->where('in_draft','1')
                 ->get();
         // dd($deadpersondetails);
 
@@ -1014,6 +1044,7 @@ class OperatorComplaintsController extends Controller
                 )
                 ->where('form_status',0)
                 ->where('approved_rejected_by_ro',0)
+                 ->where('in_draft','0')
                 ->get();
         // dd($deadpersondetails);
 
@@ -1044,6 +1075,7 @@ class OperatorComplaintsController extends Controller
                 )
                 ->where('form_status',1)
                 ->where('approved_rejected_by_ro',1)
+                 ->where('in_draft','0')
                 ->get();
         // dd($deadpersondetails);
 
