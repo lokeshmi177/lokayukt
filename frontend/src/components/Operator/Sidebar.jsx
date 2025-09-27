@@ -15,8 +15,11 @@ import {
   FaTimes,
   FaClock,
   FaCheckCircle,
-  FaListUl,          // NEW: For All Complaints only
+  FaListUl,          //
 } from "react-icons/fa";
+import { FaSave } from "react-icons/fa";
+
+
 
 const Sidebar = ({
   isMobileMenuOpen,
@@ -38,6 +41,7 @@ const Sidebar = ({
       dashboard: "Dashboard",
       complaints: "New Complaints",
       allComplaints: "Complaints",
+      draft: "Draft",
       // pendingComplaints: "Pending Complaints",
       // approvedComplaints: "Verified Complaints",
       progressRegister: "Progress Register",
@@ -55,6 +59,7 @@ const Sidebar = ({
       dashboard: "डैशबोर्ड",
       complaints: "शिकायतें",
       allComplaints: "सभी शिकायतें",
+      draft: "ड्राफ्ट",
       // pendingComplaints: "लंबित शिकायतें",
       // approvedComplaints: "स्वीकृत शिकायतें",
       progressRegister: "प्रगति रजिस्टर",
@@ -336,6 +341,31 @@ const Sidebar = ({
                 {(isMobile || !isCollapsed) && (
                   <span className="transition-all duration-300">
                     {t.allComplaints}
+                  </span>
+                )}
+              </Link>
+            </li>
+
+{/* Draft */}
+             <li>
+              <Link
+                to="/operator/draft"
+                onClick={handleLinkClick}
+                className={`flex items-center text-sm font-medium transition-all duration-200 ${
+                  isActive("/draft")
+                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
+                } ${
+                  !isMobile && isCollapsed
+                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
+                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
+                }`}
+                title={!isMobile && isCollapsed ? t.draft : ""}
+              >
+                <FaSave className="w-5 h-5 flex-shrink-0" />
+                {(isMobile || !isCollapsed) && (
+                  <span className="transition-all duration-300">
+                    {t.draft}
                   </span>
                 )}
               </Link>

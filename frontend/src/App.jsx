@@ -32,6 +32,9 @@ import OperatorEditApprovedCoplaints from './components/Operator/Approved-compla
 import OperatorPendingComplaints from './components/Operator/Pending-complaints/PendingComplaints/';
 import OperatorViewPendingComplaint from './components/Operator/Pending-complaints/ViewPendingComplaint';
 import OperatorEditPendingComplaints from './components/Operator/Pending-complaints/EditPendingComplaints';
+import AllDraft from './components/Operator/Draft/AllDraft';
+import ViewDraft from './components/Operator/Draft/ViewDraft';
+import EditDraft from './components/Operator/Draft/EditDraft';
 
 
 
@@ -157,6 +160,8 @@ import Login from './components/Login';
 
 
 
+
+
 function App() {
   const role = localStorage.getItem("role");
   const subrole = localStorage.getItem("subrole")
@@ -201,6 +206,9 @@ function App() {
             <Route path="approved-complaints/view/:id" element={<OperatorViewApprovedComplaints />} />
              <Route path="pending-complaints" element={<OperatorPendingComplaints />} />
              <Route path="approved-complaints" element={<OperatorApprovedComplaints />} />
+             <Route path="draft" element={<AllDraft />} />
+             <Route path="draft/view/:id" element={<ViewDraft />} />
+             <Route path="draft/edit/:id" element={<EditDraft />} />
              {/* <Route path="/operator/complaints/Cheekdublicate" element={<Cheekdublicate />} /> */}
 
         </Route>
@@ -215,6 +223,7 @@ function App() {
           <Route path="progress-register" element={<SupervisorProgressRegister />} />
           <Route path="search-reports" element={<SupervisorSearchReports />} />
           <Route path="search-reports/view/:id" element={<SupervisorViewComplaints />} />
+          
 
           <Route path="all-complaints" element={<SupervisorAllComplaits />} />
           <Route path="all-complaints/view/:id" element={<SupervisorViewAllComplaint />} />
