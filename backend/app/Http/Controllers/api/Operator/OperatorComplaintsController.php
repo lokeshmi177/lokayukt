@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api\Operator;
 use App\Http\Controllers\Controller;
 use App\Models\ComplainDetails;
 use App\Models\Complaint;
+use App\Models\ComplaintAction;
 use App\Models\ComplainType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -130,9 +131,9 @@ class OperatorComplaintsController extends Controller
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         
-        // if($complaint->action === "1"){
-        //     $complaint->in_draft = 1;
-        // }
+        if($request->action == "1"){
+            $complaint->in_draft = 1;
+        }
 
         if($complaint->save()){
 
@@ -162,17 +163,24 @@ class OperatorComplaintsController extends Controller
         $filePath = $request->file('file')->storeAs('letters', $file, 'public');
         $cmpDetails->file = $file;
         $cmpDetails->save();
+        
         }
 
            // MP2024ALG001
-       
-       
+          if($request->action == "1"){
+                return response()->json([
+                'status' => true,
+                'message' => 'Save Draft successfully.',
+                'data' => $complaint,
+                // 'added_by' =>$added_by
+            ], 201);
+          }
 
         return response()->json([
             'status' => true,
             'message' => 'Complaint registered successfully.',
             'data' => $complaint,
-            'added_by' =>$added_by
+            // 'added_by' =>$added_by
         ], 201);
         }
      
@@ -256,28 +264,28 @@ class OperatorComplaintsController extends Controller
         // $cmpedit = Complaint::findOrFail($id);
 
           $cmpedit = DB::table('complaints as cm')
-    ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-    ->select(
-        'cm.*',
-        'dd.district_name'
-    )
-    ->where('cm.id', $id)
-    ->first();
+            ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+            ->select(
+                'cm.*',
+                'dd.district_name'
+            )
+            ->where('cm.id', $id)
+            ->first();
 
-$cmpedit->details = DB::table('complaints_details as cd')
-    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
-    ->select(
-        'cd.*',
-        'dp.name as department_name',
-        'ds.name as designation_name',
-        'ct.name as complaintype_name',
-        'sub.name as subject_name'
-    )
-    ->where('cd.complain_id', $id)
-    ->get();
+            $cmpedit->details = DB::table('complaints_details as cd')
+                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+                ->select(
+                    'cd.*',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->where('cd.complain_id', $id)
+                ->get();
 
         return response()->json([
                 'status' => true,
@@ -285,6 +293,43 @@ $cmpedit->details = DB::table('complaints_details as cd')
                 'data' => $cmpedit
             ], 200);
     }
+
+     public function editDraft($id){
+        // $cmpedit = Complaint::findOrFail($id);
+
+          $cmpedit = DB::table('complaints as cm')
+            ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
+            ->select(
+                'cm.*',
+                'dd.district_name'
+            )
+            ->where('cm.in_draft', '1')
+            ->where('cm.id', $id)
+            ->first();
+
+            $cmpedit->details = DB::table('complaints_details as cd')
+                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+                ->select(
+                    'cd.*',
+                    'dp.name as department_name',
+                    'ds.name as designation_name',
+                    'ct.name as complaintype_name',
+                    'sub.name as subject_name'
+                )
+                ->where('cd.complain_id', $id)
+                ->get();
+
+        return response()->json([
+                'status' => true,
+                'message' => 'Complaint fetch successfully.',
+                'data' => $cmpedit
+            ], 200);
+    }
+
+
 
     // public function updateComplain(Request $request,$id){
     //     $added_by = Auth::user()->id;
@@ -564,6 +609,184 @@ $cmpedit->details = DB::table('complaints_details as cd')
             ], 201);
     }
 
+      public function updateDraft(Request $request,$id){
+        // dd($request->all());
+        $added_by = Auth::user()->id;
+            $validation = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'mobile' => 'required|digits_between:10,15',
+                'address' => 'required|string|max:255',
+                'district_id' => 'required|exists:district_master,district_code',
+                'email' => 'required',
+                'dob' => 'nullable|date',
+                // 'fee_exempted' => 'required|boolean',
+                // 'department' => 'required',
+                 'department'   => 'required|array',
+                 'department.*' => 'required|integer|exists:departments,id',
+
+                  'designation'   => 'required|array',
+                 'designation.*' => 'required|integer|exists:designations,id',
+                  'category'   => 'required|array',
+                 'category.*' => 'required|string|max:255',
+                  'subject'   => 'required|array',
+                 'subject.*' => 'required|integer|exists:subjects,id',
+                  'nature'   => 'required|array',
+                 'nature.*' => 'required|integer|exists:complaintype,id',
+                  'description'   => 'required|array',
+                 'description.*' => 'required|string|max:255',
+                  'title'   => 'required|array',
+                 'title.*' => 'required|string|max:255',
+                  'file'   => 'array',
+                 'file.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'officer_name' => 'required|array',
+               
+            ], [
+                'name.required' => 'Name is required.',
+                'mobile.required' => 'Mobile number is required.',
+                'mobile.digits_between' => 'Mobile number must be between 10 to 15 digits.',
+                'address.required' => 'Address is required.',
+                'district_id.required' => 'District is required.',
+                'district_id.exists' => 'District does not exist.',
+                'email.required' => 'Email is required.',
+                // 'email.email' => 'Please enter a valid email address.',
+                // 'email.unique' => 'This email is already registered.',
+                'dob.date' => 'Date of Birth must be a valid date.',
+                'fee_exempted.required' => 'Please specify if fee is exempted or not.',
+               
+                'department.required' => 'Department is required.',
+                'department.array' => 'Department must be an array.',
+                'department.*.required' => 'Each department is required.',
+               
+                'officer_name.required' => 'Officer name is required.',
+               
+                'designation.required' => 'designation is required.',
+                'designation.array' => 'designation must be an array.',
+                'designation.*.required' => 'Each designation is required.',
+               
+                'category.required' => 'category is required.',
+                'category.array' => 'category must be an array.',
+                'category.*.required' => 'Each category is required.',
+               
+                'subject.required' => 'subject is required.',
+                'subject.array' => 'subject must be an array.',
+                'subject.*.required' => 'Each subject is required.',
+               
+                'nature.required' => 'nature is required.',
+                'nature.array' => 'nature must be an array.',
+                'nature.*.required' => 'Each nature is required.',
+               
+                'description.required' => 'description is required.',
+                'description.array' => 'description must be an array.',
+                'description.*.required' => 'Each description is required.',
+               
+                'title.required' => 'title is required.',
+                'title.array' => 'title must be an array.',
+                'title.*.required' => 'Each title is required.',
+                'file.required' => 'file is required.',
+                'file.array' => 'file must be an array.',
+                // 'file.*.required' => 'Each file is required.',
+                // 'department.required' => 'Department is required.',
+                
+                // 'designation.required' => 'Designation is required.',
+                // 'category.required' => 'Category is required.',
+                // 'subject.required' => 'Subject is required.',
+                // 'nature.required' => 'Nature of complaint is required.',
+                // 'description.required' => 'Complaint description is required.',
+                // 'title.required' => 'Letter Subject is Required',
+                // 'file.required' => 'File is Required',
+            ]);
+
+            if ($validation->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'errors' => $validation->errors()
+                ], 422);
+            }
+
+        
+            $complaint = Complaint::findOrFail($id);
+            $complaint->name = $request->name;
+            // $complaint->complain_no = $complaintNo ?? null;
+            $complaint->mobile = $request->mobile;
+            $complaint->address = $request->address;
+            $complaint->district_id = $request->district_id;
+            $complaint->email = $request->email;
+            $complaint->amount = $request->amount;
+            $complaint->challan_no = $request->challan_no;
+            $complaint->dob = $request->dob;
+            $complaint->fee_exempted = $request->fee_exempted;
+            $complaint->in_draft = '0';
+            $complaint->save(); // ✅ Insert into DB
+
+            // $data = [];
+            foreach ($request->department as $i => $departName) {
+                
+                $data[] = [
+                    'id' => $request->complaint_details_id[$i], 
+                    'department_id' => $request->department[$i], 
+                    'officer_name' => $request->officer_name[$i], 
+                    'designation_id' => $request->designation[$i],  
+                    'category' => $request->category[$i], 
+                    'added_by' => $added_by, 
+                    'subject_id' => $request->subject[$i], 
+                    'complaintype_id' => $request->nature[$i], 
+                    'description' => $request->description[$i], 
+                    'title' => $request->title[$i], 
+                     
+                ];
+
+                  $filePath = null;
+              
+                if($request->hasFile("files.$i")){
+                    $file = $request->file("files.$i");
+                    $filename = 'letter_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('letters', $filename, 'public');
+                }
+                // dd($request->hasFile("files.$i"), $filePath);
+                
+                if (!empty($filePath)) {
+                    $data[$i]['file'] = $filename;
+                }
+
+            }
+            // dd($data);
+          
+            
+              $dataList = $data;
+            //   dd($dataList);
+                
+             
+               foreach($dataList as $key => $value){
+                // dd($value['id']);
+                
+            
+                     DB::table('complaints_details')
+                         ->where('id', $value['id'])
+                         ->update($value);
+                   
+                }
+               
+
+            // MP2024ALG001
+            // $year = date('Y');
+            // if($request->nature){
+            // $com_type = ComplainType::find($request->nature);
+            // $str = strtoupper(substr($com_type->name, 0, 3));
+
+            // }
+    
+            // $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
+            // $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
+        
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Complaint Register successfully.',
+                'data' => $complaint,
+                // 'dataList' => $dataList
+            ], 201);
+    }
+
     public function checkDuplicate(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -602,8 +825,20 @@ $cmpedit->details = DB::table('complaints_details as cd')
             // dd($existingComplaint);
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
-                $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
-                
+                // $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
+                  $percent = null;
+                // if($request->name == $existingComplaint->name){
+                //     $percent+=50;
+                // }elseif($request->title == $existingComplaint->title){
+                //     $percent+=50;
+                // }
+                // $existingComplaint->match = $percent;
+                if($request->name === $existingComplaint->name && $request->title === $existingComplaint->title){
+                    $percent+=100;
+                }else{
+                    $percent= 0;
+                }
+                $existingComplaint->match = $percent;
                 // Add new description entry with timestamp
                 // $descriptions[] = [
                 //     'text' => $request->description,
@@ -681,11 +916,20 @@ $cmpedit->details = DB::table('complaints_details as cd')
          $userId = Auth::user()->id;
         if(isset($id) && $request->isMethod('post')){
 
-            $apc = Complaint::findOrFail($id);
+                $apc = Complaint::findOrFail($id);
                 $apc->form_status = 1;
                 $apc->approved_rejected_by_ro = 1;
                 $apc->approved_by_ro_id =  $userId;
-                $apc->save();
+                
+                if($apc->save()){
+                     $apcAction = new ComplaintAction();
+                    $apcAction->complaint_id = $id;
+                    $apcAction->status = 'Verified';
+                    $apcAction->remarks = "Initial verification completed. Forwarded to Supervisor for further action.";
+                    $apcAction->forward_by_ro = $userId;
+                    $apcAction->save();
+                }
+           
     
               return response()->json([
                 'status' => 'success',

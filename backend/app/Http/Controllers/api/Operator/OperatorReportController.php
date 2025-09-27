@@ -494,7 +494,43 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
    
-    public function progress_report(){
+    // public function progress_report(){
+    //     // $userSubroleRole = Auth::user()->subrole->name;
+        
+    //      $records = DB::table('complaints')
+    //     //   ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+    //         // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+    //         // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
+    //         // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
+    //         // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
+    //         // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+    //         // ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+    //         // ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+    //         // ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            
+    //         ->select(
+    //             'complaints.*',
+    //             // 'u.id as user_id',
+    //             // 'srole.name as subrole_name',
+    //             // 'ca.*',
+    //             // 'cd.*'
+    //             // 'dd.district_name as district_name',
+    //             // 'dp.name as department_name',
+    //             // 'ds.name as designation_name',
+    //             // 'ct.name as complaintype_name',
+    //             // 'sub.name as subject_name',
+    //         )
+    //         // ->groupBy('complaints.id','u.id','srole.name')
+    //         ->get();
+    //           return response()->json([
+    //             'status' => true,
+    //             'message' => 'Records Fetch successfully',
+    //             'data' => $records,
+    //         ]);
+    //         // dd($records);
+    // }
+
+        public function progress_report(){
         // $userSubroleRole = Auth::user()->subrole->name;
         
          $records = DB::table('complaints')
@@ -506,13 +542,18 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
             // ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
             // ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-            // ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
             
             ->select(
-                'complaints.*',
+                // 'complaints.*',
+                'ca.*',
+                'complaints.complain_no',
+                'complaints.name',
+                'complaints.approved_rejected_by_ro',
+                'complaints.remark as remark',
                 // 'u.id as user_id',
                 // 'srole.name as subrole_name',
-                // 'ca.*',
+                
                 // 'cd.*'
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
@@ -521,6 +562,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // 'sub.name as subject_name',
             )
             // ->groupBy('complaints.id','u.id','srole.name')
+            ->orderBy('complaints.id','desc')
             ->get();
               return response()->json([
                 'status' => true,
@@ -529,6 +571,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             ]);
             // dd($records);
     }
+
 
      public function current_report(){
         // $userSubroleRole = Auth::user()->subrole->name;
@@ -540,13 +583,25 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
             // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
             // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-            ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+            ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            ->leftJoin('users as u', DB::raw("ca.forward_by_ro"), '=', DB::raw("u.id"))
+            ->leftJoin('users as so_us', DB::raw("ca.forward_by_so_us"), '=', DB::raw("so_us.id"))
+            ->leftJoin('users as ds_js', DB::raw("ca.forward_by_ds_js"), '=', DB::raw("ds_js.id"))
+            ->leftJoin('users as sec', DB::raw("ca.forward_by_sec"), '=', DB::raw("sec.id"))
+            ->leftJoin('users as d_a', DB::raw("ca.forward_by_d_a"), '=', DB::raw("d_a.id"))
             ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-            ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
             
             ->select(
                 'complaints.*',
-                'u.id as user_id',
+                'complaints.name',
+                'complaints.complain_no',
+                'ca.*',
+                // 'u.id as user_id',
+                'u.name as ro_name',
+                'so_us.name as so_name',
+                'ds_js.name as ds_name',
+                'sec.name as sec_name',
+                'd_a.name as da_name',
                 'srole.name as subrole_name',
                 // 'ca.*',
                 // 'cd.*',
@@ -557,6 +612,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // 'ct.name as complaintype_name',
                 // 'sub.name as subject_name',
             )
+            ->orderBy('complaints.id','desc')
             // ->groupBy('complaints.id','u.id','srole.name')
             ->get();
             //    dd($records);
