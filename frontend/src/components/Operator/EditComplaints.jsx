@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FaUser, 
-  FaBuilding, 
-  FaFileAlt, 
-  FaArrowLeft,
-  FaPaperPlane,
-  FaRupeeSign,
-  FaSpinner,
-  FaUpload,
-  FaCheck,
-  FaTimes,
-  FaPlus,
-  FaTrash,
-  FaEye,
-  FaDownload
+import {
+  FaUser, FaBuilding, FaFileAlt, FaArrowLeft, FaPaperPlane, FaRupeeSign, FaSpinner,
+  FaUpload, FaCheck, FaTimes, FaPlus, FaTrash, FaEye, FaDownload
 } from 'react-icons/fa';
 import { IoMdArrowBack } from "react-icons/io";
 import { ToastContainer, toast } from "react-toastify";
@@ -56,25 +44,23 @@ const EditComplaints = () => {
     dob: '',
   });
 
-  const [complaintDetails, setComplaintDetails] = useState([
-    {
-      id: null,
-      title: '',
-      file: null,
-      department: '',
-      officer_name: '',
-      designation: '',
-      category: '',
-      subject: '',
-      nature: '',
-      description: '',
-      existingFile: null,
-      uploadProgress: 0,
-      isUploading: false,
-      uploadSuccess: false,
-      uploadError: ''
-    }
-  ]);
+  const [complaintDetails, setComplaintDetails] = useState([{
+    id: null,
+    title: '',
+    file: null,
+    department: '',
+    officer_name: '',
+    designation: '',
+    category: '',
+    subject: '',
+    nature: '',
+    description: '',
+    existingFile: null,
+    uploadProgress: 0,
+    isUploading: false,
+    uploadSuccess: false,
+    uploadError: ''
+  }]);
 
   const [filePreviewData, setFilePreviewData] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
@@ -112,7 +98,58 @@ const EditComplaints = () => {
     return null;
   };
 
-  // FIXED Download function - force file download instead of opening in new tab
+  // ENHANCED Officer Name Parsing Function
+  const parseOfficerName = (officerName) => {
+    if (!officerName) return '';
+    
+    try {
+      let parsed = officerName;
+      
+      // Remove outer quotes if present
+      if (parsed.startsWith('"') && parsed.endsWith('"')) {
+        parsed = parsed.slice(1, -1);
+      }
+      
+      // Multiple attempts to parse JSON if it looks like stringified JSON
+      let attempts = 0;
+      while (attempts < 5 && (parsed.includes('[') || parsed.includes('"'))) {
+        try {
+          const temp = JSON.parse(parsed);
+          if (Array.isArray(temp)) {
+            // If it's an array, recursively parse each element
+            parsed = temp.map(item => parseOfficerName(item)).join(', ');
+            break;
+          } else if (typeof temp === 'string') {
+            parsed = temp;
+          } else {
+            break;
+          }
+        } catch {
+          break;
+        }
+        attempts++;
+      }
+      
+      // Clean up remaining escape characters and brackets
+      parsed = parsed
+        .replace(/\\"/g, '"')  // Remove escaped quotes
+        .replace(/\\\\/g, '\\') // Remove double backslashes
+        .replace(/^\[|\]$/g, '') // Remove outer brackets
+        .replace(/^"(.+)"$/g, '$1') // Remove outer quotes
+        .trim();
+        
+      return parsed;
+      
+    } catch (error) {
+      // Final fallback: aggressive cleaning
+      return String(officerName)
+        .replace(/[\[\]"\\]/g, '') // Remove all brackets, quotes, backslashes
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim();
+    }
+  };
+
+  // FIXED Download function
   const handleFileDownload = async (filePath) => {
     if (!filePath) {
       toast.error("File path not found!");
@@ -121,30 +158,22 @@ const EditComplaints = () => {
     
     try {
       const fileUrl = `${APP_URL}${filePath}`;
-      
-      // Use fetch to get the file as blob
       const response = await fetch(fileUrl, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         }
       });
       
-      // if (!response.ok) throw new Error('Download failed');
-      
       const blob = await response.blob();
       const filename = filePath.split('/').pop() || 'downloaded_file';
       
-      // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = filename;
       
-      // Force download
       document.body.appendChild(link);
       link.click();
-      
-      // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
@@ -152,9 +181,6 @@ const EditComplaints = () => {
       
     } catch (error) {
       console.error('Download error:', error);
-      // toast.error("Download failed. Please try again.");
-      
-      // Fallback to original method if fetch fails
       const fileUrl = `${APP_URL}${filePath}`;
       const link = document.createElement('a');
       link.href = fileUrl;
@@ -210,7 +236,7 @@ const EditComplaints = () => {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
 
-        // Set complaint data
+        // Set complaint data with FIXED officer_name parsing
         if (complaintResponse.data.status === true) {
           const data = complaintResponse.data.data;
           
@@ -238,14 +264,14 @@ const EditComplaints = () => {
             dob: data.dob || '',
           });
 
-          // Set complaint details
+          // Set complaint details with FIXED officer_name parsing
           if (data.details && data.details.length > 0) {
             const detailsArray = data.details.map((detail) => ({
               id: detail.id,
               title: detail.title || '',
               file: null,
               department: detail.department_id || '',
-              officer_name: detail.officer_name || '',
+              officer_name: parseOfficerName(detail.officer_name), // FIXED: Parse complex officer_name
               designation: detail.designation_id || '',
               category: detail.category || '',
               subject: detail.subject_id || '',
@@ -270,8 +296,6 @@ const EditComplaints = () => {
           } catch (fileErr) {
             setFilePreviewData([]);
           }
-
-          // toast.success("Complaint data loaded successfully!");
         }
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -284,7 +308,7 @@ const EditComplaints = () => {
     fetchData();
   }, [id, navigate]);
 
-  // Handle input changes with security fee toggle logic
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
@@ -293,7 +317,6 @@ const EditComplaints = () => {
       [name]: value
     }));
 
-    // Clear backend error when user types
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -313,7 +336,6 @@ const EditComplaints = () => {
       return updated;
     });
 
-    // Clear backend errors for array fields
     const arrayErrorKey = `${field}.${index}`;
     if (errors[arrayErrorKey]) {
       setErrors(prev => ({
@@ -390,7 +412,7 @@ const EditComplaints = () => {
     });
   };
 
-  // Enhanced submit handler WITH TOASTER
+  // Enhanced submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -417,11 +439,11 @@ const EditComplaints = () => {
         }
       });
 
-      // Add all fields as arrays
+      // Add all fields as arrays - FIXED: Send officer_name as simple string
       complaintDetails.forEach((detail, index) => {
         formDataToSend.append(`title[${index}]`, detail.title || '');
         formDataToSend.append(`department[${index}]`, detail.department || '');
-        formDataToSend.append(`officer_name[${index}][]`, detail.officer_name || '');
+        formDataToSend.append(`officer_name[${index}]`, detail.officer_name || ''); 
         formDataToSend.append(`designation[${index}]`, detail.designation || '');
         formDataToSend.append(`category[${index}]`, detail.category || '');
         formDataToSend.append(`subject[${index}]`, detail.subject || '');
@@ -443,13 +465,12 @@ const EditComplaints = () => {
       if (response.data.status === true) {
         toast.success("Complaint updated successfully!");
         setTimeout(() => {
-          navigate(`/operator/all-complaints/view/${id}`);
+          navigate(`/operator/search-reports/view/${id}`);
         }, 1500);
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
         setErrors(error.response.data.errors);
-        // toast.error("Please fix the validation errors!");
       } else {
         toast.error("Failed to update complaint. Please try again.");
       }
@@ -470,7 +491,6 @@ const EditComplaints = () => {
 
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
-      {/* Toaster Container */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -485,7 +505,7 @@ const EditComplaints = () => {
         style={{ zIndex: 9999 }}
       />
 
-      {/* Header - UPDATED with Submit Review button */}
+      {/* Header */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
@@ -495,14 +515,13 @@ const EditComplaints = () => {
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
             <button 
               onClick={() => navigate(`/operator/search-reports/view/${id}`)}
-                 style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
-              className="flex items-center justify-center gap-2 px-4 py-2  text-white rounded  transition"
+              style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
+              className="flex items-center justify-center gap-2 px-4 py-2 text-white rounded transition"
             >
               <IoMdArrowBack className="text-lg" />
               <span>Back</span>
             </button>
             
-            {/* Submit Review Button - TOP RIGHT with same bg color from Complaints.jsx */}
             <button
               type="submit"
               form="complaint-edit-form"
@@ -522,7 +541,7 @@ const EditComplaints = () => {
               ) : (
                 <>
                   <FaPaperPlane className="w-4 h-4" />
-                  <span>Updated Review</span>
+                  <span>Update Review</span>
                 </>
               )}
             </button>
@@ -549,82 +568,68 @@ const EditComplaints = () => {
                 {/* Name and Mobile Row */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Name */}
-                 <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Name / नाम *
-  </label>
-  <input
-    type="text"
-    name="name"
-    value={formData.name}
-    onChange={(e) => {
-      // Copy-paste और typing दोनों handle करें
-      const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
-      handleInputChange({
-        target: { name: e.target.name, value: filteredValue },
-      });
-    }}
-    onKeyDown={(e) => {
-      // Typing के दौरान numbers/symbols block
-      if (/[^a-zA-Z\u0900-\u097F\s]/.test(e.key)) {
-        e.preventDefault();
-      }
-    }}
-    className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
-      getFieldError('name') ? '' : 'border-gray-300 bg-white'
-    }`}
-    placeholder="Enter Full Name"
-  />
-  {getFieldError('name') && (
-    <p className="mt-1 text-sm text-red-600">{getFieldError('name')}</p>
-  )}
-</div>
-
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name / नाम *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={(e) => {
+                        const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
+                        handleInputChange({
+                          target: { name: e.target.name, value: filteredValue },
+                        });
+                      }}
+                      onKeyDown={(e) => {
+                        if (/[^a-zA-Z\u0900-\u097F\s]/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none transition-colors ${
+                        getFieldError('name') ? '' : 'border-gray-300 bg-white'
+                      }`}
+                      placeholder="Enter Full Name"
+                    />
+                    {getFieldError('name') && (
+                      <p className="mt-1 text-sm text-red-600">{getFieldError('name')}</p>
+                    )}
+                  </div>
 
                   {/* Mobile */}
                   <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Mobile / मोबाइल *
-  </label>
-  <input
-    type="tel"
-    name="mobile"
-    value={formData.mobile}
-    onChange={(e) => {
-      const filteredValue = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
-      handleInputChange({
-        target: { name: e.target.name, value: filteredValue },
-      });
-    }}
-    onKeyDown={(e) => {
-      const allowedKeys = [
-        "Backspace",
-        "Delete",
-        "ArrowLeft",
-        "ArrowRight",
-        "Tab",
-      ];
-      if (
-        !/[0-9]/.test(e.key) && 
-        !allowedKeys.includes(e.key)
-      ) {
-        e.preventDefault();
-      }
-      // Max 10 digits typing check (numbers only)
-      if (/[0-9]/.test(e.key) && formData.mobile.length >= 10) {
-        e.preventDefault();
-      }
-    }}
-    className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
-      getFieldError('mobile') ? '' : 'border-gray-300 bg-white'
-    }`}
-    placeholder="10-Digit Mobile Number"
-  />
-  {getFieldError('mobile') && (
-    <p className="mt-1 text-sm text-red-600">{getFieldError('mobile')}</p>
-  )}
-</div>
-
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mobile / मोबाइल *
+                    </label>
+                    <input
+                      type="tel"
+                      name="mobile"
+                      value={formData.mobile}
+                      onChange={(e) => {
+                        const filteredValue = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+                        handleInputChange({
+                          target: { name: e.target.name, value: filteredValue },
+                        });
+                      }}
+                      onKeyDown={(e) => {
+                        const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+                        if (!/[0-9]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                          e.preventDefault();
+                        }
+                        if (/[0-9]/.test(e.key) && formData.mobile.length >= 10) {
+                          e.preventDefault();
+                        }
+                      }}
+                      className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none transition-colors ${
+                        getFieldError('mobile') ? '' : 'border-gray-300 bg-white'
+                      }`}
+                      placeholder="10-Digit Mobile Number"
+                    />
+                    {getFieldError('mobile') && (
+                      <p className="mt-1 text-sm text-red-600">{getFieldError('mobile')}</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Address */}
@@ -637,7 +642,7 @@ const EditComplaints = () => {
                     value={formData.address}
                     onChange={handleInputChange}
                     rows={3}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-colors ${
+                    className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none resize-none transition-colors ${
                       getFieldError('address') ? ' ' : 'border-gray-300 bg-white'
                     }`}
                     placeholder="Enter Complete Address"
@@ -658,7 +663,7 @@ const EditComplaints = () => {
                       name="district_id"
                       value={formData.district_id}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2.5 cursor-pointer text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white appearance-none transition-colors ${
+                      className={`w-full px-3 py-2.5 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white appearance-none transition-colors ${
                         getFieldError('district_id') ? ' ' : 'border-gray-300'
                       }`}
                       style={{
@@ -682,42 +687,40 @@ const EditComplaints = () => {
                   </div>
 
                   {/* Email */}
-                 <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Email *
-  </label>
-  <input
-    type="text" // type=email छोड़ दिया ताकि regex properly filter करे
-    name="email"
-    value={formData.email}
-    onChange={(e) => {
-      // केवल letters और basic allowed characters
-      const filteredValue = e.target.value.replace(/[^a-zA-Z@._-]/g, "");
-      handleInputChange({
-        target: { name: e.target.name, value: filteredValue },
-      });
-    }}
-    onKeyDown={(e) => {
-      const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
-      if (!/[a-zA-Z@._-]/.test(e.key) && !allowedKeys.includes(e.key)) {
-        e.preventDefault();
-      }
-    }}
-    className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
-      getFieldError('email') ? '' : 'border-gray-300 bg-white'
-    }`}
-    placeholder="Enter Email"
-  />
-  {getFieldError('email') && (
-    <p className="mt-1 text-sm text-red-600">{getFieldError('email')}</p>
-  )}
-</div>
-
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email *
+                    </label>
+                    <input
+                      type="text"
+                      name="email"
+                      value={formData.email}
+                      onChange={(e) => {
+                        const filteredValue = e.target.value.replace(/[^a-zA-Z@._-]/g, "");
+                        handleInputChange({
+                          target: { name: e.target.name, value: filteredValue },
+                        });
+                      }}
+                      onKeyDown={(e) => {
+                        const allowedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+                        if (!/[a-zA-Z@._-]/.test(e.key) && !allowedKeys.includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none transition-colors ${
+                        getFieldError('email') ? '' : 'border-gray-300 bg-white'
+                      }`}
+                      placeholder="Enter Email"
+                    />
+                    {getFieldError('email') && (
+                      <p className="mt-1 text-sm text-red-600">{getFieldError('email')}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Security Fee Section - Updated with CHECKBOX toggle */}
+            {/* Security Fee Section */}
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center gap-3 mb-4">
                 <FaRupeeSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
@@ -728,7 +731,7 @@ const EditComplaints = () => {
               </div>
               
               <div className="space-y-3 sm:space-y-4">
-                {/* Fee Exempted Checkbox with Toggle */}
+                {/* Fee Exempted Checkbox */}
                 <div>
                   <div className="flex items-center rounded-md space-x-2">
                     <input
@@ -741,7 +744,6 @@ const EditComplaints = () => {
                         setFormData(prev => ({
                           ...prev,
                           fee_exempted: isChecked,
-                          // Clear fields when checking (exempted)
                           ...(isChecked && {
                             amount: '',
                             challan_no: '',
@@ -773,7 +775,7 @@ const EditComplaints = () => {
                         name="amount"
                         value={formData.amount}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                           getFieldError('amount') ? ' ' : 'border-gray-300'
                         }`}
                         placeholder="Enter Amount"
@@ -793,7 +795,7 @@ const EditComplaints = () => {
                         name="challan_no"
                         value={formData.challan_no}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                           getFieldError('challan_no') ? ' ' : 'border-gray-300'
                         }`}
                         placeholder="Enter Challan Number"
@@ -813,7 +815,7 @@ const EditComplaints = () => {
                         name="dob"
                         value={formData.dob}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                           getFieldError('dob') ? ' ' : 'border-gray-300'
                         }`}
                       />
@@ -854,28 +856,26 @@ const EditComplaints = () => {
                     {/* Title and File Upload Row */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Title */}
-                   <div>
-  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-    Title / शीर्षक *
-  </label>
-  <input
-    type="text"
-    value={detail.title}
-    onChange={(e) => {
-      // केवल letters और spaces allow करें
-      const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
-      handleDetailChange(index, 'title', filteredValue);
-    }}
-    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-      getFieldError('title', index) ? '' : 'border-gray-300'
-    }`}
-    placeholder="Enter Complaint Title"
-  />
-  {getFieldError('title', index) && (
-    <p className="mt-1 text-sm text-red-600">{getFieldError('title', index)}</p>
-  )}
-</div>
-
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                          Title / शीर्षक *
+                        </label>
+                        <input
+                          type="text"
+                          value={detail.title}
+                          onChange={(e) => {
+                            const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
+                            handleDetailChange(index, 'title', filteredValue);
+                          }}
+                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                            getFieldError('title', index) ? '' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter Complaint Title"
+                        />
+                        {getFieldError('title', index) && (
+                          <p className="mt-1 text-sm text-red-600">{getFieldError('title', index)}</p>
+                        )}
+                      </div>
 
                       {/* File Upload */}
                       <div>
@@ -887,7 +887,7 @@ const EditComplaints = () => {
                           <div className="flex items-center space-x-2">
                             <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                               <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                              <span className="text-sm text-gray-700">Choose file</span>
+                              <span className="text-sm text-gray-700">Choose File</span>
                               <input
                                 type="file"
                                 onChange={(e) => handleFileChange(index, e)}
@@ -947,7 +947,7 @@ const EditComplaints = () => {
                         )}
                         
                         <div className="flex justify-between items-center">
-                          <p className="mt-1 text-xs text-gray-500">Upload any file type</p>
+                          <p className="mt-1 text-xs text-gray-500"></p>
                           {correspondingFile && (
                             <button
                               type="button"
@@ -972,7 +972,7 @@ const EditComplaints = () => {
                         <select
                           value={detail.department}
                           onChange={(e) => handleDetailChange(index, 'department', e.target.value)}
-                          className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('department', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -988,29 +988,27 @@ const EditComplaints = () => {
                         )}
                       </div>
 
-                      {/* Officer Name */}
+                      {/* Officer Name - FIXED */}
                       <div>
-  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-    Officer Name / अधिकारी का नाम *
-  </label>
-  <input
-    type="text"
-    value={detail.officer_name}
-    onChange={(e) => {
-      // केवल letters और spaces allow करें
-      const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
-      handleDetailChange(index, 'officer_name', filteredValue);
-    }}
-    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-      getFieldError('officer_name', index) ? '' : 'border-gray-300'
-    }`}
-    placeholder="Enter Officer Name"
-  />
-  {getFieldError('officer_name', index) && (
-    <p className="mt-1 text-sm text-red-600">{getFieldError('officer_name', index)}</p>
-  )}
-</div>
-
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                          Officer Name / अधिकारी का नाम *
+                        </label>
+                        <input
+                          type="text"
+                          value={detail.officer_name}
+                          onChange={(e) => {
+                            const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
+                            handleDetailChange(index, 'officer_name', filteredValue);
+                          }}
+                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                            getFieldError('officer_name', index) ? '' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter Officer Name"
+                        />
+                        {getFieldError('officer_name', index) && (
+                          <p className="mt-1 text-sm text-red-600">{getFieldError('officer_name', index)}</p>
+                        )}
+                      </div>
 
                       {/* Designation */}
                       <div>
@@ -1020,7 +1018,7 @@ const EditComplaints = () => {
                         <select
                           value={detail.designation}
                           onChange={(e) => handleDetailChange(index, 'designation', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('designation', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1044,7 +1042,7 @@ const EditComplaints = () => {
                         <select
                           value={detail.category}
                           onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('category', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1068,7 +1066,7 @@ const EditComplaints = () => {
                         <select
                           value={detail.subject}
                           onChange={(e) => handleDetailChange(index, 'subject', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('subject', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1092,7 +1090,7 @@ const EditComplaints = () => {
                         <select
                           value={detail.nature}
                           onChange={(e) => handleDetailChange(index, 'nature', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('nature', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1118,7 +1116,7 @@ const EditComplaints = () => {
                         value={detail.description}
                         onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
                         rows={4}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none resize-none ${
                           getFieldError('description', index) ? '' : 'border-gray-300'
                         }`}
                         placeholder="Enter Detailed Complaint Description..."

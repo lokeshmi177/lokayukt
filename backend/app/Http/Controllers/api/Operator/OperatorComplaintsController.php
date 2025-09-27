@@ -131,7 +131,11 @@ class OperatorComplaintsController extends Controller
         $complaint->dob = $request->dob;
         $complaint->fee_exempted = $request->fee_exempted ? 1 : 0;
         
+<<<<<<< HEAD
         if($request->action == "1"){
+=======
+     if($request->action == "1"){
+>>>>>>> 667b57e1f94deba23bb3f095857e0a2a259f5916
             $complaint->in_draft = 1;
         }
 
@@ -461,7 +465,8 @@ class OperatorComplaintsController extends Controller
                  'title.*' => 'required|string|max:255',
                   'file'   => 'array',
                  'file.*' => 'file|mimes:jpg,jpeg,png,pdf|max:2048',
-                'officer_name' => 'required|array',
+                // 'officer_name.*' => 'required|array',
+                 'officer_name.*' => 'required|string|max:255',
                
             ], [
                 'name.required' => 'Name is required.',
@@ -600,7 +605,7 @@ class OperatorComplaintsController extends Controller
             // $complaintNo = 'UP'.$year.$str.str_pad($complaint->id,8, '0',STR_PAD_LEFT);
             // $complaint->where('id',$complaint->id)->update(['complain_no' => $complaintNo]);
         
-
+                // dd($request->data);
             return response()->json([
                 'status' => true,
                 'message' => 'Complaint update successfully.',
@@ -826,6 +831,7 @@ class OperatorComplaintsController extends Controller
             if ($existingComplaint) {
                 // Decode existing description (JSON) into array
                 // $existdescriptions = $existingComplaint->description ? $existingComplaint->description: '';
+<<<<<<< HEAD
                   $percent = null;
                 // if($request->name == $existingComplaint->name){
                 //     $percent+=50;
@@ -833,6 +839,9 @@ class OperatorComplaintsController extends Controller
                 //     $percent+=50;
                 // }
                 // $existingComplaint->match = $percent;
+=======
+                $percent = null;
+>>>>>>> 667b57e1f94deba23bb3f095857e0a2a259f5916
                 if($request->name === $existingComplaint->name && $request->title === $existingComplaint->title){
                     $percent+=100;
                 }else{

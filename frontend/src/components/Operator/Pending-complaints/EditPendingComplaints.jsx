@@ -587,7 +587,7 @@ const EditPendingComplaints = () => {
                           e.preventDefault();
                         }
                       }}
-                      className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+                      className={`w-full px-3 py-2.5 text-sm border rounded-md  focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none transition-colors ${
                         getFieldError('name') ? '' : 'border-gray-300 bg-white'
                       }`}
                       placeholder="Enter Full Name"
@@ -621,7 +621,7 @@ const EditPendingComplaints = () => {
                           e.preventDefault();
                         }
                       }}
-                      className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+                      className={`w-full px-3 py-2.5 text-sm border rounded-md  focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none transition-colors ${
                         getFieldError('mobile') ? '' : 'border-gray-300 bg-white'
                       }`}
                       placeholder="10-Digit Mobile Number"
@@ -642,7 +642,7 @@ const EditPendingComplaints = () => {
                     value={formData.address}
                     onChange={handleInputChange}
                     rows={3}
-                    className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none transition-colors ${
+                    className={`w-full px-3 py-2.5 text-sm border rounded-md  focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none resize-none transition-colors ${
                       getFieldError('address') ? ' ' : 'border-gray-300 bg-white'
                     }`}
                     placeholder="Enter Complete Address"
@@ -663,7 +663,7 @@ const EditPendingComplaints = () => {
                       name="district_id"
                       value={formData.district_id}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2.5 cursor-pointer text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white appearance-none transition-colors ${
+                      className={`w-full px-3 py-2.5 cursor-pointer text-sm border rounded-md  focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white appearance-none transition-colors ${
                         getFieldError('district_id') ? ' ' : 'border-gray-300'
                       }`}
                       style={{
@@ -707,7 +707,7 @@ const EditPendingComplaints = () => {
                           e.preventDefault();
                         }
                       }}
-                      className={`w-full px-3 py-2.5 text-sm border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors ${
+                      className={`w-full px-3 py-2.5 text-sm border rounded-md  focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none transition-colors ${
                         getFieldError('email') ? '' : 'border-gray-300 bg-white'
                       }`}
                       placeholder="Enter Email"
@@ -775,7 +775,7 @@ const EditPendingComplaints = () => {
                         name="amount"
                         value={formData.amount}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                           getFieldError('amount') ? ' ' : 'border-gray-300'
                         }`}
                         placeholder="Enter Amount"
@@ -795,7 +795,7 @@ const EditPendingComplaints = () => {
                         name="challan_no"
                         value={formData.challan_no}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                           getFieldError('challan_no') ? ' ' : 'border-gray-300'
                         }`}
                         placeholder="Enter Challan Number"
@@ -815,7 +815,7 @@ const EditPendingComplaints = () => {
                         name="dob"
                         value={formData.dob}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                           getFieldError('dob') ? ' ' : 'border-gray-300'
                         }`}
                       />
@@ -867,7 +867,7 @@ const EditPendingComplaints = () => {
                             const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
                             handleDetailChange(index, 'title', filteredValue);
                           }}
-                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                             getFieldError('title', index) ? '' : 'border-gray-300'
                           }`}
                           placeholder="Enter Complaint Title"
@@ -887,7 +887,7 @@ const EditPendingComplaints = () => {
                           <div className="flex items-center space-x-2">
                             <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                               <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                              <span className="text-sm text-gray-700">Choose file</span>
+                              <span className="text-sm text-gray-700">Choose File</span>
                               <input
                                 type="file"
                                 onChange={(e) => handleFileChange(index, e)}
@@ -947,7 +947,7 @@ const EditPendingComplaints = () => {
                         )}
                         
                         <div className="flex justify-between items-center">
-                          <p className="mt-1 text-xs text-gray-500">Upload any file type</p>
+                          <p className="mt-1 text-xs text-gray-500"></p>
                           {correspondingFile && (
                             <button
                               type="button"
@@ -972,7 +972,7 @@ const EditPendingComplaints = () => {
                         <select
                           value={detail.department}
                           onChange={(e) => handleDetailChange(index, 'department', e.target.value)}
-                          className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('department', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1000,7 +1000,7 @@ const EditPendingComplaints = () => {
                             const filteredValue = e.target.value.replace(/[^a-zA-Z\u0900-\u097F\s]/g, "");
                             handleDetailChange(index, 'officer_name', filteredValue);
                           }}
-                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
                             getFieldError('officer_name', index) ? '' : 'border-gray-300'
                           }`}
                           placeholder="Enter Officer Name"
@@ -1018,7 +1018,7 @@ const EditPendingComplaints = () => {
                         <select
                           value={detail.designation}
                           onChange={(e) => handleDetailChange(index, 'designation', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('designation', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1042,7 +1042,7 @@ const EditPendingComplaints = () => {
                         <select
                           value={detail.category}
                           onChange={(e) => handleDetailChange(index, 'category', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('category', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1066,7 +1066,7 @@ const EditPendingComplaints = () => {
                         <select
                           value={detail.subject}
                           onChange={(e) => handleDetailChange(index, 'subject', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('subject', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1090,7 +1090,7 @@ const EditPendingComplaints = () => {
                         <select
                           value={detail.nature}
                           onChange={(e) => handleDetailChange(index, 'nature', e.target.value)}
-                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                          className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
                             getFieldError('nature', index) ? '' : 'border-gray-300'
                           }`}
                         >
@@ -1116,7 +1116,7 @@ const EditPendingComplaints = () => {
                         value={detail.description}
                         onChange={(e) => handleDetailChange(index, 'description', e.target.value)}
                         rows={4}
-                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
+                        className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none resize-none ${
                           getFieldError('description', index) ? '' : 'border-gray-300'
                         }`}
                         placeholder="Enter Detailed Complaint Description..."

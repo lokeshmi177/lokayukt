@@ -570,7 +570,7 @@ const ProgressRegister = () => {
         {/* Header */}
        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
   <div className="min-w-0 flex-1">
-    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
+    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-2 text-gray-900 truncate">
       Progress Register / प्रगति रजिस्टर
     </h1>
   </div>
@@ -578,7 +578,7 @@ const ProgressRegister = () => {
   {/* Filter and Export buttons on the right */}
   <div className="flex items-center gap-3 flex-shrink-0">
     {/* Filter Button */}
-    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
+    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z" />
       </svg>
@@ -588,7 +588,7 @@ const ProgressRegister = () => {
     {/* Export Button with functionality */}
     <button 
       onClick={handleExport}
-      className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+      className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
     >
       <FaDownload className="w-4 h-4" />
       Export
@@ -616,7 +616,7 @@ const ProgressRegister = () => {
                   placeholder="Complaint No. or Complainant"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none"
                 />
                 <FaSearch className="absolute left-2.5 sm:left-3 top-2.5 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
               </div>
@@ -747,9 +747,9 @@ const ProgressRegister = () => {
                                 <tr>
                                   <td
                                     colSpan="6"
-                                    className="py-8 text-center text-gray-500"
+                                    className="py-8 font-semibold text-center text-md text-gray-500"
                                   >
-                                    No file movements found.
+                                    Loading...
                                   </td>
                                 </tr>
                               )}
@@ -783,7 +783,7 @@ const ProgressRegister = () => {
                     <div className="flex items-center gap-2 mb-4">
                       <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Current Complaint Status ({currentReportData.length} records)
+                        Current Complaint Status 
                       </h3>
                     </div>
 
@@ -822,7 +822,7 @@ const ProgressRegister = () => {
                                   key={`${complaint.complaintNo}-${index}`}
                                   className="border-b border-gray-100 hover:bg-gray-50"
                                 >
-                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-blue-600">
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700">
                                     {complaint.complaintNo}
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
@@ -864,7 +864,7 @@ const ProgressRegister = () => {
                                   className="py-8 text-center text-gray-500"
                                 >
                                   {currentReportData.length === 0 
-                                    ? "No current report data available from API." 
+                                    ? "Loading..." 
                                     : "No complaint status found matching search criteria."
                                   }
                                 </td>
@@ -898,9 +898,10 @@ const ProgressRegister = () => {
                   <div className="overflow-hidden">
                     {analyticsData ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200">
+                        <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
+                        {/* from-blue-50 to-blue-100 */}
                           <div className="flex items-center gap-2 mb-2">
-                            <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                            {/* <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Average Processing Time
                             </h3>
@@ -913,9 +914,10 @@ const ProgressRegister = () => {
                           </p>
                         </div>
 
-                        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-lg border border-yellow-200">
+                        <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
+                        {/* from-yellow-50 to-yellow-100 */}
                           <div className="flex items-center gap-2 mb-2">
-                            <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+                            {/* <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Files in Transit
                             </h3>
@@ -928,9 +930,10 @@ const ProgressRegister = () => {
                           </p>
                         </div>
 
-                        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg border border-red-200 sm:col-span-2 lg:col-span-1">
+                        <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200 sm:col-span-2 lg:col-span-1">
+                        {/* from-red-50 to-red-100 */}
                           <div className="flex items-center gap-2 mb-2">
-                            <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                            {/* <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Overdue Files
                             </h3>
@@ -946,7 +949,7 @@ const ProgressRegister = () => {
                     ) : (
                       <div className="text-center py-8">
                         <div className="text-gray-500">
-                          Loading analytics data...
+                          Loading...
                         </div>
                       </div>
                     )}

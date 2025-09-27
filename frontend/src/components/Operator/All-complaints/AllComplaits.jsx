@@ -32,6 +32,11 @@ const AllComplaints = () => {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [complaintToApprove, setComplaintToApprove] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
+  
+  // Loading states for each tab
+  const [isLoadingAll, setIsLoadingAll] = useState(false);
+  const [isLoadingPending, setIsLoadingPending] = useState(false);
+  const [isLoadingApproved, setIsLoadingApproved] = useState(false);
 
   // Determine active tab from URL
   const getActiveTabFromURL = () => {
@@ -67,49 +72,63 @@ const AllComplaints = () => {
 
   // Fetch all complaints data from API
   const fetchAllComplaints = async () => {
+    setIsLoadingAll(true);
     try {
       const response = await api.get("/operator/all-complaints");
       
       if (response.data.status === true) {
         setComplaintsData(response.data.data);
+        setError("");
       } else {
         setError("Failed to fetch complaints data");
       }
     } catch (error) {
       console.error("API Error:", error);
       setError("Error fetching data");
+    } finally {
+      setIsLoadingAll(false);
     }
   };
 
   // Fetch pending complaints data
   const fetchPendingComplaints = async () => {
+    setIsLoadingPending(true);
     try {
       const response = await api.get("/operator/pending-complaints");
       
       if (response.data.status === true) {
         setPendingData(response.data.data);
+        setError("");
       } else {
         setPendingData([]);
       }
     } catch (error) {
       console.error("Pending API Error:", error);
       setPendingData([]);
+      setError("Error fetching pending complaints");
+    } finally {
+      setIsLoadingPending(false);
     }
   };
 
   // Fetch approved complaints data
   const fetchApprovedComplaints = async () => {
+    setIsLoadingApproved(true);
     try {
       const response = await api.get("/operator/approved-complaints");
       
       if (response.data.status === true) {
         setApprovedData(response.data.data);
+        setError("");
       } else {
         setApprovedData([]);
       }
     } catch (error) {
       console.error("Approved API Error:", error);
       setApprovedData([]);
+      setError("Error fetching approved complaints");
+    } finally {
+      setIsLoadingApproved(false);
     }
   };
 
@@ -141,6 +160,20 @@ const AllComplaints = () => {
         return approvedData;
       default:
         return complaintsData;
+    }
+  };
+
+  // Get current loading state
+  const getCurrentLoadingState = () => {
+    switch(activeTab) {
+      case 'all':
+        return isLoadingAll;
+      case 'pending':
+        return isLoadingPending;
+      case 'approved':
+        return isLoadingApproved;
+      default:
+        return isLoadingAll;
     }
   };
 
@@ -287,6 +320,7 @@ const AllComplaints = () => {
   }
 
   const currentData = getCurrentData();
+  const isLoading = getCurrentLoadingState();
 
   return (
     <>
@@ -311,7 +345,6 @@ const AllComplaints = () => {
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {getTabTitle()} / सभी शिकायतें
           </h1>
-        
         </div>
 
         {/* JUSTIFY-BETWEEN TABS COMPONENT */}
@@ -353,91 +386,103 @@ const AllComplaints = () => {
           </div>
         </div>
 
-        {/* Mobile-First Responsive Card Layout */}
-        <div className="space-y-3 sm:space-y-4">
-          {currentData.map((complaint) => (
-            <div
-              key={complaint.id}
-              className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
-            >
-              {/* Row 1 */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
-                    Complaint No:
-                  </span>
-                  <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
-                    {complaint.complain_no}
-                  </span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
-                  <span className="text-gray-700 text-sm">{complaint.name}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
-                  <span className="text-gray-700 text-sm">{complaint.mobile}</span>
-                </div>
-              </div>
-
-              {/* Row 2 */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
-                  <span className="text-gray-700 text-sm">{complaint.email}</span>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                  <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
-                  <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
-                </div>
-              </div>
-
-              {/* Row 4 - Action Buttons */}
-              <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
-                  <button
-                    onClick={(e) => handleViewDetails(e, complaint.id)}
-                    className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-blue-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                  >
-                    View Details
-                  </button>
-                  
-                  {/* Conditional rendering for Verify button */}
-                  {subRole === "entry-operator" ? null : (
-                    isApprovedByRO(complaint) ? (
-                      <button
-                        disabled
-                        className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-                      >
-                        ✓ Verified
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => handleApproveClick(e, complaint)}
-                        className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-                      >
-                        Verify
-                      </button>
-                    )
-                  )}
-                </div>
-              </div>
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="flex flex-col items-center space-y-4">
+              {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div> */}
+              <p className="text-gray-700 text-md font-semibold">Loading...</p>
             </div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {currentData.length === 0 && (
-          <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">
-              No {activeTab === 'all' ? '' : activeTab} complaints found
-            </p>
           </div>
+        ) : (
+          <>
+            {/* Mobile-First Responsive Card Layout */}
+            <div className="space-y-3 sm:space-y-4">
+              {currentData.map((complaint) => (
+                <div
+                  key={complaint.id}
+                  className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
+                >
+                  {/* Row 1 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                      <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
+                        Complaint No:
+                      </span>
+                      <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
+                        {complaint.complain_no}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
+                      <span className="text-gray-700 text-sm">{complaint.name}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
+                      <span className="text-gray-700 text-sm">{complaint.mobile}</span>
+                    </div>
+                  </div>
+
+                  {/* Row 2 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
+                      <span className="text-gray-700 text-sm">{complaint.email}</span>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
+                      <span className="text-gray-700 text-sm">{complaint.district_name}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
+                      <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
+                    </div>
+                  </div>
+
+                  {/* Row 4 - Action Buttons */}
+                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
+                      <button
+                        onClick={(e) => handleViewDetails(e, complaint.id)}
+                        className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-blue-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
+                      >
+                        View Details
+                      </button>
+                      
+                      {/* Conditional rendering for Verify button */}
+                      {subRole === "entry-operator" ? null : (
+                        isApprovedByRO(complaint) ? (
+                          <button
+                            disabled
+                            className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+                          >
+                            ✓ Verified
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => handleApproveClick(e, complaint)}
+                            className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                          >
+                            Verify
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {currentData.length === 0 && (
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-gray-500 text-sm sm:text-base">
+                  No {activeTab === 'all' ? '' : activeTab} complaints found
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

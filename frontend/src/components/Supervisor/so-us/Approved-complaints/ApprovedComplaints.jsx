@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,6 +19,7 @@ import {
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
+const subRole = localStorage.getItem("subrole");
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -245,7 +246,7 @@ const ForwardModal = ({
 
       console.log("API Response:", response.data);
 
-      // ✅ Check for success response based on your API
+      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
         toast.success(response.data.message || 'Complaint forwarded successfully!', {
           position: "top-right",
@@ -256,7 +257,7 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // ✅ Pass the complaint ID to parent for local update
+        // Pass the complaint ID to parent for local update
         onSubmit(complaintId); // Pass complaint ID to parent
         onClose(); // Close modal
       } else {
@@ -411,7 +412,13 @@ const ForwardModal = ({
 
 const ApprovedComplaints = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // State for tabs and data
+  const [activeTab, setActiveTab] = useState("approved");
   const [complaintsData, setComplaintsData] = useState([]);
+  const [pendingData, setPendingData] = useState([]);
+  const [approvedData, setApprovedData] = useState([]);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -420,24 +427,119 @@ const ApprovedComplaints = () => {
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-  // Fetch complaints data from API
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        const response = await api.get("/supervisor/all-approved-complaints");
-        if (response.data.status === true) {
-          setComplaintsData(response.data.data);
-        } else {
-          setError("Failed to fetch complaints data");
-        }
-      } catch (error) {
-        console.error("API Error:", error);
-        setError("Error fetching data");
-      }
-    };
+  // Determine active tab from URL
+  const getActiveTabFromURL = () => {
+    if (location.pathname.includes('/pending-complaints')) return 'pending';
+    if (location.pathname.includes('/approved-complaints')) return 'approved';
+    return 'all';
+  };
 
-    fetchComplaints();
-  }, []);
+  // Set active tab based on URL on mount
+  useEffect(() => {
+    setActiveTab(getActiveTabFromURL());
+  }, [location.pathname]);
+
+  // Handle tab change with routing
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    
+    // Route navigation
+    switch(tab) {
+      case 'all':
+        navigate('/supervisor/all-complaints');
+        break;
+      case 'pending':
+        navigate('/supervisor/pending-complaints');
+        break;
+      case 'approved':
+        navigate('/supervisor/approved-complaints');
+        break;
+      default:
+        navigate('/supervisor/approved-complaints');
+    }
+  };
+
+  // Fetch all complaints data from API
+  const fetchAllComplaints = async () => {
+    try {
+      const response = await api.get("/supervisor/all-complaints");
+      
+      if (response.data.status === true) {
+        setComplaintsData(response.data.data);
+      } else {
+        setError("Failed to fetch complaints data");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      setError("Error fetching data");
+    }
+  };
+
+  // Fetch pending complaints data
+  const fetchPendingComplaints = async () => {
+    try {
+      const response = await api.get("/supervisor/pending-complaints");
+      
+      if (response.data.status === true) {
+        setPendingData(response.data.data);
+      } else {
+        setPendingData([]);
+      }
+    } catch (error) {
+      console.error("Pending API Error:", error);
+      setPendingData([]);
+    }
+  };
+
+  // Fetch approved complaints data
+  const fetchApprovedComplaints = async () => {
+    try {
+      const response = await api.get("/supervisor/all-approved-complaints");
+      
+      if (response.data.status === true) {
+        setApprovedData(response.data.data);
+        setComplaintsData(response.data.data); // Also set main data for consistency
+      } else {
+        setApprovedData([]);
+        setComplaintsData([]);
+      }
+    } catch (error) {
+      console.error("Approved API Error:", error);
+      setApprovedData([]);
+      setComplaintsData([]);
+    }
+  };
+
+  // Fetch data based on active tab
+  useEffect(() => {
+    switch(activeTab) {
+      case 'all':
+        fetchAllComplaints();
+        break;
+      case 'pending':
+        fetchPendingComplaints();
+        break;
+      case 'approved':
+        fetchApprovedComplaints();
+        break;
+      default:
+        fetchApprovedComplaints();
+    }
+  }, [activeTab]);
+
+  // Get current data based on active tab
+  const getCurrentData = () => {
+    switch(activeTab) {
+      case 'all':
+        return complaintsData;
+      case 'pending':
+        return pendingData;
+      case 'approved':
+        return approvedData.length > 0 ? approvedData : complaintsData;
+      default:
+        return complaintsData;
+    }
+  };
 
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
@@ -459,9 +561,11 @@ const ApprovedComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
+  // Handle forward submit with local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    setComplaintsData(prevComplaints => 
-      prevComplaints.map(complaint => 
+    // Update local state immediately without API call
+    const updateData = (prevData) => 
+      prevData.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
@@ -469,8 +573,12 @@ const ApprovedComplaints = () => {
               status: 'Forwarded'
             }
           : complaint
-      )
-    );
+      );
+
+    setComplaintsData(updateData);
+    setApprovedData(updateData);
+    
+    console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
   };
 
   // Format date helper
@@ -483,20 +591,11 @@ const ApprovedComplaints = () => {
     });
   };
 
-  // ✅ NEW: Full text approval badges in green background - Jo jiski value 1 hai
+  // Get approval statuses
   const getApprovalStatuses = (complaint) => {
     const statuses = [];
     
-    // // ✅ DA approval - Full text with green background
-    // if (complaint.approved_rejected_by_d_a === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_da',
-    //     label: 'Approved by DA',
-    //     color: 'bg-green-500'
-    //   });
-    // }
-    
-    // ✅ RO approval - Full text with green background
+    // RO approval
     if (complaint.approved_rejected_by_ro === 1) {
       statuses.push({
         status: 'approved_by_ro', 
@@ -505,7 +604,7 @@ const ApprovedComplaints = () => {
       });
     }
     
-    // ✅ SO approval - Full text with green background
+    // SO approval
     if (complaint.approved_rejected_by_so_us === 1) {
       statuses.push({
         status: 'approved_by_so',
@@ -514,21 +613,26 @@ const ApprovedComplaints = () => {
       });
     }
     
-    // // ✅ DS approval - Full text with green background
-    // if (complaint.approved_rejected_by_ds_js === 1) {
-    //   statuses.push({
-    //     status: 'approved_by_ds',
-    //     label: 'Approved by DS',
-    //     color: 'bg-green-500'
-    //   });
-    // }
-    
     return statuses;
   };
 
-  // ✅ Updated: Forward status helper - now checks approved_rejected_by_so_us field
+  // Forward status helper
   const isForwarded = (complaint) => {
     return complaint.approved_rejected_by_so_us === 1;
+  };
+
+  // Get tab title
+  const getTabTitle = () => {
+    switch(activeTab) {
+      case 'all':
+        return 'All Complaints';
+      case 'pending':
+        return 'Pending Complaints';
+      case 'approved':
+        return 'Approved Complaints';
+      default:
+        return 'Approved Complaints';
+    }
   };
 
   if (error) {
@@ -540,6 +644,8 @@ const ApprovedComplaints = () => {
       </div>
     );
   }
+
+  const currentData = getCurrentData();
 
   return (
     <>
@@ -559,19 +665,59 @@ const ApprovedComplaints = () => {
 
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Approved Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            {getTabTitle()} / स्वीकृत शिकायतें
+          </h1>
+        </div>
+
+        {/* JUSTIFY-BETWEEN TABS COMPONENT */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
+          <div className="">
+            <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
+              <button
+                onClick={() => handleTabChange('all')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "all"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                All Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('pending')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "pending"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Pending Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('approved')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "approved"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Approved Complaints
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-3 sm:space-y-4">
-          {complaintsData.map((complaint) => {
-            const approvalStatuses = getApprovalStatuses(complaint); // ✅ Full text badges
+          {currentData.map((complaint) => {
+            const approvalStatuses = getApprovalStatuses(complaint);
             
             return (
               <div
                 key={complaint.id}
                 className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
               >
-                {/* ✅ Full Text Approval Status Badges in Green - Jo jiski value 1 hai */}
+                {/* Approval Status Badges */}
                 {approvalStatuses.length > 0 && (
                   <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
                     {approvalStatuses.map((status, index) => (
@@ -622,8 +768,8 @@ const ApprovedComplaints = () => {
                   </div>
                 </div>
 
-                {/* Row 4 - Action Buttons */}
-                <div className="px-3 sm:px-4 pb-12 sm:pb-4"> {/* Extra bottom padding for mobile to avoid overlap with badge */}
+                {/* Action Buttons */}
+                <div className="px-3 sm:px-4 pb-12 sm:pb-4">
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
                     <button
                       onClick={(e) => handleViewDetails(e, complaint.id)}
@@ -631,7 +777,8 @@ const ApprovedComplaints = () => {
                     >
                       View Details
                     </button>
-                    {/* ✅ Dynamic button based on approved_rejected_by_so_us field */}
+                    
+                    {/* Dynamic button based on approved_rejected_by_so_us field */}
                     {isForwarded(complaint) ? (
                       <button
                         disabled
@@ -654,9 +801,12 @@ const ApprovedComplaints = () => {
           })}
         </div>
 
-        {complaintsData.length === 0 && (
+        {/* Empty State */}
+        {currentData.length === 0 && (
           <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No complaints found</p>
+            <p className="text-gray-500 text-sm sm:text-base">
+              No {activeTab === 'all' ? '' : activeTab} complaints found
+            </p>
           </div>
         )}
       </div>
@@ -669,7 +819,7 @@ const ApprovedComplaints = () => {
         onSubmit={handleForwardSubmit}
       />
 
-      {/* Details Modal (existing) */}
+      {/* Details Modal */}
       {isModalOpen && selectedComplaint && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4">
           <div className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-lg sm:rounded-2xl bg-white mt-2 sm:mt-0">
