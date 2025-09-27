@@ -187,7 +187,7 @@ const Login = () => {
                   className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
                     errors.user_name ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Enter username"
+                  placeholder="Enter Username"
                 />
               </div>
               {errors.user_name && (
@@ -213,7 +213,7 @@ const Login = () => {
                   className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${
                     errors.password || generalError ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Enter password"
+                  placeholder="Enter Password"
                 />
               </div>
               {/* Show field-specific password error */}

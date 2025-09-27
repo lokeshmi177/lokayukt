@@ -177,6 +177,8 @@ const PendingComplaints = () => {
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation(); // Prevent any parent event
     navigate(`/operator/pending-complaints/view/${complaintId}`);
+      window.scrollTo({ top: 2, behavior: 'smooth' }); // Scroll to top smoothly
+
   };
 
   // ✅ Handle modal view - Only for modal
@@ -391,81 +393,113 @@ const PendingComplaints = () => {
         ) : (
           <>
             {/* ✅ Mobile-First Responsive Card Layout */}
-            <div className="space-y-3 sm:space-y-4">
-              {currentData.map((complaint) => (
-                <div
-                  key={complaint.id}
-                  className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
-                >
-                  {/* ✅ Row 1 - Only Complaint No is bold */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
-                        Complaint No:
-                      </span>
-                      <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
-                        {complaint.complain_no}
-                      </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
-                      <span className="text-gray-700 text-sm">{complaint.name}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
-                      <span className="text-gray-700 text-sm">{complaint.mobile}</span>
-                    </div>
-                  </div>
-
-                  {/* Row 2 */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
-                      <span className="text-gray-700 text-sm">{complaint.email}</span>
-                    </div>
-                   
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                      <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
-                      <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
-                    </div>
-                  </div>
-
-                  {/* ✅ **UPDATED: Row 4 - Action Buttons with real-time conditional rendering** */}
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
-                      <button
-                        onClick={(e) => handleViewDetails(e, complaint.id)}
-                        className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-blue-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                      >
-                        View Details
-                      </button>
-                      
-                      {/* ✅ **REAL-TIME: Conditional rendering based on approved_rejected_by_ro field** */}
-                      {isApprovedByRO(complaint) ? (
-                        <button
-                          disabled
-                          className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed transition-all duration-300"
-                        >
-                          ✓ Verified
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => handleApproveClick(e, complaint)}
-                          disabled={isApproving && complaintToApprove?.id === complaint.id}
-                          className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isApproving && complaintToApprove?.id === complaint.id ? 'Verifying...' : 'Verify'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+           <div className="space-y-3 sm:space-y-4">
+  {currentData.map((complaint) => (
+    <div
+      key={complaint.id}
+      className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-200 transition-shadow duration-300 relative overflow-hidden"
+    >
+      {/* ✅ Header Section */}
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-2 sm:mb-0">
+            <span className="text-gray-700 font-semibold text-sm">
+              Complaint Details
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+            <div className="text-right">
+              <span className="text-xs text-gray-600">Current Stage:</span>
+              <span className="ml-1 text-sm font-semibold text-gray-900">
+                {isApprovedByRO(complaint) ? "Verified (Completed)" : "Pending Verification"}
+              </span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ✅ Main Content Grid */}
+      <div className="p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          {/* Left Column */}
+          <div className="space-y-2">
+            <div className="flex">
+              <span className="text-gray-600 font-medium w-32">Complaint No:</span>
+              <span className="bg-blue-100 px-2 py-1 rounded text-blue-800 font-bold text-xs">
+                {complaint.complain_no}
+              </span>
+            </div>
+            <div className="flex">
+              <span className="text-gray-600 font-medium w-32">Complainant:</span>
+              <span className="text-gray-900 font-medium">{complaint.name}</span>
+            </div>
+            <div className="flex">
+              <span className="text-gray-600 font-medium w-32">Mobile No:</span>
+              <span className="text-gray-900">{complaint.mobile}</span>
+            </div>
+          </div>
+
+          {/* Middle Column */}
+          <div className="space-y-2">
+            <div className="flex">
+              <span className="text-gray-600 font-medium w-24">Email:</span>
+              <span className="text-gray-900 text-xs break-all">{complaint.email}</span>
+            </div>
+            <div className="flex">
+              <span className="text-gray-600 font-medium w-24">District:</span>
+              <span className="text-gray-900">{complaint.district_name}</span>
+            </div>
+            <div className="flex">
+              <span className="text-gray-600 font-medium w-24">Created:</span>
+              <span className="text-gray-900">{formatDate(complaint.created_at)}</span>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-2">
+            <div className="text-left sm:text-right">
+              <span className="text-xs text-gray-600">Submitted:</span>
+              <div className="text-sm font-medium text-gray-900">
+                {formatDate(complaint.created_at)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ✅ Action Buttons */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
+            <button
+              onClick={(e) => handleViewDetails(e, complaint.id)}
+              className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+            >
+              View Details
+            </button>
+
+            {/* Conditional Verify button */}
+            {isApprovedByRO(complaint) ? (
+              <button
+                disabled
+                className="w-full sm:w-auto px-4 py-2 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed transition-all duration-300"
+              >
+                ✓ Verified
+              </button>
+            ) : (
+              <button
+                onClick={(e) => handleApproveClick(e, complaint)}
+                disabled={isApproving && complaintToApprove?.id === complaint.id}
+                className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 rounded cursor-pointer transition-colors duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isApproving && complaintToApprove?.id === complaint.id ? "Verifying..." : "Verify"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
 
             {/* ✅ Empty State */}
             {currentData.length === 0 && (

@@ -176,6 +176,8 @@ const ApprovedComplaints = () => {
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation(); // Prevent any parent event
     navigate(`/operator/approved-complaints/view/${complaintId}`);
+      window.scrollTo({ top: 2, behavior: 'smooth' }); // Scroll to top smoothly
+
   };
 
   // ✅ Handle modal view - Only for modal
@@ -377,97 +379,104 @@ const ApprovedComplaints = () => {
         ) : (
           <>
             {/* ✅ Mobile-First Responsive Card Layout */}
-            <div className="space-y-3 sm:space-y-4">
-              {currentData.map((complaint) => (
-                <div
-                  key={complaint.id}
-                  className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300"
-                >
-                  {/* ✅ Row 1 - Only Complaint No is bold */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className=" text-black text-xs sm:text-sm mb-1 sm:mb-0">
-                        Complaint No:
-                      </span>
-                      <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
-                        {complaint.complain_no}
-                      </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
-                      <span className="text-gray-700 text-sm">{complaint.name}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
-                      <span className="text-gray-700 text-sm">{complaint.mobile}</span>
-                    </div>
-                  </div>
+<div className="space-y-3 sm:space-y-4">
+  {currentData.map((complaint) => (
+    <div
+      key={complaint.id}
+      className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-200 transition-shadow duration-300"
+    >
+      {/* Header */}
+      <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        {/* Left */}
+        <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
 
-                  {/* Row 2 */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
-                      <span className="text-gray-700 text-sm">{complaint.email}</span>
-                    </div>
-                   
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                      <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                      <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
-                      <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
-                    </div>
-                  </div>
+        {/* Right */}
+        <div className="text-right mt-2 sm:mt-0">
+          <span className="text-xs text-gray-600">Current Stage:</span>
+          <span className="ml-1 text-sm font-semibold text-gray-900">
+            {isApprovedByRO(complaint) ? "Verified (Completed)" : "Pending Verification"}
+          </span>
+        </div>
+      </div>
 
-                  {/* ✅ Row 4 - Action Buttons with conditional rendering */}
-                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
-                      <button
-                        onClick={(e) => handleViewDetails(e, complaint.id)}
-                        className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-blue-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                      >
-                        View Details
-                      </button>
-                      
-                      {/*  Conditional rendering based on approved_by_ro field */}
-                      {isApprovedByRO(complaint) ? (
-                        <button
-                          disabled
-                          className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-                        >
-                          ✓ Verified
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => handleApproveClick(e, complaint)}
-                          className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-                        >
-                          Verify
-                        </button>
-                      )}
-                      
-                      {/* ✅ Conditional forward button based on forward status */}
-                      {/* {isForwarded(complaint) ? (
-                        <button
-                          disabled
-                          className="w-full sm:w-auto px-4 py-2 sm:py-1 rounded text-sm font-medium bg-blue-500 text-white border border-blue-500 cursor-not-allowed"
-                        >
-                          ✓ Forwarded
-                        </button>
-                      ) : (
-                        <button
-                          onClick={(e) => handleForwardClick(e, complaint)}
-                          className="w-full sm:w-auto border border-orange-500 text-orange-500 hover:text-white hover:bg-orange-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-                        >
-                          Forward
-                        </button>
-                      )} */}
-                    </div>
-                  </div>
-                </div>
-              ))}
+      {/* Content */}
+      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+        {/* Left */}
+        <div className="space-y-2">
+          <div className="flex">
+            <span className="text-gray-600 font-medium w-28">Complaint No:</span>
+            <span className="bg-blue-100 px-2 py-1 rounded text-blue-800 font-bold text-xs">
+              {complaint.complain_no}
+            </span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-600 font-medium w-28">Complainant:</span>
+            <span className="text-gray-800">{complaint.name}</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-600 font-medium w-28">Mobile No:</span>
+            <span className="text-gray-800">{complaint.mobile}</span>
+          </div>
+        </div>
+
+        {/* Middle */}
+        <div className="space-y-2">
+          <div className="flex">
+            <span className="text-gray-600 font-medium w-20">Email:</span>
+            <span className="text-gray-800 break-all">{complaint.email}</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-600 font-medium w-20">District:</span>
+            <span className="text-gray-800">{complaint.district_name}</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-600 font-medium w-20">Created:</span>
+            <span className="text-gray-800">{formatDate(complaint.created_at)}</span>
+          </div>
+        </div>
+
+        {/* Right */}
+        <div className="space-y-2">
+          <div className="text-left sm:text-right">
+            <span className="text-xs text-gray-600">Submitted:</span>
+            <div className="text-sm font-medium text-gray-900">
+              {formatDate(complaint.created_at)}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:justify-end">
+        <button
+          onClick={(e) => handleViewDetails(e, complaint.id)}
+          className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-white hover:bg-blue-700 px-4 py-2 rounded transition-colors duration-200 text-sm font-medium"
+        >
+          View Details
+        </button>
+
+        {isApprovedByRO(complaint) ? (
+          <button
+            disabled
+            className="w-full sm:w-auto px-4 py-2 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
+          >
+            ✓ Verified
+          </button>
+        ) : (
+          <button
+            onClick={(e) => handleApproveClick(e, complaint)}
+            className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 rounded transition-colors duration-200 text-sm font-medium"
+          >
+            Verify
+          </button>
+        )}
+      </div>
+    </div>
+  ))}
+</div>
+
+
+
 
             {/* ✅ Empty State */}
             {currentData.length === 0 && (

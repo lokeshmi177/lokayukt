@@ -570,7 +570,7 @@ const ProgressRegister = () => {
         {/* Header */}
        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
   <div className="min-w-0 flex-1">
-    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-2 text-gray-900 truncate">
+    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-1 text-gray-900 truncate">
       Progress Register / प्रगति रजिस्टर
     </h1>
   </div>

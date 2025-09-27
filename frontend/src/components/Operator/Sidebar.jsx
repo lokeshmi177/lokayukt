@@ -41,7 +41,7 @@ const Sidebar = ({
       dashboard: "Dashboard",
       complaints: "New Complaints",
       allComplaints: "Complaints",
-      draft: "Draft",
+      draft: "Drafts",
       // pendingComplaints: "Pending Complaints",
       // approvedComplaints: "Verified Complaints",
       progressRegister: "Progress Register",
