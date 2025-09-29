@@ -168,7 +168,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/check-duplicate',[OperatorComplaintsController::class,'checkDuplicate']);
         // Route::post('/check-duplicate-store',[OperatorComplaintsController::class,'checkduplicateStoreComplain']);
         Route::post('/approved-by-ro/{complainId}',[OperatorComplaintsController::class,'approvedByRo']);
-        // Route::get('//{complainId}',[OperatorComplaintsController::class,'']);
+        Route::get('get-section-officers',[OperatorComplaintsController::class,'getSectionOfficers']);
 
         Route::get('/progress-register',[OperatorReportController::class,'progress_report']);
         Route::get('/current-report',[OperatorReportController::class,'current_report']);

@@ -7,6 +7,7 @@ use App\Models\ComplainDetails;
 use App\Models\Complaint;
 use App\Models\ComplaintAction;
 use App\Models\ComplainType;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1086,6 +1087,23 @@ class OperatorComplaintsController extends Controller
            ]);
     }
 
+      public function getSectionOfficers(){
+     
+        $usersBySubRole = User::with('role','subrole')
+         ->whereNotNull('sub_role_id')
+        ->get()
+        ->groupBy(fn ($user) => $user->subrole->name);
+        
+
+         if(!empty($usersBySubRole['so-us'])){
+
+           return response()->json($usersBySubRole['so-us']);
+        }else{
+
+            return response()->json(["message"=>"Data Not Found"]);
+        }
+        // dd($usersBySubRole);
+   }
 
     //  public function forwardbyRo(Request $request,$complainId){
     //     $userrole = Auth::user();

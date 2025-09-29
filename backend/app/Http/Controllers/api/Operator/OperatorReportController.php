@@ -83,6 +83,7 @@ class OperatorReportController extends Controller
         'complaints.created_at',
         'dd.district_name as district_name',
         'dd.district_code as district_id',
+        'ds.name as designation_name',
 
         // Concatenate multiple related fields
         DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
@@ -165,7 +166,8 @@ class OperatorReportController extends Controller
         'complaints.complain_no',
         'complaints.created_at',
         'complaints.status',
-        'dd.district_code'
+        'dd.district_code',
+        'ds.name',
     )
      ->where('in_draft','0')
         ->get();
