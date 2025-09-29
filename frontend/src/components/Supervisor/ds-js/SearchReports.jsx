@@ -515,8 +515,7 @@ const SearchReports = () => {
         console.error("Export failed:", e);
         toast.error("Failed to export data.");
       }
-    };
-  
+    }
 
   // Fetch initial data when component mounts
   useEffect(() => {
