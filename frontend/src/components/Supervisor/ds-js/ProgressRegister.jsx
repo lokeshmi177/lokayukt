@@ -10,7 +10,11 @@ import {
   FaDownload,
   FaCalendarAlt,
 } from "react-icons/fa";
-import Pagination from "../../Pagination"; 
+import Pagination from "../../Pagination";
+import * as XLSX from "xlsx-js-style"; 
+import { saveAs } from "file-saver"; 
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -28,36 +32,270 @@ const ProgressRegister = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("movements");
   const [complaintsData, setComplaintsData] = useState([]);
-  const [currentReportData, setCurrentReportData] = useState([]); // ✅ State for current report data
-  const [analyticsData, setAnalyticsData] = useState(null); // ✅ NEW: State for analytics data
+  const [currentReportData, setCurrentReportData] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
+  
+  // Loading states
+  const [isLoadingMovements, setIsLoadingMovements] = useState(true);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
 
-  // ✅ Pagination states
+  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+
+  // Export functionality - File Movements
+  const handleExportMovements = () => {
+    try {
+      const fileMovements = transformToFileMovements(complaintsData);
+      const filteredMovements = fileMovements.filter(
+        (movement) =>
+          movement.complaintNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          movement.complainant.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      if (filteredMovements.length === 0) {
+        toast.error("No data to export.");
+        return;
+      }
+
+      const wsData = [
+        ["Sr. No", "Complaint No", "Complainant", "From Role", "To Role", "Note", "Timestamp", "Status"],
+        ...filteredMovements.map((movement, index) => [
+          index + 1,
+          movement.complaintNo || "NA",
+          movement.complainant || "NA",
+          movement.fromRole || "NA",
+          movement.toRole || "NA",
+          movement.note || "NA",
+          movement.timestamp || "NA",
+          movement.status || "NA"
+        ])
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Header styling
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "000000" } },
+        alignment: { horizontal: "center" },
+        fill: { fgColor: { rgb: "D3D3D3" } }
+      };
+
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = {};
+        ws[cellAddress].s = headerStyle;
+      }
+
+      // Column widths
+      ws['!cols'] = [
+        {wch: 8}, {wch: 15}, {wch: 20}, {wch: 15}, 
+        {wch: 15}, {wch: 30}, {wch: 20}, {wch: 15}
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, "File_Movements");
+
+      const excelBuffer = XLSX.write(wb, {
+        bookType: 'xlsx',
+        type: 'array',
+        cellStyles: true
+      });
+
+      const data = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      saveAs(data, `File_Movements_${new Date().toISOString().slice(0,10)}.xlsx`);
+      toast.success("Export successful!");
+
+    } catch (e) {
+      console.error("Export failed:", e);
+      toast.error("Failed to export data.");
+    }
+  };
+
+  // Export functionality - Current Status
+  const handleExportStatus = () => {
+    try {
+      const complaintStatus = transformCurrentReportToStatus(currentReportData);
+      const filteredStatus = complaintStatus.filter(
+        (status) =>
+          status.complaintNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          status.complainant.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      if (filteredStatus.length === 0) {
+        toast.error("No data to export.");
+        return;
+      }
+
+      const wsData = [
+        ["Sr. No", "Complaint No", "Complainant", "Subject", "Current Stage", "Assigned To", "Received Date", "Target Date", "Days Elapsed", "Status"],
+        ...filteredStatus.map((status, index) => [
+          index + 1,
+          status.complaintNo || "NA",
+          status.complainant || "NA",
+          status.subject || "NA",
+          status.currentStage || "NA",
+          status.assignedTo || "NA",
+          status.receivedDate || "NA",
+          status.targetDate || "NA",
+          status.daysElapsed || "NA",
+          getStatusText(status.status) || "NA"
+        ])
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Header styling
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "000000" } },
+        alignment: { horizontal: "center" },
+        fill: { fgColor: { rgb: "D3D3D3" } }
+      };
+
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = {};
+        ws[cellAddress].s = headerStyle;
+      }
+
+      // Column widths
+      ws['!cols'] = [
+        {wch: 8}, {wch: 15}, {wch: 20}, {wch: 30}, 
+        {wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, 
+        {wch: 12}, {wch: 15}
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, "Current_Status");
+
+      const excelBuffer = XLSX.write(wb, {
+        bookType: 'xlsx',
+        type: 'array',
+        cellStyles: true
+      });
+
+      const data = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      saveAs(data, `Current_Status_${new Date().toISOString().slice(0,10)}.xlsx`);
+      toast.success("Export successful!");
+
+    } catch (e) {
+      console.error("Export failed:", e);
+      toast.error("Failed to export data.");
+    }
+  };
+
+  // Export functionality - Analytics
+  const handleExportAnalytics = () => {
+    try {
+      if (!analyticsData) {
+        toast.error("No analytics data to export.");
+        return;
+      }
+
+      const wsData = [
+        ["Metric", "Value"],
+        ["Average Processing Time", `${parseFloat(analyticsData.avg_processing_time || 0).toFixed(1)} days`],
+        ["Files in Transit", analyticsData.files_in_transit || 0],
+        ["Overdue Files", analyticsData.overdue_files || 0]
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Header styling
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "000000" } },
+        alignment: { horizontal: "center" },
+        fill: { fgColor: { rgb: "D3D3D3" } }
+      };
+
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = {};
+        ws[cellAddress].s = headerStyle;
+      }
+
+      // Column widths
+      ws['!cols'] = [
+        {wch: 25}, {wch: 15}
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, "Analytics");
+
+      const excelBuffer = XLSX.write(wb, {
+        bookType: 'xlsx',
+        type: 'array',
+        cellStyles: true
+      });
+
+      const data = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      saveAs(data, `Analytics_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+      toast.success("Export successful!");
+
+    } catch (e) {
+      console.error("Export failed:", e);
+      toast.error("Failed to export data.");
+    }
+  };
+
+  // Main export handler based on active tab
+  const handleExport = () => {
+    switch (activeTab) {
+      case "movements":
+        handleExportMovements();
+        break;
+      case "status":
+        handleExportStatus();
+        break;
+      case "analytics":
+        handleExportAnalytics();
+        break;
+      default:
+        toast.error("Please select a tab to export data.");
+    }
+  };
 
   // Fetch complaints data from API for movements tab
   useEffect(() => {
     const fetchComplaints = async () => {
+      setIsLoadingMovements(true);
       try {
         const response = await api.get("/supervisor/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
         } else {
-          setError("Failed to fetch data");
+          setComplaintsData([]);
         }
       } catch (err) {
         console.error("API Error:", err);
+        setComplaintsData([]);
         setError("Failed to fetch complaints data");
+      } finally {
+        setIsLoadingMovements(false);
       }
     };
 
     fetchComplaints();
   }, []);
 
-  // ✅ Fetch current report data for status tab
+  // Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
+      setIsLoadingStatus(true);
       try {
         const response = await api.get("/supervisor/current-report");
         console.log("Current Report API Response:", response.data);
@@ -71,15 +309,18 @@ const ProgressRegister = () => {
       } catch (err) {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
+      } finally {
+        setIsLoadingStatus(false);
       }
     };
 
     fetchCurrentReport();
   }, []);
 
-  // ✅ NEW: Fetch analytics data for analytics tab
+  // Fetch analytics data for analytics tab
   useEffect(() => {
     const fetchAnalytics = async () => {
+      setIsLoadingAnalytics(true);
       try {
         const response = await api.get("/supervisor/analytic-report");
         console.log("Analytics API Response:", response.data);
@@ -93,24 +334,16 @@ const ProgressRegister = () => {
       } catch (err) {
         console.error("Analytics API Error:", err);
         setAnalyticsData(null);
+      } finally {
+        setIsLoadingAnalytics(false);
       }
     };
 
     fetchAnalytics();
   }, []);
 
-  // ✅ Function to determine movement flow based on API data
+  // Function to determine movement flow based on API data
   const getMovementFlow = (complaint) => {
-    // // RO to Section Officer
-    // if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
-    //   return {
-    //     from: "RO",
-    //     to: "Section Officer", 
-    //     status: "pending",
-    //     icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
-    //   };
-    // }
-    
     // Section Officer to DS/JS
     if (complaint.approved_rejected_by_ro  == 1) {
       if(complaint.forward_to_d_a){
@@ -183,7 +416,7 @@ const ProgressRegister = () => {
     };
   };
 
-  // ✅ UPDATED: Transform API data to file movements format - show API status directly
+  // Transform API data to file movements format - show API status directly
   const transformToFileMovements = (data) => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
@@ -194,14 +427,14 @@ const ProgressRegister = () => {
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-        note: complaint.remarks || complaint.description || 'N/A',
+        note: complaint.remark || complaint.description || 'N/A',
         timestamp: formatDate(complaint.created_at),
-        status: complaint.status || 'N/A', //  CHANGED: Direct API status
+        status: complaint.status || 'N/A',
       };
     });
   };
 
-  //  Transform current report data - show API status directly in currentStage
+  // Transform current report data - show API status directly in currentStage
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
     
@@ -213,18 +446,18 @@ const ProgressRegister = () => {
         complaintNo: report.complain_no || 'N/A',
         complainant: report.name || 'N/A',
         subject: report.description || report.title || 'No subject provided',
-        currentStage: report.status || 'N/A', // ✅ Direct API status
+        currentStage: report.status || 'N/A',
         assignedTo: report.officer_name || 'Not Assigned',
         receivedDate: formatDateOnly(report.created_at),
         targetDate: report.target_date ? formatDateOnly(report.target_date) : getTargetDate(report.created_at),
-        status: getStatusFromDays(daysElapsed), // ✅ Status based on days
+        status: getStatusFromDays(daysElapsed),
         daysElapsed: daysElapsed,
-        originalStatus: report.status, // Keep original status for reference
+        originalStatus: report.status,
       };
     });
   };
 
-  // ✅ Get status based on days (15+ days = critical, otherwise on-track)
+  // Get status based on days (15+ days = critical, otherwise on-track)
   const getStatusFromDays = (days) => {
     if (days > 15) {
       return "critical";
@@ -233,37 +466,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ Helper function to get current stage based on API data (for backward compatibility)
-  const getCurrentStage = (complaint) => {
-    if (complaint.approved_rejected_by_ro == 1 && complaint.approved_rejected_by_so_us == 0) {
-      return "At Section Officer";
-    }
-    if (complaint.approved_rejected_by_so_us == 1 && complaint.approved_rejected_by_ds_js == 0) {
-      return "At DS/JS";
-    }
-    if (complaint.forward_to_lokayukt == 1) {
-      return "At Lokayukt";
-    }
-    if (complaint.forward_to_uplokayukt == 1) {
-      return "At Up-Lokayukt";
-    }
-    if (complaint.status === "Rejected") {
-      return "Case Rejected";
-    }
-    if (complaint.status === "In Progress") {
-      return "Under Investigation";
-    }
-    return "Verification";
-  };
-
-  const getStatusType = (status) => {
-    if (status === "In Progress") return "on-track";
-    if (status === "Disposed - Accepted") return "on-track";
-    if (status === "Rejected") return "critical";
-    return "delayed";
-  };
-
-  // ✅ Helper function to get readable status text
+  // Helper function to get readable status text
   const getStatusText = (status) => {
     switch (status) {
       case "on-track":
@@ -283,7 +486,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ Get stage color based on API status
+  // Get stage color based on API status
   const getStageColor = (status) => {
     switch (status) {
       case "In Progress":
@@ -297,7 +500,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // ✅ UPDATED: Get status color for file movements (API status based)
+  // Get status color for file movements (API status based)
   const getFileMovementStatusColor = (status) => {
     switch (status) {
       case "In Progress":
@@ -332,7 +535,7 @@ const ProgressRegister = () => {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString("en-CA"); // YYYY-MM-DD format
+      return date.toLocaleDateString("en-CA");
     } catch (error) {
       return 'Invalid Date';
     }
@@ -342,14 +545,14 @@ const ProgressRegister = () => {
     if (!createdDate) return 'N/A';
     try {
       const date = new Date(createdDate);
-      date.setDate(date.getDate() + 30); // Add 30 days as target
+      date.setDate(date.getDate() + 30);
       return date.toLocaleDateString("en-CA");
     } catch (error) {
       return 'N/A';
     }
   };
 
-  // ✅ Calculate days elapsed with better error handling
+  // Calculate days elapsed with better error handling
   const getDaysElapsed = (createdDate) => {
     if (!createdDate) return 0;
     try {
@@ -366,13 +569,13 @@ const ProgressRegister = () => {
     switch (status) {
       case "completed":
       case "on-track":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "bg-green-400 text-white hover:bg-blue-400";
       case "pending":
       case "delayed":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-orange-400 text-white hover:bg-blue-400";
       case "overdue":
       case "critical":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "bg-red-400 text-white hover:bg-blue-400";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
@@ -380,8 +583,6 @@ const ProgressRegister = () => {
 
   // Get transformed data
   const fileMovements = transformToFileMovements(complaintsData);
-  
-  // ✅ Use current report data for status tab
   const complaintStatus = transformCurrentReportToStatus(currentReportData);
 
   // Filter data based on search term
@@ -397,12 +598,12 @@ const ProgressRegister = () => {
       status.complainant.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ✅ Reset current page when filters change
+  // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, activeTab]);
 
-  // ✅ Calculate pagination for current active tab
+  // Calculate pagination for current active tab
   const getCurrentData = () => {
     if (activeTab === "movements") return filteredMovements;
     if (activeTab === "status") return filteredStatus;
@@ -432,18 +633,47 @@ const ProgressRegister = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen overflow-hidden">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
+      
       <div className="px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl pt-1 font-bold text-gray-900 truncate">
               Progress Register / प्रगति रजिस्टर
             </h1>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              Track complaint progress and file movements
-            </p>
           </div>
-         
+          
+          {/* Filter and Export buttons on the right */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Filter Button */}
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
+              <FaFilter className="w-4 h-4" />
+              Filter
+            </button>
+            
+            {/* Export Button with functionality */}
+            <button 
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
+            >
+              <FaDownload className="w-4 h-4" />
+              Export
+            </button>
+          </div>
         </div>
 
         {/* Search Card */}
@@ -466,7 +696,7 @@ const ProgressRegister = () => {
                   placeholder="Complaint No. or Complainant"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none"
                 />
                 <FaSearch className="absolute left-2.5 sm:left-3 top-2.5 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
               </div>
@@ -514,7 +744,7 @@ const ProgressRegister = () => {
 
             {/* Tab Content */}
             <div className="p-3 sm:p-6 overflow-hidden">
-              {/* ✅ UPDATED: File Movements Tab - shows API status directly */}
+              {/* File Movements Tab */}
               {activeTab === "movements" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
@@ -552,13 +782,22 @@ const ProgressRegister = () => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
-                              {paginatedData.length > 0 ? (
+                              {isLoadingMovements ? (
+                                <tr>
+                                  <td
+                                    colSpan="6"
+                                    className="py-8 text-center text-gray-500"
+                                  >
+                                    Loading...
+                                  </td>
+                                </tr>
+                              ) : paginatedData.length > 0 ? (
                                 paginatedData.map((movement) => (
                                   <tr
                                     key={movement.id}
                                     className="hover:bg-gray-50"
                                   >
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                       {movement.complaintNo}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
@@ -578,7 +817,6 @@ const ProgressRegister = () => {
                                       {movement.timestamp}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
-                                      {/* ✅ UPDATED: Show API status with proper colors */}
                                       <span
                                         className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
                                           movement.status
@@ -595,7 +833,7 @@ const ProgressRegister = () => {
                                     colSpan="6"
                                     className="py-8 text-center text-gray-500"
                                   >
-                                    No file movements found.
+                                    No data
                                   </td>
                                 </tr>
                               )}
@@ -622,7 +860,7 @@ const ProgressRegister = () => {
                 </div>
               )}
 
-              {/* Current Status Tab - shows API status directly */}
+              {/* Current Status Tab */}
               {activeTab === "status" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
@@ -659,13 +897,22 @@ const ProgressRegister = () => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-100">
-                            {paginatedData.length > 0 ? (
+                            {isLoadingStatus ? (
+                              <tr>
+                                <td
+                                  colSpan="6"
+                                  className="py-8 text-center text-gray-500"
+                                >
+                                  Loading...
+                                </td>
+                              </tr>
+                            ) : paginatedData.length > 0 ? (
                               paginatedData.map((complaint, index) => (
                                 <tr
                                   key={`${complaint.complaintNo}-${index}`}
                                   className="border-b border-gray-100 hover:bg-gray-50"
                                 >
-                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-blue-600">
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700">
                                     {complaint.complaintNo}
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
@@ -701,10 +948,7 @@ const ProgressRegister = () => {
                                   colSpan="6"
                                   className="py-8 text-center text-gray-500"
                                 >
-                                  {currentReportData.length === 0 
-                                    ? "No current report data available from API." 
-                                    : "No complaint status found matching search criteria."
-                                  }
+                                  No data
                                 </td>
                               </tr>
                             )}
@@ -730,15 +974,20 @@ const ProgressRegister = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Analytics Tab with API data */}
+              {/* Analytics Tab */}
               {activeTab === "analytics" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
-                    {analyticsData ? (
+                    {isLoadingAnalytics ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500">
+                          Loading...
+                        </div>
+                      </div>
+                    ) : analyticsData ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200">
+                        <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
                           <div className="flex items-center gap-2 mb-2">
-                            <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Average Processing Time
                             </h3>
@@ -751,9 +1000,8 @@ const ProgressRegister = () => {
                           </p>
                         </div>
 
-                        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-lg border border-yellow-200">
+                        <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
                           <div className="flex items-center gap-2 mb-2">
-                            <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Files in Progress
                             </h3>
@@ -766,9 +1014,8 @@ const ProgressRegister = () => {
                           </p>
                         </div>
 
-                        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg border border-red-200 sm:col-span-2 lg:col-span-1">
+                        <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200 sm:col-span-2 lg:col-span-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Overdue Cases
                             </h3>
@@ -784,7 +1031,7 @@ const ProgressRegister = () => {
                     ) : (
                       <div className="text-center py-8">
                         <div className="text-gray-500">
-                          Loading analytics data...
+                          No data
                         </div>
                       </div>
                     )}

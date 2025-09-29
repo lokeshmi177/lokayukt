@@ -7,8 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
-  const subRole = localStorage.getItem("subrole")
-
+  const subrole = localStorage.getItem("subrole")
 // Create axios instance with token if it exists
 const api = axios.create({
   baseURL: BASE_URL,
@@ -514,7 +513,7 @@ const PendingComplaints = () => {
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-gray-900">Confirm Verification</h3>
                   <p className="text-sm text-gray-500">
-                    Are you sure you want to verify complaint <strong>{complaintToApprove?.complain_no}</strong>?
+                    Are you sure you want to verify complaint?
                   </p>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,6 +19,7 @@ import {
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
+const subRole = localStorage.getItem("subrole");
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -80,7 +81,7 @@ const CustomSearchableSelect = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between"
+        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between"
       >
         <span className="flex items-center">
           {selectedOption ? (
@@ -110,7 +111,7 @@ const CustomSearchableSelect = ({
                 placeholder="Search by name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none text-sm"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -238,14 +239,14 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      const response = await api.post(`/supervisor/forward-by-ds-js/${complaintId}`, {
+      const response = await api.post(`/supervisor/forward-by-so/${complaintId}`, {
         forward_to_d_a: parseInt(formData.forwardTo),
         remarks: formData.remarks
       });
 
       console.log("API Response:", response.data);
 
-      // ✅ Check for success response based on your API
+      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
         toast.success(response.data.message || 'Complaint forwarded successfully!', {
           position: "top-right",
@@ -256,7 +257,7 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // ✅ Pass the complaint ID to parent for local update
+        // Pass the complaint ID to parent for local update
         onSubmit(complaintId); // Pass complaint ID to parent
         onClose(); // Close modal
       } else {
@@ -364,7 +365,7 @@ const ForwardModal = ({
                 name="remarks"
                 value={formData.remarks}
                 onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="Enter forwarding remarks..."
                 rows="4"
                 required
@@ -387,7 +388,7 @@ const ForwardModal = ({
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !formData.forwardTo || !formData.remarks.trim() || isLoadingOptions
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-[#123463] text-white'
               }`}
             >
               {isSubmitting ? (
@@ -411,38 +412,203 @@ const ForwardModal = ({
 
 const PendingComplaints = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // State for tabs and data
+  const [activeTab, setActiveTab] = useState("pending");
   const [complaintsData, setComplaintsData] = useState([]);
+  const [pendingData, setPendingData] = useState([]);
+  const [approvedData, setApprovedData] = useState([]);
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+
+  // Loading states for each tab
+  const [isLoadingAll, setIsLoadingAll] = useState(false);
+  const [isLoadingPending, setIsLoadingPending] = useState(false);
+  const [isLoadingApproved, setIsLoadingApproved] = useState(false);
 
   // Forward Modal State
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-  // Fetch complaints data from API
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      try {
-        const response = await api.get("/supervisor/all-pending-complaints");
-        if (response.data.status === true) {
-          setComplaintsData(response.data.data);
-        } else {
-          setError("Failed to fetch complaints data");
-        }
-      } catch (error) {
-        console.error("API Error:", error);
-        setError("Error fetching data");
-      }
-    };
+  // Determine active tab from URL
+  const getActiveTabFromURL = () => {
+    if (location.pathname.includes('/pending-complaints')) return 'pending';
+    if (location.pathname.includes('/approved-complaints')) return 'approved';
+    return 'all';
+  };
 
-    fetchComplaints();
-  }, []);
+  // Set active tab based on URL on mount
+  useEffect(() => {
+    setActiveTab(getActiveTabFromURL());
+  }, [location.pathname]);
+
+  // Handle tab change with routing
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    
+    // Route navigation
+    switch(tab) {
+      case 'all':
+        navigate('/supervisor/all-complaints');
+        break;
+      case 'pending':
+        navigate('/supervisor/pending-complaints');
+        break;
+      case 'approved':
+        navigate('/supervisor/approved-complaints');
+        break;
+      default:
+        navigate('/supervisor/pending-complaints');
+    }
+  };
+
+  // Fetch all complaints data from API
+  const fetchAllComplaints = async () => {
+    setIsLoadingAll(true);
+    try {
+      const response = await api.get("/supervisor/all-complaints");
+      
+      if (response.data.status === true) {
+        setComplaintsData(response.data.data);
+        setError("");
+      } else {
+        setError("Failed to fetch complaints data");
+      }
+    } catch (error) {
+      console.error("API Error:", error);
+      setError("Error fetching data");
+    } finally {
+      setIsLoadingAll(false);
+    }
+  };
+
+  // Fetch pending complaints data
+  const fetchPendingComplaints = async () => {
+    setIsLoadingPending(true);
+    try {
+      const response = await api.get("/supervisor/all-pending-complaints");
+      
+      if (response.data.status === true) {
+        setPendingData(response.data.data);
+        setComplaintsData(response.data.data); // Also set main data for consistency
+        setError("");
+      } else {
+        setPendingData([]);
+        setComplaintsData([]);
+      }
+    } catch (error) {
+      console.error("Pending API Error:", error);
+      setPendingData([]);
+      setComplaintsData([]);
+      setError("Error fetching pending complaints");
+    } finally {
+      setIsLoadingPending(false);
+    }
+  };
+
+  // Fetch approved complaints data
+  const fetchApprovedComplaints = async () => {
+    setIsLoadingApproved(true);
+    try {
+      const response = await api.get("/supervisor/approved-complaints");
+      
+      if (response.data.status === true) {
+        setApprovedData(response.data.data);
+        setError("");
+      } else {
+        setApprovedData([]);
+      }
+    } catch (error) {
+      console.error("Approved API Error:", error);
+      setApprovedData([]);
+      setError("Error fetching approved complaints");
+    } finally {
+      setIsLoadingApproved(false);
+    }
+  };
+
+  // Fetch data based on active tab
+  useEffect(() => {
+    switch(activeTab) {
+      case 'all':
+        fetchAllComplaints();
+        break;
+      case 'pending':
+        fetchPendingComplaints();
+        break;
+      case 'approved':
+        fetchApprovedComplaints();
+        break;
+      default:
+        fetchPendingComplaints();
+    }
+  }, [activeTab]);
+
+  // Filter function to remove forwarded complaints for pending/all tabs
+  const filterComplaintsByTab = (complaints, tabType) => {
+    if (!Array.isArray(complaints)) return [];
+    
+    switch(tabType) {
+      case 'pending':
+        // Show only complaints that are NOT forwarded (approved_rejected_by_so_us !== 1)
+        return complaints.filter(complaint => complaint.approved_rejected_by_so_us !== 1);
+      
+      case 'all':
+        // Show all complaints regardless of forward status
+        return complaints;
+      
+      case 'approved':
+        // Show only forwarded complaints (approved_rejected_by_so_us === 1)
+        return complaints.filter(complaint => complaint.approved_rejected_by_so_us === 1);
+      
+      default:
+        return complaints;
+    }
+  };
+
+  // Get current data based on active tab with filtering
+  const getCurrentData = () => {
+    let rawData;
+    
+    switch(activeTab) {
+      case 'all':
+        rawData = complaintsData;
+        break;
+      case 'pending':
+        rawData = pendingData.length > 0 ? pendingData : complaintsData;
+        break;
+      case 'approved':
+        rawData = approvedData;
+        break;
+      default:
+        rawData = complaintsData;
+    }
+    
+    // Apply filtering based on current tab
+    return filterComplaintsByTab(rawData, activeTab);
+  };
+
+  // Get current loading state
+  const getCurrentLoadingState = () => {
+    switch(activeTab) {
+      case 'all':
+        return isLoadingAll;
+      case 'pending':
+        return isLoadingPending;
+      case 'approved':
+        return isLoadingApproved;
+      default:
+        return isLoadingPending;
+    }
+  };
 
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
     navigate(`/supervisor/pending-complaints/view/${complaintId}`);
+    window.scrollTo({ top: 2, behavior: 'smooth' });
   };
 
   // Handle modal view
@@ -459,14 +625,43 @@ const PendingComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // ✅ UPDATED: Remove forwarded complaint from UI completely
+  // UPDATED: Handle forward submit with improved local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // ✅ Remove complaint from list completely - UI se data hat jayega
-    setComplaintsData(prevComplaints => 
-      prevComplaints.filter(complaint => complaint.id !== forwardedComplaintId)
-    );
+    // Function to update complaint status in any array
+    const updateComplaintStatus = (complaintsArray) => 
+      complaintsArray.map(complaint => 
+        complaint.id === forwardedComplaintId 
+          ? { 
+              ...complaint, 
+              approved_rejected_by_so_us: 1, 
+              status: 'Forwarded'
+            }
+          : complaint
+      );
+
+    // Update all relevant state arrays
+    setComplaintsData(updateComplaintStatus);
+    setPendingData(updateComplaintStatus);
+    setApprovedData(prev => {
+      const forwardedComplaint = [...complaintsData, ...pendingData]
+        .find(complaint => complaint.id === forwardedComplaintId);
+      
+      if (forwardedComplaint) {
+        const updatedComplaint = {
+          ...forwardedComplaint,
+          approved_rejected_by_so_us: 1,
+          status: 'Forwarded'
+        };
+        
+        // Add to approved data if not already present
+        const existsInApproved = prev.some(complaint => complaint.id === forwardedComplaintId);
+        return existsInApproved ? updateComplaintStatus(prev) : [...prev, updatedComplaint];
+      }
+      
+      return prev;
+    });
     
-    console.log(`Complaint ${forwardedComplaintId} removed from pending list`);
+    console.log(`Complaint ${forwardedComplaintId} marked as forwarded and moved to appropriate tab`);
   };
 
   // Format date helper
@@ -479,11 +674,11 @@ const PendingComplaints = () => {
     });
   };
 
-  // ✅ Full text approval badges in green background - Jo jiski value 1 hai
+  // Get approval statuses
   const getApprovalStatuses = (complaint) => {
     const statuses = [];
     
-    // ✅ RO approval - Full text with green background
+    // RO approval
     if (complaint.approved_rejected_by_ro === 1) {
       statuses.push({
         status: 'approved_by_ro', 
@@ -492,7 +687,44 @@ const PendingComplaints = () => {
       });
     }
     
+    // SO approval
+    if (complaint.approved_rejected_by_so_us === 1) {
+      statuses.push({
+        status: 'approved_by_so',
+        label: 'Approved by SO',
+        color: 'bg-green-500'
+      });
+    }
+    
+    // DS approval
+    if (complaint.approved_rejected_by_ds_js === 1) {
+      statuses.push({
+        status: 'approved_by_ds',
+        label: 'Approved by DS',
+        color: 'bg-green-500'
+      });
+    }
+    
     return statuses;
+  };
+
+  // Forward status helper
+  const isForwarded = (complaint) => {
+    return complaint.approved_rejected_by_so_us === 1;
+  };
+
+  // Get tab title
+  const getTabTitle = () => {
+    switch(activeTab) {
+      case 'all':
+        return 'All Complaints';
+      case 'pending':
+        return 'Pending Complaints';
+      case 'approved':
+        return 'Approved Complaints';
+      default:
+        return 'Pending Complaints';
+    }
   };
 
   if (error) {
@@ -504,6 +736,9 @@ const PendingComplaints = () => {
       </div>
     );
   }
+
+  const currentData = getCurrentData();
+  const isLoading = getCurrentLoadingState();
 
   return (
     <>
@@ -523,96 +758,180 @@ const PendingComplaints = () => {
 
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Pending Complaints</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            {getTabTitle()} / लंबित शिकायतें
+          </h1>
         </div>
 
-        <div className="space-y-3 sm:space-y-4">
-          {complaintsData.map((complaint) => {
-            const approvalStatuses = getApprovalStatuses(complaint);
-            
-            return (
-              <div
-                key={complaint.id}
-                className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-300 transition-shadow duration-300 relative"
+        {/* JUSTIFY-BETWEEN TABS COMPONENT */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
+          <div className="">
+            <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
+              <button
+                onClick={() => handleTabChange('all')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "all"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
               >
-                {/* ✅ Full Text Approval Status Badges in Green */}
-                {approvalStatuses.length > 0 && (
-                  <div className="absolute bottom-2 left-2 z-10 flex flex-wrap gap-1">
-                    {approvalStatuses.map((status, index) => (
-                      <span 
-                        key={index}
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${status.color}`}
-                      >
-                        <FaCheck className="w-3 h-3 mr-1" />
-                        {status.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 p-3 sm:p-4 text-sm border-b sm:border-b-0 border-gray-100">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className="text-black text-xs sm:text-sm mb-1 sm:mb-0">
-                      Complaint No:
-                    </span>
-                    <span className="bg-blue-100 px-2 sm:px-3 py-1 rounded text-blue-800 font-bold text-xs sm:text-sm text-center sm:text-left">
-                      {complaint.complain_no}
-                    </span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Complainant:</span>
-                    <span className="text-gray-700 text-sm">{complaint.name}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Mobile No:</span>
-                    <span className="text-gray-700 text-sm">{complaint.mobile}</span>
-                  </div>
-                </div>
-
-                {/* Row 2 */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 px-3 sm:px-4 pb-3 sm:pb-4 text-sm border-b sm:border-b-0 border-gray-100">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Email:</span>
-                    <span className="text-gray-700 text-sm">{complaint.email}</span>
-                  </div>
-                 
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">District:</span>
-                    <span className="text-gray-700 text-sm">{complaint.district_name}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                    <span className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-0">Created Date:</span>
-                    <span className="text-sm text-gray-600">{formatDate(complaint.created_at)}</span>
-                  </div>
-                </div>
-
-                {/* Row 4 - Action Buttons */}
-                <div className="px-3 sm:px-4 pb-12 sm:pb-4">
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
-                    <button
-                      onClick={(e) => handleViewDetails(e, complaint.id)}
-                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white px-4 py-2 sm:py-1 rounded hover:bg-blue-700 cursor-pointer transition-colors duration-200 text-sm font-medium"
-                    >
-                      View Details
-                    </button>
-                    {/* ✅ Only Forward button - no conditional rendering needed */}
-                    <button
-                      onClick={(e) => handleForward(e, complaint.id)}
-                      className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 sm:py-1 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-                    >
-                      Forward
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                All Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('pending')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "pending"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Pending Complaints
+              </button>
+              <button
+                onClick={() => handleTabChange('approved')}
+                className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                  activeTab === "approved"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                Approved Complaints
+              </button>
+            </div>
+          </div>
         </div>
 
-        {complaintsData.length === 0 && (
-          <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500 text-sm sm:text-base">No pending complaints found</p>
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="flex flex-col items-center space-y-4">
+              <p className="text-gray-700 text-md font-semibold">Loading...</p>
+            </div>
           </div>
+        ) : (
+          <>
+           <div className="space-y-4">
+  {currentData.map((complaint) => {
+    const approvalStatuses = getApprovalStatuses(complaint);
+    
+    return (
+      <div
+        key={complaint.id}
+        className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
+      >
+        {/* Header Section */}
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
+          <div className="mt-2 sm:mt-0">
+            <span className="text-xs text-gray-600">Current Stage:</span>
+            <span
+              className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                isForwarded(complaint)
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+              }`}
+            >
+              {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
+            </span>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {/* Column 1 */}
+            <div className="space-y-2">
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Complaint No:</span>
+                <span className="bg-blue-100 px-2 py-0.5 rounded text-blue-800 font-semibold text-xs">
+                  {complaint.complain_no}
+                </span>
+              </div>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Complainant:</span>
+                <span className="text-gray-900 font-medium">{complaint.name}</span>
+              </div>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Mobile No:</span>
+                <span className="text-gray-900">{complaint.mobile}</span>
+              </div>
+            </div>
+
+            {/* Column 2 */}
+            <div className="space-y-2">
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Email:</span>
+                <span className="text-gray-900 text-xs break-all">{complaint.email}</span>
+              </div>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">District:</span>
+                <span className="text-gray-900">{complaint.district_name}</span>
+              </div>
+            </div>
+
+            {/* Column 3 */}
+            <div className="flex flex-col sm:items-end">
+              <span className="text-xs text-gray-600">Created:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {formatDate(complaint.created_at)}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions and Badges in Same Row */}
+          <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Approval Badges */}
+            <div className="flex flex-wrap gap-2">
+              {approvalStatuses.map((status, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1 rounded text-xs font-medium bg-green-600 text-white"
+                >
+                  <FaCheck className="w-3 h-3 mr-1" />
+                  {status.label}
+                </span>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={(e) => handleViewDetails(e, complaint.id)}
+                className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+              >
+                View Details
+              </button>
+
+              {isForwarded(complaint) ? (
+                <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+                  ✓ Forwarded
+                </span>
+              ) : (
+                <button
+                  onClick={(e) => handleForward(e, complaint.id)}
+                  className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                >
+                  Forward
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
+
+
+            {/* Empty State */}
+            {currentData.length === 0 && (
+              <div className="text-center py-8 sm:py-12">
+                <p className="text-gray-500 text-sm sm:text-base">
+                  No {activeTab === 'all' ? '' : activeTab} complaints found
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -624,7 +943,7 @@ const PendingComplaints = () => {
         onSubmit={handleForwardSubmit}
       />
 
-      {/* Details Modal (existing) */}
+      {/* Details Modal */}
       {isModalOpen && selectedComplaint && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4">
           <div className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-lg sm:rounded-2xl bg-white mt-2 sm:mt-0">
