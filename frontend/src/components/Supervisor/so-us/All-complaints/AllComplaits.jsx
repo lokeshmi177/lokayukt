@@ -855,7 +855,7 @@ const AllComplaints = () => {
             <div className="space-y-2">
               <div className="flex gap-x-2">
                 <span className="text-gray-600 font-medium">Email:</span>
-                <span className="text-gray-900 text-xs break-all">{complaint.email}</span>
+                <span className="text-gray-900 ">{complaint.email}</span>
               </div>
               <div className="flex gap-x-2">
                 <span className="text-gray-600 font-medium">District:</span>
