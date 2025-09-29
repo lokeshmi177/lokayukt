@@ -536,21 +536,31 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected"),
 
         // Percentages
-        DB::raw("ROUND(
-            (SUM(CASE WHEN cm.approved_rejected_by_ro = '1' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
-        ) as approved_percentage"),
+        // DB::raw("ROUND(
+        //     (SUM(CASE WHEN cm.approved_rejected_by_ro = '1' THEN 1 ELSE 0 END) / 
+        //      COUNT(cm.id)) * 100, 2
+        // ) as approved_percentage"),
 
-        DB::raw("ROUND(
-            (SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
-        ) as pending_percentage"),
+        // DB::raw("ROUND(
+        //     (SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) / 
+        //      COUNT(cm.id)) * 100, 2
+        // ) as pending_percentage"),
 
-        DB::raw("ROUND(
-            (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
-             COUNT(cm.id)) * 100, 2
-        ) as rejected_percentage")
+        // DB::raw("ROUND(
+        //     (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
+        //      COUNT(cm.id)) * 100, 2
+        // ) as rejected_percentage")
+          DB::raw("
+            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 1 AND 10 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as approved_percentage
+        "),
+           DB::raw("
+            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 10 AND 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as pending_percentage
+        "),
+        DB::raw("
+            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) > 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as rejected_percentage
+        ")
     )
+     ->where('approved_rejected_by_ro','1')
      ->where('in_draft','0')
     ->first();
     return response()->json([

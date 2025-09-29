@@ -83,9 +83,9 @@ class SupervisorDashboardController extends Controller
                   ->whereNot('approved_rejected_by_ds_js', 1);
              $query2->where('cmp.form_status', 1)
             ->where('cmp.approved_rejected_by_ro', 1)
-            ->where('cmp.approved_rejected_by_so_us', 1)
-            ->where('cmp.approved_rejected_by_ds_js', 0)
-            ->where('cmp.approved_rejected_by_d_a', 0);
+            ->where('cmp.approved_rejected_by_so_us', 1);
+            // ->where('cmp.approved_rejected_by_ds_js', 0)
+            // ->where('cmp.approved_rejected_by_d_a', 0);
             // ->where('approved_rejected_by_ds_js', 0);
                         // ->where('approved_rejected_by_d_a',1)
                         //  ->where(function($q){
