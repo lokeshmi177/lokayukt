@@ -256,7 +256,7 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      const response = await api.post(`/supervisor/forward-by-ds/${complaintId}`, {
+      const response = await api.post(`/supervisor/forward-by-ds-js/${complaintId}`, {
         forward_to_d_a: parseInt(formData.forwardTo),
         remarks: formData.remarks
       });
