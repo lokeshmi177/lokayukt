@@ -804,132 +804,118 @@ const AllComplaints = () => {
           </div>
         ) : (
           <>
-            <div className="space-y-3 sm:space-y-4">
-              {currentData.map((complaint) => {
-                const approvalStatuses = getApprovalStatuses(complaint);
-                
-                return (
-                  <div
-  key={complaint.id}
-  className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-200 transition-shadow duration-300 relative overflow-hidden"
->
-  {/* Header Section */}
-  <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-      <div className="mb-2 sm:mb-0">
-        <span className="text-gray-700 font-semibold text-sm">
-          Complaint Details
-        </span>
-      </div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-        <div className="text-right">
-          <span className="text-xs text-gray-600">Current Stage:</span>
-          <span className="ml-1 text-sm font-semibold text-gray-900">
-            {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
-          </span>
+          <div className="space-y-4">
+  {currentData.map((complaint) => {
+    const approvalStatuses = getApprovalStatuses(complaint);
+    
+    return (
+      <div
+        key={complaint.id}
+        className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
+      >
+        {/* Header Section */}
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
+          <div className="mt-2 sm:mt-0">
+            <span className="text-xs text-gray-600">Current Stage:</span>
+            <span
+              className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                isForwarded(complaint)
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+              }`}
+            >
+              {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
+            </span>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  {/* Main Content Grid */}
-  <div className="p-4">
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-      {/* Left Column */}
-      <div className="space-y-2">
-        <div className="flex">
-          <span className="text-gray-600 font-medium w-32">Complaint No:</span>
-          <span className="bg-blue-100 px-2 py-1 rounded text-blue-800 font-bold text-xs">
-            {complaint.complain_no}
-          </span>
-        </div>
-        <div className="flex">
-          <span className="text-gray-600 font-medium w-32">Complainant:</span>
-          <span className="text-gray-900 font-medium">{complaint.name}</span>
-        </div>
-        <div className="flex">
-          <span className="text-gray-600 font-medium w-32">Mobile No:</span>
-          <span className="text-gray-900">{complaint.mobile}</span>
-        </div>
-      </div>
+        {/* Main Content */}
+        <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {/* Column 1 */}
+            <div className="space-y-2">
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Complaint No:</span>
+                <span className="bg-blue-100 px-2 py-0.5 rounded text-blue-800 font-semibold text-xs">
+                  {complaint.complain_no}
+                </span>
+              </div>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Complainant:</span>
+                <span className="text-gray-900 font-medium">{complaint.name}</span>
+              </div>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Mobile No:</span>
+                <span className="text-gray-900">{complaint.mobile}</span>
+              </div>
+            </div>
 
-      {/* Middle Column */}
-      <div className="space-y-2">
-        <div className="flex">
-          <span className="text-gray-600 font-medium w-24">Email:</span>
-          <span className="text-gray-900 text-xs break-all">{complaint.email}</span>
-        </div>
-        <div className="flex">
-          <span className="text-gray-600 font-medium w-24">District:</span>
-          <span className="text-gray-900">{complaint.district_name}</span>
-        </div>
-        <div className="flex">
-          <span className="text-gray-600 font-medium w-24">Created:</span>
-          <span className="text-gray-900">{formatDate(complaint.created_at)}</span>
-        </div>
-      </div>
+            {/* Column 2 */}
+            <div className="space-y-2">
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Email:</span>
+                <span className="text-gray-900 text-xs break-all">{complaint.email}</span>
+              </div>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">District:</span>
+                <span className="text-gray-900">{complaint.district_name}</span>
+              </div>
+           
+            </div>
 
-      {/* Right Column */}
-      <div className="space-y-2">
-        <div className="text-left sm:text-right">
-          <span className="text-xs text-gray-600">Submitted:</span>
-          <div className="text-sm font-medium text-gray-900">
-            {formatDate(complaint.created_at)}
+            {/* Column 3 */}
+            <div className="flex flex-col sm:items-end">
+              <span className="text-xs text-gray-600">Created:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {formatDate(complaint.created_at)}
+              </span>
+            </div>
+          </div>
+
+          {/* Actions and Badges in Same Row */}
+          <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Approval Badges */}
+            <div className="flex flex-wrap gap-2">
+              {approvalStatuses.map((status, index) => (
+                <span
+                  key={index}
+                  className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium text-white ${status.color}`}
+                >
+                  <FaCheck className="w-3 h-3 mr-1" />
+                  {status.label}
+                </span>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={(e) => handleViewDetails(e, complaint.id)}
+                className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+              >
+                View Details
+              </button>
+
+              {isForwarded(complaint) ? (
+                <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+                  ✓ Forwarded
+                </span>
+              ) : (
+                <button
+                  onClick={(e) => handleForward(e, complaint.id)}
+                  className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                >
+                  Forward
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    {/* Approval Badges Section */}
-    {approvalStatuses.length > 0 && (
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="flex flex-wrap gap-2">
-          {approvalStatuses.map((status, index) => (
-            <span
-              key={index}
-              className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium text-white ${status.color}`}
-            >
-              <FaCheck className="w-3 h-3 mr-1" />
-              {status.label}
-            </span>
-          ))}
-        </div>
-      </div>
-    )}
-
-    {/* Action Buttons */}
-    <div className="mt-4 pt-4 border-t border-gray-200">
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
-        <button
-          onClick={(e) => handleViewDetails(e, complaint.id)}
-          className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-        >
-          View Details
-        </button>
-
-        {isForwarded(complaint) ? (
-          <button
-            disabled
-            className="w-full sm:w-auto px-4 py-2 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-          >
-            ✓ Forwarded
-          </button>
-        ) : (
-          <button
-            onClick={(e) => handleForward(e, complaint.id)}
-            className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
-          >
-            Forward
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
+    );
+  })}
 </div>
-
-                );
-              })}
-            </div>
 
 
             {/* Empty State */}

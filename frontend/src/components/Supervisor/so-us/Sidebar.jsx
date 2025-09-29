@@ -1,5 +1,5 @@
 // components/Sidebar.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaHome,
@@ -26,6 +26,7 @@ const Sidebar = ({
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isHindi, setIsHindi] = useState(false);
+  const sidebarRef = useRef(null); // ✅ Added ref for outside click detection
 
   // Simple translation object with updated route names
   const translations = {
@@ -36,8 +37,6 @@ const Sidebar = ({
       supervisor: "Supervisor",
       dashboard: "Dashboard",
       allComplaints: "Complaints",
-      // pendingComplaints: "Pending Complaints",
-      // approvedComplaints: "Approved Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",
@@ -51,9 +50,7 @@ const Sidebar = ({
       description: "शिकायत प्रबंधन",
       supervisor: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
-      Complaints: "शिकायतें",
-      // pendingComplaints: "लंबित शिकायतें",
-      // approvedComplaints: "स्वीकृत शिकायतें",
+      allComplaints: "शिकायतें", // ✅ Fixed: was "Complaints"
       progressRegister: "प्रगति रजिस्टर",
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
@@ -66,11 +63,40 @@ const Sidebar = ({
   // Get current translations
   const t = isHindi ? translations.hindi : translations.english;
 
+  // ✅ Outside click handler for mobile menu
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        isMobile &&
+        isMobileMenuOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target)
+      ) {
+        toggleMobileMenu();
+      }
+    };
+
+    if (isMobile && isMobileMenuOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("touchstart", handleOutsideClick); // ✅ Added for mobile touch
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [isMobile, isMobileMenuOpen, toggleMobileMenu]);
+
   // Check screen size and set mobile state
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
+      
+      // ✅ Auto-close mobile menu on desktop resize
+      if (!mobile && isMobileMenuOpen) {
+        toggleMobileMenu();
+      }
     };
 
     checkScreenSize();
@@ -79,7 +105,7 @@ const Sidebar = ({
     return () => {
       window.removeEventListener("resize", checkScreenSize);
     };
-  }, []);
+  }, [isMobileMenuOpen, toggleMobileMenu]);
 
   // Toggle language function
   const toggleLanguage = () => {
@@ -98,10 +124,23 @@ const Sidebar = ({
 
   // Close mobile menu when clicking link
   const handleLinkClick = () => {
-    if (isMobile) {
+    if (isMobile && isMobileMenuOpen) {
       toggleMobileMenu();
     }
   };
+
+  // ✅ Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobile && isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobile, isMobileMenuOpen]);
 
   // Custom Scrollbar CSS
   const scrollbarStyles = `
@@ -130,27 +169,29 @@ const Sidebar = ({
       {/* Custom Scrollbar Styles */}
       <style>{scrollbarStyles}</style>
 
-      {/* Mobile Overlay */}
+      {/* ✅ Mobile Overlay with higher z-index */}
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={toggleMobileMenu}
+          aria-label="Close menu overlay"
         />
       )}
 
-      {/* Sidebar */}
+      {/* ✅ Sidebar with proper z-index and ref */}
       <div
-        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col z-40 ${
+        ref={sidebarRef}
+        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col ${
           isMobile
-            ? `w-72 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
-            : `${isCollapsed ? "w-16" : "w-72"}`
+            ? `w-72 z-50 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
+            : `${isCollapsed ? "w-16" : "w-72"} z-30`
         }`}
       >
         {/* Mobile Close Button */}
         {isMobile && isMobileMenuOpen && (
           <button
             onClick={toggleMobileMenu}
-            className="absolute top-4 right-4 p-2 text-white hover:bg-slate-700 rounded-lg transition-colors z-50"
+            className="absolute top-4 right-4 p-2 text-white hover:bg-slate-700 rounded-lg transition-colors z-10"
             aria-label="Close menu"
           >
             <FaTimes className="w-5 h-5" />
@@ -295,9 +336,8 @@ const Sidebar = ({
                   ["/all-complaints", "/pending-complaints", "/approved-complaints"].some(path =>
                     isActive(path)
                   )
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
-                  
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -313,56 +353,6 @@ const Sidebar = ({
                 )}
               </Link>
             </li>
-
-            {/* Pending Complaints */}
-            {/* <li>
-              <Link
-                to="/supervisor/pending-complaints"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/pending")
-                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
-                    : "text-slate-300 hover:text-white hover:bg-gray-700"
-                } ${
-                  !isMobile && isCollapsed
-                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
-                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
-                }`}
-                title={!isMobile && isCollapsed ? t.pendingComplaints : ""}
-              >
-                <FaClock className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && (
-                  <span className="transition-all duration-300">
-                    {t.pendingComplaints}
-                  </span>
-                )}
-              </Link>
-            </li> */}
-
-            {/* Approved Complaints */}
-            {/* <li>
-              <Link
-                to="/supervisor/approved-complaints"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/approved")
-                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
-                    : "text-slate-300 hover:text-white hover:bg-gray-700"
-                } ${
-                  !isMobile && isCollapsed
-                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
-                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
-                }`}
-                title={!isMobile && isCollapsed ? t.approvedComplaints : ""}
-              >
-                <FaCheckCircle className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && (
-                  <span className="transition-all duration-300">
-                    {t.approvedComplaints}
-                  </span>
-                )}
-              </Link>
-            </li> */}
 
             {/* Progress Register */}
             <li>

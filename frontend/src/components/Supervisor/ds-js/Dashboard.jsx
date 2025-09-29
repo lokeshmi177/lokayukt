@@ -33,6 +33,7 @@ import {
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
@@ -256,6 +257,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 // Main Dashboard Component
 const Dashboard = ({ userRole = "supervisor" }) => {
+
+  const navigate = useNavigate()
   //  API State Management + Date Picker State
   const [dashboardData, setDashboardData] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
@@ -275,7 +278,7 @@ const Dashboard = ({ userRole = "supervisor" }) => {
   const fetchWeeklyData = async () => {
     try {
       console.log('Fetching weekly graph data...');
-      const response = await api.get('/supervisor/getWeeklyGraph');
+      const response = await api.get('/admin/getWeeklyGraph');
       console.log('Weekly API Response:', response.data);
       
       if (response.data && response.data.labels) {
@@ -531,7 +534,7 @@ const Dashboard = ({ userRole = "supervisor" }) => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard / डैशबोर्ड</h1>
           <p className="text-gray-600">
-            Welcome back, {userRole} • Last updated: {new Date().toLocaleString()}
+            Welcome Back, {userRole} • Last Updated: {new Date().toLocaleString()}
           </p>
         </div>
         <div className="flex gap-2 relative">
@@ -603,11 +606,15 @@ const Dashboard = ({ userRole = "supervisor" }) => {
 
 
       {/* Key Performance Indicators */}
-     
+ <div className="grid grid-cols-1 sm:grid-cols-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
 
- <div className="grid grid-cols-1 sm:grid-cols-5 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+
         {/* Total Complaints */}
-        <div className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+        onClick={()=>{
+          navigate("/supervisor/all-complaints ")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaFileAlt className="text-2xl text-blue-600" />
@@ -618,12 +625,16 @@ const Dashboard = ({ userRole = "supervisor" }) => {
           <div className="mt-4 text-3xl font-extrabold text-blue-900">
             {dashboardData?.totalcomplains || 0}
           </div>
-          <div className="text-sm text-blue-700">All time</div>
+          <div className="text-sm text-blue-700">All Time</div>
         </div>
 
 
         {/* Today's Entry */}
-        <div className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+         onClick={()=>{
+          navigate("/supervisor/pending-complaints")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaClock className="text-2xl text-indigo-600" />
@@ -634,28 +645,32 @@ const Dashboard = ({ userRole = "supervisor" }) => {
           <div className="mt-4 text-3xl font-extrabold text-indigo-900">
             {dashboardData?.todaycomplains || 0}
           </div>
-          <div className="text-sm text-indigo-700">New complaints</div>
+          <div className="text-sm text-indigo-700">New Complaints</div>
         </div>
 
 
         {/* Approved */}
-        <div className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div 
+          onClick={()=>{
+          navigate("/supervisor/approved-complaints")
+        }}
+        className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaCheckCircle className="text-2xl text-green-600" />
-              <h3 className="text-sm font-medium text-green-800">Approved</h3>
+              <h3 className="text-sm font-medium text-green-800">Disposed</h3>
             </div>
             <div className="text-green-600 text-sm font-semibold">↑</div>
           </div>
           <div className="mt-4 text-3xl font-extrabold text-green-900">
             {dashboardData?.approvedcomplains || 0}
           </div>
-          <div className="text-sm text-green-700">Disposed cases</div>
+          <div className="text-sm text-green-700">Disposed Cases</div>
         </div>
 
 
         {/* Rejected */}
-        {/* <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div className="p-5 rounded-2xl shadow-md border border-red-200 bg-red-50 hover:bg-red-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaTimesCircle className="text-2xl text-red-600" />
@@ -667,37 +682,45 @@ const Dashboard = ({ userRole = "supervisor" }) => {
             {dashboardData?.rejectedcomplains || 0}
           </div>
           <div className="text-sm text-red-700">Rejected cases</div>
-        </div> */}
+        </div>
 
 
         {/* Pending */}
-        <div className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+          onClick={()=>{
+          navigate("/supervisor/pending-complaints")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaExclamationTriangle className="text-2xl text-yellow-600" />
-              <h3 className="text-sm font-medium text-yellow-800">Pending</h3>
+              <h3 className="text-sm font-medium text-yellow-800">In Progress</h3>
             </div>
           </div>
           <div className="mt-4 text-3xl font-extrabold text-yellow-900">
             {dashboardData?.pendingcomplains || 0}
           </div>
-          <div className="text-sm text-yellow-700">In progress</div>
+          <div className="text-sm text-yellow-700">In Progress</div>
         </div>
 
 
         {/* Avg. Processing */}
-        <div className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
+        <div
+          onClick={()=>{
+          navigate("/supervisor/pending-complaints")
+        }}
+         className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-2">
               <FaClock className="text-2xl text-teal-600" />
-              <h3 className="text-sm font-medium text-teal-800">Avg. pending</h3>
+              <h3 className="text-sm font-medium text-teal-800">Avg. Pending</h3>
             </div>
             <div className="text-red-600 text-sm font-semibold">↓</div>
           </div>
           <div className="mt-4 text-3xl font-extrabold text-teal-900">
             {dashboardData?.avgPendingDays || '0'} days
           </div>
-          <div className="text-sm text-teal-700">Average time</div>
+          <div className="text-sm text-teal-700">Average Time</div>
         </div>
 
 

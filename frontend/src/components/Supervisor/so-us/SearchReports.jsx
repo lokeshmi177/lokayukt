@@ -669,7 +669,7 @@ const SearchReports = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen overflow-hidden">
+    <div className="bg-gray-50 min-h-screen overflow-hidden ">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -706,7 +706,7 @@ const SearchReports = () => {
         </div>
 
         {/* Tabs Component */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden sm:px-0 lg:px-0 md:px-0 px-2 sm:py-0 lg:py-0 md:py-0 py-2 ">
           {/* Tab Navigation */}
           <div className="space-y-6">
             <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
@@ -763,8 +763,8 @@ const SearchReports = () => {
                     {/* Search Criteria */}
                    <div className="bg-white  sm:p-4 shadow-sm">
  <div className="flex items-center gap-2 mb-3">
-  <FaSearch className="w-5 h-5 text-gray-700 relative bottom-3" /> {/* Icon thoda bada */}
-  <h3 className="text-2xl sm:text-xl md:text-2xl relative bottom-3 font-semibold text-gray-900">
+  <FaSearch className="w-5 h-5 text-gray-700 relative  sm:bottom-3 md:bottom-3 lg:bottom-3 " /> {/* Icon thoda bada */}
+  <h3 className="text-2xl sm:text-xl md:text-2xl relative sm:bottom-3 md:bottom-3 lg:bottom-3  font-semibold text-gray-900">
     Search Criteria
   </h3>
 </div>

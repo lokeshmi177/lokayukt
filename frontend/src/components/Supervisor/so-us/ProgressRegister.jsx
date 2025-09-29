@@ -35,6 +35,11 @@ const ProgressRegister = () => {
   const [currentReportData, setCurrentReportData] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
+  
+  // Loading states
+  const [isLoadingMovements, setIsLoadingMovements] = useState(true);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -267,16 +272,20 @@ const ProgressRegister = () => {
   // Fetch complaints data from API for movements tab
   useEffect(() => {
     const fetchComplaints = async () => {
+      setIsLoadingMovements(true);
       try {
         const response = await api.get("/supervisor/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
         } else {
-          setError("Failed to fetch data");
+          setComplaintsData([]);
         }
       } catch (err) {
         console.error("API Error:", err);
+        setComplaintsData([]);
         setError("Failed to fetch complaints data");
+      } finally {
+        setIsLoadingMovements(false);
       }
     };
 
@@ -286,6 +295,7 @@ const ProgressRegister = () => {
   // Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
+      setIsLoadingStatus(true);
       try {
         const response = await api.get("/supervisor/current-report");
         console.log("Current Report API Response:", response.data);
@@ -299,6 +309,8 @@ const ProgressRegister = () => {
       } catch (err) {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
+      } finally {
+        setIsLoadingStatus(false);
       }
     };
 
@@ -308,6 +320,7 @@ const ProgressRegister = () => {
   // Fetch analytics data for analytics tab
   useEffect(() => {
     const fetchAnalytics = async () => {
+      setIsLoadingAnalytics(true);
       try {
         const response = await api.get("/supervisor/analytic-report");
         console.log("Analytics API Response:", response.data);
@@ -321,6 +334,8 @@ const ProgressRegister = () => {
       } catch (err) {
         console.error("Analytics API Error:", err);
         setAnalyticsData(null);
+      } finally {
+        setIsLoadingAnalytics(false);
       }
     };
 
@@ -640,7 +655,6 @@ const ProgressRegister = () => {
             <h1 className="text-xl sm:text-2xl lg:text-3xl pt-1 font-bold text-gray-900 truncate">
               Progress Register / प्रगति रजिस्टर
             </h1>
-
           </div>
           
           {/* Filter and Export buttons on the right */}
@@ -768,7 +782,16 @@ const ProgressRegister = () => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
-                              {paginatedData.length > 0 ? (
+                              {isLoadingMovements ? (
+                                <tr>
+                                  <td
+                                    colSpan="6"
+                                    className="py-8 text-center text-gray-500"
+                                  >
+                                    Loading...
+                                  </td>
+                                </tr>
+                              ) : paginatedData.length > 0 ? (
                                 paginatedData.map((movement) => (
                                   <tr
                                     key={movement.id}
@@ -810,7 +833,7 @@ const ProgressRegister = () => {
                                     colSpan="6"
                                     className="py-8 text-center text-gray-500"
                                   >
-                                    No file movements found.
+                                    No data
                                   </td>
                                 </tr>
                               )}
@@ -874,7 +897,16 @@ const ProgressRegister = () => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-100">
-                            {paginatedData.length > 0 ? (
+                            {isLoadingStatus ? (
+                              <tr>
+                                <td
+                                  colSpan="6"
+                                  className="py-8 text-center text-gray-500"
+                                >
+                                  Loading...
+                                </td>
+                              </tr>
+                            ) : paginatedData.length > 0 ? (
                               paginatedData.map((complaint, index) => (
                                 <tr
                                   key={`${complaint.complaintNo}-${index}`}
@@ -916,10 +948,7 @@ const ProgressRegister = () => {
                                   colSpan="6"
                                   className="py-8 text-center text-gray-500"
                                 >
-                                  {currentReportData.length === 0 
-                                    ? "No current report data available from API." 
-                                    : "No complaint status found matching search criteria."
-                                  }
+                                  No data
                                 </td>
                               </tr>
                             )}
@@ -949,12 +978,16 @@ const ProgressRegister = () => {
               {activeTab === "analytics" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
-                    {analyticsData ? (
+                    {isLoadingAnalytics ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500">
+                          Loading...
+                        </div>
+                      </div>
+                    ) : analyticsData ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
                           <div className="flex items-center gap-2 mb-2">
-                          {/* from-blue-50 to-blue-100 */}
-                            {/* <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Average Processing Time
                             </h3>
@@ -969,8 +1002,6 @@ const ProgressRegister = () => {
 
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
                           <div className="flex items-center gap-2 mb-2">
-                          {/* from-yellow-50 to-yellow-100 */}
-                            {/* <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Files in Progress
                             </h3>
@@ -985,8 +1016,6 @@ const ProgressRegister = () => {
 
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200 sm:col-span-2 lg:col-span-1">
                           <div className="flex items-center gap-2 mb-2">
-                          {/* from-red-50 to-red-100 */}
-                            {/* <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Overdue Cases
                             </h3>
@@ -1002,7 +1031,7 @@ const ProgressRegister = () => {
                     ) : (
                       <div className="text-center py-8">
                         <div className="text-gray-500">
-                          Loading analytics data...
+                          No data
                         </div>
                       </div>
                     )}

@@ -17,11 +17,9 @@ import {
   FaCheck
 } from "react-icons/fa";
 
-
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
 const subRole = localStorage.getItem("subrole");
-
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -30,7 +28,6 @@ const api = axios.create({
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
-
 
 // Custom Searchable Select Component - ID save होगी, Name display होगी
 const CustomSearchableSelect = ({ 
@@ -44,7 +41,6 @@ const CustomSearchableSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-
   // Filter options based on search (केवल name में search)
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
@@ -54,16 +50,13 @@ const CustomSearchableSelect = ({
     );
   };
 
-
   const selectedOption = options.find(opt => opt.value === value);
-
 
   const handleSelect = (optionValue) => {
     onChange(optionValue); // यहाँ ID pass होती है
     setIsOpen(false);
     setSearchTerm("");
   };
-
 
   return (
     <div className="relative">
@@ -83,7 +76,6 @@ const CustomSearchableSelect = ({
           </option>
         ))}
       </select>
-
 
       {/* Custom Dropdown Button - केवल name दिखेगा */}
       <button
@@ -107,7 +99,6 @@ const CustomSearchableSelect = ({
         <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
@@ -125,7 +116,6 @@ const CustomSearchableSelect = ({
               />
             </div>
           </div>
-
 
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
@@ -169,7 +159,6 @@ const CustomSearchableSelect = ({
   );
 };
 
-
 // Forward Modal Component
 const ForwardModal = ({ 
   isOpen, 
@@ -184,7 +173,6 @@ const ForwardModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
-
 
   // Fetch dealing assistants from API
   useEffect(() => {
@@ -223,10 +211,8 @@ const ForwardModal = ({
       }
     };
 
-
     fetchDealingAssistants();
   }, [isOpen]);
-
 
   useEffect(() => {
     if (isOpen) {
@@ -237,7 +223,6 @@ const ForwardModal = ({
     }
   }, [isOpen]);
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -246,12 +231,10 @@ const ForwardModal = ({
       return;
     }
 
-
     if (!formData.remarks.trim()) {
       toast.error("Please enter remarks");
       return;
     }
-
 
     setIsSubmitting(true);
     
@@ -261,9 +244,7 @@ const ForwardModal = ({
         remarks: formData.remarks
       });
 
-
       console.log("API Response:", response.data);
-
 
       // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
@@ -313,7 +294,6 @@ const ForwardModal = ({
     }
   };
 
-
   // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -321,9 +301,7 @@ const ForwardModal = ({
     }
   };
 
-
   if (!isOpen) return null;
-
 
   return (
     <div 
@@ -341,7 +319,6 @@ const ForwardModal = ({
             <FaTimes className="w-5 h-5" />
           </button>
         </div>
-
 
         <form onSubmit={handleSubmit}>
           <div className="p-4 space-y-4">
@@ -380,7 +357,6 @@ const ForwardModal = ({
               )}
             </div>
 
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Remarks / टिप्पणी *
@@ -397,7 +373,6 @@ const ForwardModal = ({
             </div>
           </div>
 
-
           <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
             <button
               type="button"
@@ -413,7 +388,7 @@ const ForwardModal = ({
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !formData.forwardTo || !formData.remarks.trim() || isLoadingOptions
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-[-[#123463] text-white'
+                  : 'bg-[#123463] text-white'
               }`}
             >
               {isSubmitting ? (
@@ -435,7 +410,6 @@ const ForwardModal = ({
   );
 };
 
-
 const PendingComplaints = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -449,7 +423,7 @@ const PendingComplaints = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  // Loading states for each tab - ADDED
+  // Loading states for each tab
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [isLoadingApproved, setIsLoadingApproved] = useState(false);
@@ -458,7 +432,6 @@ const PendingComplaints = () => {
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-
   // Determine active tab from URL
   const getActiveTabFromURL = () => {
     if (location.pathname.includes('/pending-complaints')) return 'pending';
@@ -466,12 +439,10 @@ const PendingComplaints = () => {
     return 'all';
   };
 
-
   // Set active tab based on URL on mount
   useEffect(() => {
     setActiveTab(getActiveTabFromURL());
   }, [location.pathname]);
-
 
   // Handle tab change with routing
   const handleTabChange = (tab) => {
@@ -493,8 +464,7 @@ const PendingComplaints = () => {
     }
   };
 
-
-  // Fetch all complaints data from API - UPDATED WITH LOADING
+  // Fetch all complaints data from API
   const fetchAllComplaints = async () => {
     setIsLoadingAll(true);
     try {
@@ -514,8 +484,7 @@ const PendingComplaints = () => {
     }
   };
 
-
-  // Fetch pending complaints data - UPDATED WITH LOADING
+  // Fetch pending complaints data
   const fetchPendingComplaints = async () => {
     setIsLoadingPending(true);
     try {
@@ -539,8 +508,7 @@ const PendingComplaints = () => {
     }
   };
 
-
-  // Fetch approved complaints data - UPDATED WITH LOADING
+  // Fetch approved complaints data
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
     try {
@@ -561,7 +529,6 @@ const PendingComplaints = () => {
     }
   };
 
-
   // Fetch data based on active tab
   useEffect(() => {
     switch(activeTab) {
@@ -579,22 +546,51 @@ const PendingComplaints = () => {
     }
   }, [activeTab]);
 
-
-  // Get current data based on active tab
-  const getCurrentData = () => {
-    switch(activeTab) {
-      case 'all':
-        return complaintsData;
+  // Filter function to remove forwarded complaints for pending/all tabs
+  const filterComplaintsByTab = (complaints, tabType) => {
+    if (!Array.isArray(complaints)) return [];
+    
+    switch(tabType) {
       case 'pending':
-        return pendingData.length > 0 ? pendingData : complaintsData;
+        // Show only complaints that are NOT forwarded (approved_rejected_by_so_us !== 1)
+        return complaints.filter(complaint => complaint.approved_rejected_by_so_us !== 1);
+      
+      case 'all':
+        // Show all complaints regardless of forward status
+        return complaints;
+      
       case 'approved':
-        return approvedData;
+        // Show only forwarded complaints (approved_rejected_by_so_us === 1)
+        return complaints.filter(complaint => complaint.approved_rejected_by_so_us === 1);
+      
       default:
-        return complaintsData;
+        return complaints;
     }
   };
 
-  // Get current loading state - ADDED
+  // Get current data based on active tab with filtering
+  const getCurrentData = () => {
+    let rawData;
+    
+    switch(activeTab) {
+      case 'all':
+        rawData = complaintsData;
+        break;
+      case 'pending':
+        rawData = pendingData.length > 0 ? pendingData : complaintsData;
+        break;
+      case 'approved':
+        rawData = approvedData;
+        break;
+      default:
+        rawData = complaintsData;
+    }
+    
+    // Apply filtering based on current tab
+    return filterComplaintsByTab(rawData, activeTab);
+  };
+
+  // Get current loading state
   const getCurrentLoadingState = () => {
     switch(activeTab) {
       case 'all':
@@ -608,22 +604,18 @@ const PendingComplaints = () => {
     }
   };
 
-
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
     navigate(`/supervisor/pending-complaints/view/${complaintId}`);
-    window.scrollTo({ top: 2, behavior: 'smooth' }); // Scroll to top smoothly
-
+    window.scrollTo({ top: 2, behavior: 'smooth' });
   };
-
 
   // Handle modal view
   const handleModalView = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
   };
-
 
   // Handle Forward button click
   const handleForward = (e, complaintId) => {
@@ -633,12 +625,11 @@ const PendingComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-
-  // Handle forward submit with local state update
+  // UPDATED: Handle forward submit with improved local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // Update local state immediately without API call
-    const updateData = (prevData) => 
-      prevData.map(complaint => 
+    // Function to update complaint status in any array
+    const updateComplaintStatus = (complaintsArray) => 
+      complaintsArray.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
@@ -648,13 +639,30 @@ const PendingComplaints = () => {
           : complaint
       );
 
-
-    setComplaintsData(updateData);
-    setPendingData(updateData);
+    // Update all relevant state arrays
+    setComplaintsData(updateComplaintStatus);
+    setPendingData(updateComplaintStatus);
+    setApprovedData(prev => {
+      const forwardedComplaint = [...complaintsData, ...pendingData]
+        .find(complaint => complaint.id === forwardedComplaintId);
+      
+      if (forwardedComplaint) {
+        const updatedComplaint = {
+          ...forwardedComplaint,
+          approved_rejected_by_so_us: 1,
+          status: 'Forwarded'
+        };
+        
+        // Add to approved data if not already present
+        const existsInApproved = prev.some(complaint => complaint.id === forwardedComplaintId);
+        return existsInApproved ? updateComplaintStatus(prev) : [...prev, updatedComplaint];
+      }
+      
+      return prev;
+    });
     
-    console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
+    console.log(`Complaint ${forwardedComplaintId} marked as forwarded and moved to appropriate tab`);
   };
-
 
   // Format date helper
   const formatDate = (dateString) => {
@@ -665,7 +673,6 @@ const PendingComplaints = () => {
       day: 'numeric'
     });
   };
-
 
   // Get approval statuses
   const getApprovalStatuses = (complaint) => {
@@ -701,12 +708,10 @@ const PendingComplaints = () => {
     return statuses;
   };
 
-
   // Forward status helper
   const isForwarded = (complaint) => {
     return complaint.approved_rejected_by_so_us === 1;
   };
-
 
   // Get tab title
   const getTabTitle = () => {
@@ -722,7 +727,6 @@ const PendingComplaints = () => {
     }
   };
 
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -733,10 +737,8 @@ const PendingComplaints = () => {
     );
   }
 
-
   const currentData = getCurrentData();
-  const isLoading = getCurrentLoadingState(); // ADDED
-
+  const isLoading = getCurrentLoadingState();
 
   return (
     <>
@@ -754,14 +756,12 @@ const PendingComplaints = () => {
         style={{ zIndex: 9999 }}
       />
 
-
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {getTabTitle()} / लंबित शिकायतें
           </h1>
         </div>
-
 
         {/* JUSTIFY-BETWEEN TABS COMPONENT */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
@@ -801,137 +801,115 @@ const PendingComplaints = () => {
           </div>
         </div>
 
-
-        {/* Loading State - ADDED */}
+        {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="flex flex-col items-center space-y-4">
-              {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div> */}
               <p className="text-gray-700 text-md font-semibold">Loading...</p>
             </div>
           </div>
         ) : (
           <>
-            <div className="space-y-3 sm:space-y-4">
-              {currentData.map((complaint) => {
-                const approvalStatuses = getApprovalStatuses(complaint);
-                
-                return (
-                 <div className="space-y-3 sm:space-y-4">
+           <div className="space-y-4">
   {currentData.map((complaint) => {
     const approvalStatuses = getApprovalStatuses(complaint);
     
     return (
       <div
         key={complaint.id}
-        className="w-full bg-white shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl rounded-lg border border-gray-200 transition-shadow duration-300 relative overflow-hidden"
+        className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
       >
-        {/* Header Section - Clean without name */}
-        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div className="mb-2 sm:mb-0">
-              <span className="text-gray-700 font-semibold text-sm">
-                Complaint Details
-              </span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-              <div className="text-right">
-                <span className="text-xs text-gray-600">Current Stage:</span>
-                <span className="ml-1 text-sm font-semibold text-gray-900">
-                  {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
-                </span>
-              </div>
-            </div>
+        {/* Header Section */}
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
+          <div className="mt-2 sm:mt-0">
+            <span className="text-xs text-gray-600">Current Stage:</span>
+            <span
+              className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                isForwarded(complaint)
+                  ? "bg-green-100 text-green-700 border border-green-200"
+                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+              }`}
+            >
+              {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
+            </span>
           </div>
         </div>
 
-        {/* Main Content Grid */}
+        {/* Main Content */}
         <div className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            {/* Left Column */}
+            {/* Column 1 */}
             <div className="space-y-2">
-              <div className="flex">
-                <span className="text-gray-600 font-medium w-32">Complaint No:</span>
-                <span className="bg-blue-100 px-2 py-1 rounded text-blue-800 font-bold text-xs">
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Complaint No:</span>
+                <span className="bg-blue-100 px-2 py-0.5 rounded text-blue-800 font-semibold text-xs">
                   {complaint.complain_no}
                 </span>
               </div>
-              <div className="flex">
-                <span className="text-gray-600 font-medium w-32">Complainant:</span>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Complainant:</span>
                 <span className="text-gray-900 font-medium">{complaint.name}</span>
               </div>
-              <div className="flex">
-                <span className="text-gray-600 font-medium w-32">Mobile No:</span>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Mobile No:</span>
                 <span className="text-gray-900">{complaint.mobile}</span>
               </div>
             </div>
 
-            {/* Middle Column */}
+            {/* Column 2 */}
             <div className="space-y-2">
-              <div className="flex">
-                <span className="text-gray-600 font-medium w-24">Email:</span>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">Email:</span>
                 <span className="text-gray-900 text-xs break-all">{complaint.email}</span>
               </div>
-              <div className="flex">
-                <span className="text-gray-600 font-medium w-24">District:</span>
+              <div className="flex gap-x-2">
+                <span className="text-gray-600 font-medium">District:</span>
                 <span className="text-gray-900">{complaint.district_name}</span>
-              </div>
-              <div className="flex">
-                <span className="text-gray-600 font-medium w-24">Created:</span>
-                <span className="text-gray-900">{formatDate(complaint.created_at)}</span>
               </div>
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-2">
-              <div className="text-left sm:text-right">
-                <span className="text-xs text-gray-600">Submitted:</span>
-                <div className="text-sm font-medium text-gray-900">
-                  {formatDate(complaint.created_at)}
-                </div>
-              </div>
+            {/* Column 3 */}
+            <div className="flex flex-col sm:items-end">
+              <span className="text-xs text-gray-600">Created:</span>
+              <span className="text-sm font-medium text-gray-900">
+                {formatDate(complaint.created_at)}
+              </span>
             </div>
           </div>
 
-          {/* Approval Badges Section */}
-          {approvalStatuses.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex flex-wrap gap-2">
-                {approvalStatuses.map((status, index) => (
-                  <span 
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded text-xs font-medium bg-green-600 text-white"
-                  >
-                    <FaCheck className="w-3 h-3 mr-1" />
-                    {status.label}
-                  </span>
-                ))}
-              </div>
+          {/* Actions and Badges in Same Row */}
+          <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {/* Approval Badges */}
+            <div className="flex flex-wrap gap-2">
+              {approvalStatuses.map((status, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1 rounded text-xs font-medium bg-green-600 text-white"
+                >
+                  <FaCheck className="w-3 h-3 mr-1" />
+                  {status.label}
+                </span>
+              ))}
             </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:justify-end">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={(e) => handleViewDetails(e, complaint.id)}
-                className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
               >
                 View Details
               </button>
-              
-              {/* Dynamic button based on forward status */}
+
               {isForwarded(complaint) ? (
-                <button
-                  disabled
-                  className="w-full sm:w-auto px-4 py-2 rounded text-sm font-medium bg-green-500 text-white border border-green-500 cursor-not-allowed"
-                >
+                <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                   ✓ Forwarded
-                </button>
+                </span>
               ) : (
                 <button
                   onClick={(e) => handleForward(e, complaint.id)}
-                  className="w-full sm:w-auto border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-700 px-4 py-2 rounded cursor-pointer transition-colors duration-200 text-sm font-medium"
+                  className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
                 >
                   Forward
                 </button>
@@ -943,10 +921,6 @@ const PendingComplaints = () => {
     );
   })}
 </div>
-
-                );
-              })}
-            </div>
 
 
             {/* Empty State */}
@@ -961,7 +935,6 @@ const PendingComplaints = () => {
         )}
       </div>
 
-
       {/* Forward Modal */}
       <ForwardModal
         isOpen={isForwardModalOpen}
@@ -969,7 +942,6 @@ const PendingComplaints = () => {
         complaintId={selectedComplaintId}
         onSubmit={handleForwardSubmit}
       />
-
 
       {/* Details Modal */}
       {isModalOpen && selectedComplaint && (
@@ -1006,6 +978,5 @@ const PendingComplaints = () => {
     </>
   );
 };
-
 
 export default PendingComplaints;

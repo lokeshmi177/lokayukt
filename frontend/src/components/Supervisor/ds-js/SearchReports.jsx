@@ -731,6 +731,7 @@ const SearchReports = () => {
                             className="w-full px-2.5 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           />
                         </div>
+                        
 
                         <div className="flex flex-col sm:flex-row gap-3">
                           {/* District Filter */}

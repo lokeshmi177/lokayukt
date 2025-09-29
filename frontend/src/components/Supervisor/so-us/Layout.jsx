@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from "./Sidebar"
 import Header from './Header';
-import Footer from '../../Footer'; // Footer import करें
+import Footer from '../../Footer';
 
 const Layout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -16,11 +16,9 @@ const Layout = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       
-      // Auto-collapse sidebar on mobile
+      // ✅ FIXED: Don't auto-collapse on mobile, just detect mobile state
       if (mobile) {
-        setIsCollapsed(true);
-      } else {
-        setIsCollapsed(false);
+        setIsCollapsed(false); // Keep expanded for mobile functionality
       }
     };
 
