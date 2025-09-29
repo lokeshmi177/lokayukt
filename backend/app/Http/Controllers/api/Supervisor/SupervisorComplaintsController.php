@@ -276,13 +276,24 @@ $complainDetails->details = DB::table('complaints_details as cd')
              
             if($cmp){
                 $cmp->approved_rejected_by_so_us = 1;
-                $cmp->forward_to_d_a = $request->forward_to_d_a;
-                $remark ='Remark By Section Officer / Under Secretary';
-                $remark.='\n';
-                $remark.= $request->remarks;
-                $remark.='\n';
-                $cmp->remark = $remark;
-                $cmp->save();
+                // $cmp->forward_to_d_a = $request->forward_to_d_a;
+                // $remark ='Remark By Section Officer / Under Secretary';
+                // $remark.='\n';
+                // $remark.= $request->remarks;
+                // $remark.='\n';
+                // $cmp->remark = $remark;
+                // $cmp->save();
+
+               
+                if($cmp->save()){
+                    $apcAction = new ComplaintAction();
+                    $apcAction->complaint_id = $complainId;
+                    $apcAction->forward_by_so_us = $user;
+                    $apcAction->forward_to_d_a = $request->forward_to_d_a;
+                    $apcAction->status = 'Forwarded';
+                    $apcAction->remarks = $request->remarks;
+                    $apcAction->save();
+                }
                 // $cmpAction =new ComplaintAction();
                 // $cmpAction->complaint_id = $complainId;
                 // $cmpAction->forward_by_so_us = $user;
@@ -321,7 +332,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
             'forward_to_d_a' => 'required|exists:users,id',
-            'remark' => 'required',
+            'remarks' => 'required',
          
           
         ], [
@@ -329,7 +340,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
             'forward_to_d_a.required' => 'Forward to user is required.',
             'forward_to_d_a.exists' => 'Forward to user does not exist.',
-            'remark.required' => 'Remark is required.',
+            'remarks.required' => 'Remark is required.',
            
         ]);
 
@@ -345,13 +356,23 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
             if($cmp){
                 $cmp->approved_rejected_by_ds_js = 1;
-                $cmp->forward_to_d_a = $request->forward_to_d_a;
-                $remark ='Remark By Deputy Secretary / Joint Secretary';
-                $remark.='\n';
-                $remark.= $request->remarks;
-                $remark.='\n';
-                $cmp->remark = $remark;
-                $cmp->save();
+                // $cmp->forward_to_d_a = $request->forward_to_d_a;
+                // $remark ='Remark By Deputy Secretary / Joint Secretary';
+                // $remark.='\n';
+                // $remark.= $request->remarks;
+                // $remark.='\n';
+                // $cmp->remark = $remark;
+                
+                    if($cmp->save()){
+                        $apcAction = new ComplaintAction();
+                        $apcAction->complaint_id = $complainId;
+                        $apcAction->forward_by_ds_js = $user;
+                        $apcAction->forward_to_d_a = $request->forward_to_d_a;
+                        $apcAction->status = 'Forwarded';
+                        $apcAction->remarks = $request->remarks;
+                        $apcAction->save();
+                    }
+                
                 // $cmpAction =new ComplaintAction();
                 // $cmpAction->complaint_id = $complainId;
                 // $cmpAction->forward_by_ds_js = $user;
