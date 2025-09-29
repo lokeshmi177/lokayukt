@@ -6,7 +6,7 @@ import {
   FaFileAlt,
   FaChartBar,
   FaSpinner,
-  FaArrowRight, // Added Forward icon
+  FaArrowRight, // ✅ Forward icon add kiya
   FaChevronDown,
   FaUser,
   FaUserTie,
@@ -34,7 +34,7 @@ const api = axios.create({
   },
 });
 
-// Custom Searchable Dropdown Component
+// ✅ Custom Searchable Dropdown Component
 const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select option...", required = false, error = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -178,7 +178,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// ✅ UPDATED: Forward Modal Component - ID bhejega backend mein, Name dikhega frontend mein
+// ✅ Forward Modal Component
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -216,7 +216,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     }
   };
 
-  // ✅ UPDATED: Build dropdown options - ID as value, Name as label for display
+  // ✅ Build dropdown options - ID as value, Name as label for display
   const buildDropdownOptions = () => {
     const options = [];
 
@@ -224,12 +224,12 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (lokayuktData.length > 0) {
       options.push({
         label: "Hon'ble LokAyukta",
-        // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
+        icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
         items: lokayuktData.map((item) => ({
-          value: item.id, // ✅ ID bhejenge backend mein
-          label: item.name, // ✅ Name dikhayenge frontend mein
-          // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
-          type: "lokayukt" // Optional: type tracking ke liye
+          value: item.id, // ✅ ID भेजेंगे backend में
+          label: item.name, // ✅ Name दिखाएंगे frontend में
+          icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+          type: "lokayukt"
         })),
       });
     }
@@ -238,12 +238,12 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (upLokayuktData.length > 0) {
       options.push({
         label: "Hon'ble UpLokAyukta",
-        // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
+        icon: <FaCrown className="w-4 h-4 text-blue-500" />,
         items: upLokayuktData.map((item) => ({
-          value: item.id, // ✅ ID bhejenge backend mein
-          label: item.name, // ✅ Name dikhayenge frontend mein
-          // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
-          type: "uplokayukt" // Optional: type tracking ke liye
+          value: item.id, // ✅ ID भेजेंगे backend में
+          label: item.name, // ✅ Name दिखाएंगे frontend में
+          icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
+          type: "uplokayukt"
         })),
       });
     }
@@ -259,7 +259,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     }
   }, [isOpen]);
 
-  // ✅ UPDATED: Handle Submit - Only ID send hoga backend mein
+  // ✅ Handle Submit - Only ID send होगा backend में
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -268,7 +268,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     try {
       console.log("Forwarding complaint:", complaintId, "with payload:", forward);
 
-      // ✅ forward.forward_to mein ab sirf ID hai, name nahi
+      // ✅ forward.forward_to में अब सिर्फ ID है, name नहीं
       const response = await api.post(`/supervisor/forward-report-by-so/${complaintId}`, forward);
 
       console.log("Forward API Response:", response.data);
@@ -333,7 +333,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 name="forward_to"
                 value={forward.forward_to}
                 onChange={(value) => {
-                  // ✅ Yahan sirf ID set hogi, name nahi
+                  // ✅ यहाँ सिर्फ ID set होगी, name नहीं
                   setForward((prev) => ({ ...prev, forward_to: value }));
                 
                   if (errors.forward_to) {
@@ -453,69 +453,69 @@ const SearchReports = () => {
     console.log("Complaint forwarded");
   };
 
-    const handleHeaderExport = () => {
-      try {
-        if (filteredResults.length === 0) {
-          toast.error("No data to export.");
-          return;
-        }
-  
-        const wsData = [
-          ["Sr. No", "Complain No", "Application No", "Name", "Officer", "Department", "District", "Nature", "Status", "Entry Date"],
-          ...filteredResults.map((item, index) => [
-            index + 1,
-            item.complain_no || "NA",
-            item.application_no || "NA", 
-            item.name || "NA",
-            item.officer_name || "NA",
-            item.department_name || "NA",
-            item.district_name || "NA",
-            item.complaintype_name || "NA",
-            item.status || "NA",
-            item.created_at || "NA"
-          ])
-        ];
-  
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-  
-        // Header styling
-        const headerStyle = {
-          font: { bold: true, color: { rgb: "000000" } },
-          alignment: { horizontal: "center" },
-          fill: { fgColor: { rgb: "D3D3D3" } }
-        };
-  
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-          const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
-          if (!ws[cellAddress]) ws[cellAddress] = {};
-          ws[cellAddress].s = headerStyle;
-        }
-  
-        ws['!cols'] = [
-          {wch: 8}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}
-        ];
-  
-        XLSX.utils.book_append_sheet(wb, ws, "Search Reports");
-  
-        const excelBuffer = XLSX.write(wb, {
-          bookType: 'xlsx',
-          type: 'array',
-          cellStyles: true
-        });
-  
-        const data = new Blob([excelBuffer], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-  
-        saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
-        toast.success("Export successful!");
-      } catch(e) {
-        console.error("Export failed:", e);
-        toast.error("Failed to export data.");
+  const handleHeaderExport = () => {
+    try {
+      if (filteredResults.length === 0) {
+        toast.error("No data to export.");
+        return;
       }
+
+      const wsData = [
+        ["Sr. No", "Complain No", "Application No", "Name", "Officer", "Department", "District", "Nature", "Status", "Entry Date"],
+        ...filteredResults.map((item, index) => [
+          index + 1,
+          item.complain_no || "NA",
+          item.application_no || "NA", 
+          item.name || "NA",
+          item.officer_name || "NA",
+          item.department_name || "NA",
+          item.district_name || "NA",
+          item.complaintype_name || "NA",
+          item.status || "NA",
+          item.created_at || "NA"
+        ])
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Header styling
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "000000" } },
+        alignment: { horizontal: "center" },
+        fill: { fgColor: { rgb: "D3D3D3" } }
+      };
+
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = {};
+        ws[cellAddress].s = headerStyle;
+      }
+
+      ws['!cols'] = [
+        {wch: 8}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, "Search Reports");
+
+      const excelBuffer = XLSX.write(wb, {
+        bookType: 'xlsx',
+        type: 'array',
+        cellStyles: true
+      });
+
+      const data = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
+      toast.success("Export successful!");
+    } catch(e) {
+      console.error("Export failed:", e);
+      toast.error("Failed to export data.");
     }
+  }
 
   // Fetch initial data when component mounts
   useEffect(() => {
@@ -795,7 +795,6 @@ const SearchReports = () => {
   </h3>
 </div>
 
-
   {/* ✅ UPDATED: 4 Grid Layout with Equal Sizes */}
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
     {/* Search Term */}
@@ -876,7 +875,6 @@ const SearchReports = () => {
     </div>
   </div>
 </div>
-
 
                     {/* Search Results */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
@@ -979,6 +977,14 @@ const SearchReports = () => {
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
+                                        </button>
+                                        {/* ✅ Forward Button */}
+                                        <button 
+                                          onClick={() => handleForward(result.id)}
+                                          className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
+                                        >
+                                          <FaArrowRight className="w-3 text-blue-600 h-3" />
+                                          <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
                                         </button>
                                       </div>
                                     </td>
@@ -1230,7 +1236,7 @@ const SearchReports = () => {
           </div>
         </div>
 
-        {/* ✅ UPDATED: Forward Modal with ID backend submission */}
+        {/* ✅ Forward Modal */}
         <ForwardModal
           isOpen={isForwardModalOpen}
           onClose={() => setIsForwardModalOpen(false)}
