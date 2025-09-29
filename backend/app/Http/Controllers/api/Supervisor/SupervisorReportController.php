@@ -283,7 +283,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
             ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
             ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-            // ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
             
             ->select(
                 'complaints.*',
