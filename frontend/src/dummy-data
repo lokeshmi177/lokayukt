@@ -1,181 +1,155 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FaUser, 
-  FaBuilding, 
-  FaFileAlt, 
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  FaFileAlt,
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaBuilding,
+  FaCalendarAlt,
+  FaDownload,
   FaArrowLeft,
-  FaPaperPlane,
+  FaExclamationTriangle,
+  FaIdCard,
   FaRupeeSign,
+  FaEye,
+  FaExpand,
+  FaTimes,
   FaSpinner,
   FaUpload,
   FaCheck,
-  FaTimes,
   FaPlus,
   FaTrash,
-  FaEye,
-  FaDownload
-} from 'react-icons/fa';
+} from "react-icons/fa";
+import { FaRegEdit } from "react-icons/fa";
 import { IoMdArrowBack } from "react-icons/io";
-import { ToastContainer, toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const APP_URL = BASE_URL.replace("/api", "");
 const token = localStorage.getItem("access_token");
+const subRole = localStorage.getItem("subrole");
 
-// Enhanced axios instance with better debugging
+// Create axios instance with token if it exists
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 60000, // Increased timeout to 60 seconds
   headers: {
+    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
 
-// ENHANCED Request/Response interceptors for debugging
-api.interceptors.request.use(
-  (config) => {
-    // Log request details for debugging
-    console.group('🚀 API REQUEST DEBUG');
-    console.log('Method:', config.method?.toUpperCase());
-    console.log('URL:', `${config.baseURL}${config.url}`);
-    console.log('Headers:', config.headers);
-    
-    // Special handling for FormData
-    if (config.data instanceof FormData) {
-      // Don't set Content-Type for FormData - let browser handle it
-      delete config.headers['Content-Type'];
-      
-      console.log('Request Type: FormData');
-      console.log('FormData contents:');
-      for (let pair of config.data.entries()) {
-        if (pair[1] instanceof File) {
-          console.log(`${pair[0]}: [File] ${pair[1].name} (${pair[1].size} bytes)`);
-        } else {
-          console.log(`${pair[0]}: ${pair[1]}`);
-        }
-      }
-    } else {
-      config.headers['Content-Type'] = 'application/json';
-      console.log('Request Type: JSON');
-      console.log('Data:', config.data);
-    }
-    
-    console.groupEnd();
-    return config;
-  },
-  (error) => {
-    console.error('❌ Request Error:', error);
-    return Promise.reject(error);
-  }
-);
-
-api.interceptors.response.use(
-  (response) => {
-    // Log successful response
-    console.group('✅ API RESPONSE SUCCESS');
-    console.log('Status:', response.status);
-    console.log('Status Text:', response.statusText);
-    console.log('Headers:', response.headers);
-    console.log('Data:', response.data);
-    console.groupEnd();
-    return response;
-  },
-  (error) => {
-    // Enhanced error logging
-    console.group('❌ API ERROR DEBUG');
-    console.error('Error Type:', error.code || 'UNKNOWN');
-    console.error('Error Message:', error.message);
-    
-    if (error.response) {
-      // Server responded with error status
-      console.log('Response Status:', error.response.status);
-      console.log('Response Data:', error.response.data);
-      console.log('Response Headers:', error.response.headers);
-    } else if (error.request) {
-      // Network error - no response received
-      console.log('Network Error - No Response Received');
-      console.log('Request Details:', error.request);
-    } else {
-      // Something else happened
-      console.log('Unknown Error:', error.message);
-    }
-    
-    console.log('Full Error Object:', error);
-    console.groupEnd();
-    
-    return Promise.reject(error);
-  }
-);
-
-const AllComplaintsEdit = () => {
+const ViewPendingComplaints = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    address: '',
-    district_id: '',
-    email: '',
-    fee_exempted: true,
-    amount: '',
-    challan_no: '',
-    dob: '',
-  });
-
-  // Multiple complaint details state
-  const [complaintDetails, setComplaintDetails] = useState([
-    {
-      id: null,
-      title: '',
-      file: null,
-      department: '',
-      officer_name: '',
-      designation: '',
-      category: '',
-      subject: '',
-      nature: '',
-      description: '',
-      existingFile: null,
-      uploadProgress: 0,
-      isUploading: false,
-      uploadSuccess: false,
-      uploadError: ''
-    }
-  ]);
-
-  // File preview states
+  const [complaintData, setComplaintData] = useState(null);
   const [filePreviewData, setFilePreviewData] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
   const [currentPreviewFile, setCurrentPreviewFile] = useState(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Dropdown data states
-  const [districts, setDistricts] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [designations, setDesignations] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [complaintTypes, setComplaintTypes] = useState([]);
-  
-  // Only backend errors - no frontend validation
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  // Fetch complaint data
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id) {
+        setError("No complaint ID provided");
+        setLoading(false);
+        return;
+      }
 
-  // File helper functions
+      try {
+        setLoading(true);
+
+        // Fetch complaint data using edit endpoint for consistency
+        const complaintResponse = await api.get(
+          `/supervisor/view-complaint/${id}`
+        );
+
+        if (complaintResponse.data.status === true) {
+          setComplaintData(complaintResponse.data.data);
+          console.log("Complaint Data:", complaintResponse.data.data);
+
+          // Fetch file preview data
+          try {
+            const fileResponse = await api.get(
+              `/supervisor/get-file-preview/${id}`
+            );
+            if (fileResponse.data.status === true) {
+              setFilePreviewData(fileResponse.data.data || []);
+              console.log("File Preview Data:", fileResponse.data.data);
+            }
+          } catch (fileErr) {
+            console.log("File preview not available:", fileErr);
+            setFilePreviewData([]);
+          }
+        } else {
+          setError("Failed to fetch complaint data");
+          toast.error("Failed to fetch complaint data");
+        }
+      } catch (err) {
+        console.error("API Error:", err);
+        setError(
+          err.response?.data?.message || "Failed to fetch complaint data"
+        );
+        toast.error("Error loading complaint details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  // Get status color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Disposed - Accepted":
+      case "Resolved":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Rejected":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Under Investigation":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Pending":
+      case "In Progress":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  // Handle file download
   const handleFileDownload = (filePath) => {
     if (!filePath) {
       toast.error("No file available for download");
       return;
     }
     
+    // Open file in new tab for download
     const fileUrl = `${APP_URL}${filePath}`;
     window.open(fileUrl, "_blank");
   };
 
+  // Handle file preview
   const handleFilePreview = (filePath) => {
     if (filePath) {
       setCurrentPreviewFile(filePath);
@@ -185,10 +159,23 @@ const AllComplaintsEdit = () => {
     }
   };
 
+  // Handle edit navigation
+  const handleEditNavigation = () => {
+    if (id && complaintData) {
+      console.log("Navigating to edit with ID:", id);
+      console.log("Complaint data:", complaintData);
+      navigate(`/supervisor/search-reports/edit/${id}`);
+    } else {
+      toast.error("Unable to edit: Missing complaint data");
+    }
+  };
+
+  // Check if file is PDF
   const isPDF = (filePath) => {
     return filePath && filePath.toLowerCase().endsWith(".pdf");
   };
 
+  // Check if file is image
   const isImage = (filePath) => {
     return filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   };
@@ -210,6 +197,7 @@ const AllComplaintsEdit = () => {
               <FaTimes className="w-5 h-5" />
             </button>
           </div>
+
           <div className="flex-1 p-4">
             {currentPreviewFile ? (
               <>
@@ -254,395 +242,63 @@ const AllComplaintsEdit = () => {
     );
   };
 
-  // Fetch complaint data - SAME AS BEFORE
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!id) {
-        toast.error("No complaint ID provided");
-        navigate("/operator/all-complaints");
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-
-        const [
-          complaintResponse,
-          districtsResponse,
-          departmentsResponse,
-          designationsResponse,
-          subjectsResponse,
-          complaintTypesResponse
-        ] = await Promise.all([
-          api.get(`/operator/edit-complaint/${id}`),
-          api.get(`/operator/all-district`),
-          api.get(`/operator/department`),
-          api.get(`/operator/designation`),
-          api.get(`/operator/subjects`),
-          api.get(`/operator/complainstype`)
-        ]);
-
-        // Set dropdown data
-        if (districtsResponse.data.status === 'success') {
-          setDistricts(districtsResponse.data.data);
-        }
-        if (departmentsResponse.data.status === 'success') {
-          setDepartments(departmentsResponse.data.data);
-        }
-        if (designationsResponse.data.status === 'success') {
-          setDesignations(designationsResponse.data.data);
-        }
-        if (subjectsResponse.data.status === 'success') {
-          setSubjects(subjectsResponse.data.data);
-        }
-        if (complaintTypesResponse.data.status === 'success') {
-          setComplaintTypes(complaintTypesResponse.data.data);
-        }
-
-        // Set complaint data
-        if (complaintResponse.data.status === true) {
-          const data = complaintResponse.data.data;
-          
-          // Set basic form data
-          setFormData({
-            name: data.name || '',
-            mobile: data.mobile || '',
-            address: data.address || '',
-            district_id: data.district_id || '',
-            email: data.email || '',
-            fee_exempted: data.fee_exempted === 1,
-            amount: data.amount || '',
-            challan_no: data.challan_no || '',
-            dob: data.dob || '',
-          });
-
-          // Set multiple complaint details
-          if (data.details && data.details.length > 0) {
-            const detailsArray = data.details.map((detail, index) => {
-              return {
-                id: detail.id,
-                title: detail.title || '',
-                file: null,
-                department: detail.department_id || '',
-                officer_name: detail.officer_name || '',
-                designation: detail.designation_id || '',
-                category: detail.category || '',
-                subject: detail.subject_id || '',
-                nature: detail.complaintype_id || '',
-                description: detail.description || '',
-                existingFile: detail.file || null,
-                uploadProgress: 0,
-                isUploading: false,
-                uploadSuccess: false,
-                uploadError: ''
-              };
-            });
-            
-            setComplaintDetails(detailsArray);
-          }
-
-          // File preview data fetching
-          try {
-            const fileResponse = await api.get(`/operator/get-file-preview/${id}`);
-            if (fileResponse.data.status === true) {
-              setFilePreviewData(fileResponse.data.data || []);
-            }
-          } catch (fileErr) {
-            setFilePreviewData([]);
-          }
-        } else {
-          toast.error("Failed to load complaint data");
-        }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-        toast.error("Error loading complaint data");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id, navigate]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name === 'fee_exempted') {
-      setFormData(prev => ({
-        ...prev,
-        fee_exempted: value === 'true'
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-
-    // Clear backend error when user types
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-  };
-
-  // Handle complaint detail changes
-  const handleDetailChange = (index, field, value) => {
-    setComplaintDetails(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        [field]: value
-      };
-      return updated;
-    });
-
-    // Clear backend errors for details fields
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
-    }
-  };
-
-  // Handle file change for specific detail
-  const handleFileChange = (index, e) => {
-    const file = e.target.files[0];
-    
-    if (!file) return;
-
-    // Validate file type (only PDF allowed)
-    if (file.type !== 'application/pdf') {
-      toast.error('Only PDF files are allowed');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File size should not exceed 5MB');
-      return;
-    }
-
-    // Update the specific detail
-    setComplaintDetails(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        uploadProgress: 0,
-        isUploading: true,
-        uploadSuccess: false,
-        uploadError: ''
-      };
-      return updated;
-    });
-
-    // Simulate upload progress
-    const simulateUpload = () => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 15;
-        if (progress >= 100) {
-          progress = 100;
-          setComplaintDetails(prev => {
-            const updated = [...prev];
-            updated[index] = {
-              ...updated[index],
-              file: file,
-              uploadProgress: 100,
-              isUploading: false,
-              uploadSuccess: true
-            };
-            return updated;
-          });
-          clearInterval(interval);
-        } else {
-          setComplaintDetails(prev => {
-            const updated = [...prev];
-            updated[index] = {
-              ...updated[index],
-              uploadProgress: Math.round(progress)
-            };
-            return updated;
-          });
-        }
-      }, 200);
-    };
-
-    simulateUpload();
-  };
-
-  // Remove file for specific detail
-  const handleRemoveFile = (index) => {
-    setComplaintDetails(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        file: null,
-        uploadProgress: 0,
-        isUploading: false,
-        uploadSuccess: false,
-        uploadError: ''
-      };
-      return updated;
-    });
-  };
-
-  // UPDATED Submit handler - Direct POST method without PUT
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrors({});
-
-    try {
-      console.log('🚀 Starting form submission...');
-      
-      // Create FormData for multipart/form-data submission
-      const formDataToSend = new FormData();
-      
-      // Add basic form fields
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('mobile', formData.mobile);
-      formDataToSend.append('address', formData.address);
-      formDataToSend.append('district_id', formData.district_id);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('fee_exempted', formData.fee_exempted ? '1' : '0');
-      formDataToSend.append('amount', formData.amount || '');
-      formDataToSend.append('challan_no', formData.challan_no || '');
-      formDataToSend.append('dob', formData.dob || '');
-      
-      // Add complaint details arrays
-      complaintDetails.forEach((detail, index) => {
-        formDataToSend.append(`title[${index}]`, detail.title || '');
-        formDataToSend.append(`department[${index}]`, detail.department || '');
-        formDataToSend.append(`officer_name[${index}]`, detail.officer_name || '');
-        formDataToSend.append(`designation[${index}]`, detail.designation || '');
-        formDataToSend.append(`category[${index}]`, detail.category || '');
-        formDataToSend.append(`subject[${index}]`, detail.subject || '');
-        formDataToSend.append(`nature[${index}]`, detail.nature || '');
-        formDataToSend.append(`description[${index}]`, detail.description || '');
-        
-        // Add existing detail ID if available
-        if (detail.id) {
-          formDataToSend.append(`complaint_details_id[${index}]`, detail.id);
-        }
-        
-        // Add file if available
-        if (detail.file) {
-          formDataToSend.append(`files[${index}]`, detail.file);
-        }
-      });
-
-      console.log('📝 FormData prepared, sending request...');
-
-      // DIRECT POST REQUEST - NO PUT METHOD OVERRIDE
-      const response = await api.post(`/operator/update-complaint/${id}`, formDataToSend);
-      
-      console.log('✅ Request successful:', response);
-      
-      if (response.data.status === true) {
-        toast.success(response.data.message || 'Complaint updated successfully!');
-        
-        // Navigate back to view page after successful update
-        setTimeout(() => {
-          navigate(`/operator/all-complaints/view/${id}`);
-        }, 1500);
-      } else {
-        toast.error(response.data.message || 'Update failed');
-      }
-    } catch (error) {
-      console.error('💥 Submit Error Details:', error);
-      
-      // Enhanced error handling with detailed network debugging
-      if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
-        toast.error('❌ Network Error: Cannot connect to server. Please check your internet connection.');
-        console.error('Network Error Details:', {
-          baseURL: BASE_URL,
-          endpoint: `/operator/update-complaint/${id}`,
-          fullURL: `${BASE_URL}/operator/update-complaint/${id}`,
-          token: token ? 'Present' : 'Missing'
-        });
-      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        toast.error('⏱️ Request Timeout: Server is taking too long to respond.');
-      } else if (error.response?.status === 405) {
-        toast.error('🚫 Method Not Allowed: Server does not accept this request method.');
-        console.error('405 Error - Check Laravel Route:', {
-          method: 'POST',
-          route: `/operator/update-complaint/${id}`,
-          allowedMethods: error.response.headers?.allow || 'Not specified'
-        });
-      } else if (error.response?.status === 404) {
-        toast.error('🔍 Route Not Found: The requested endpoint does not exist.');
-      } else if (error.response?.status === 422) {
-        // Validation errors
-        if (error.response?.data?.errors) {
-          const backendErrors = {};
-          
-          Object.keys(error.response.data.errors).forEach(field => {
-            if (Array.isArray(error.response.data.errors[field])) {
-              backendErrors[field] = error.response.data.errors[field][0];
-            } else {
-              backendErrors[field] = error.response.data.errors[field];
-            }
-          });
-          
-          setErrors(backendErrors);
-          const firstError = Object.values(backendErrors)[0];
-          toast.error(`Validation Error: ${firstError}`);
-        } else {
-          toast.error('❌ Validation Error: Please check your input data.');
-        }
-      } else if (error.response?.status === 500) {
-        toast.error('🔧 Server Error: Internal server error occurred.');
-        console.error('Server Error Details:', error.response?.data);
-      } else if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else {
-        toast.error('❌ Something went wrong. Please try again.');
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // Loading state
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="text-center text-lg font-medium text-gray-700">Loading...</div>
+        <div className="text-center text-lg font-medium text-gray-700">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 font-medium">{error}</p>
+          <button
+            onClick={() => navigate("/supervisor/search-reports")}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Back to Complaints
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        style={{ zIndex: 9999 }}
-      />
+      <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Header */}
+      {/* Header - Same as edit form with Edit Button */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Edit Complaint</h1>
-            <p className="text-xs sm:text-sm text-gray-600">शिकायत संपादन फॉर्म</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">View Complaint Details</h1>
+            <p className="text-xs sm:text-sm text-gray-600">शिकायत विवरण देखें</p>
           </div>
           <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+            {/* Edit Button - Show based on subRole */}
+            {subRole === "review-operator" && (
+              <button
+                onClick={handleEditNavigation}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+                disabled={!id || !complaintData}
+              >
+                <FaRegEdit className="text-lg" />
+                <span>Edit</span>
+              </button>
+            )}
+            
             <button 
-              onClick={() => navigate(`/operator/all-complaints/view/${id}`)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              onClick={() => navigate("/supervisor/search-reports")}
+              style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
+              className="flex items-center justify-center gap-2 px-4 py-2 text-white rounded transition"
             >
               <IoMdArrowBack className="text-lg" />
               <span>Back</span>
@@ -651,134 +307,83 @@ const AllComplaintsEdit = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      {/* Main Content - Same structure as edit form */}
+      {complaintData && (
         <div className="space-y-4 sm:space-y-6">
-          {/* Form content same as before - complainant details, security fee, complaint details */}
-          {/* I'll keep the form structure same as your original code for brevity */}
-          
           {/* Top Row: Complainant Details + Security Fee */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             
             {/* Complainant Details */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <FaUser className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <FaUser className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Complainant Details</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">शिकायतकर्ता विवरण</p>
+                  <h2 className="text-lg font-semibold text-gray-900">Complainant Details</h2>
+                  <p className="text-sm text-gray-500">शिकायतकर्ता विवरण</p>
                 </div>
               </div>
 
-              <div className="space-y-3 sm:space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Name / नाम *
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter full name"
-                  />
-                  {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
+              <div className="space-y-4">
+                {/* Name and Mobile Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name / नाम *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50">
+                      {complaintData.name || "N/A"}
+                    </div>
+                  </div>
 
-                {/* Mobile */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Mobile / मोबाइल *
-                  </label>
-                  <input
-                    type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                      errors.mobile ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="10-digit mobile number"
-                  />
-                  {errors.mobile && (
-                    <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
-                  )}
+                  {/* Mobile */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mobile / मोबाइल *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50 font-mono">
+                      {complaintData.mobile || "N/A"}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Address */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Address / पता *
                   </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
-                      errors.address ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter complete address"
-                  />
-                  {errors.address && (
-                    <p className="mt-1 text-sm text-red-600">{errors.address}</p>
-                  )}
+                  <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50 min-h-[80px] whitespace-pre-wrap">
+                    {complaintData.address || "N/A"}
+                  </div>
                 </div>
 
-                {/* District */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    District / जिला *
-                  </label>
-                  <select
-                    name="district_id"
-                    value={formData.district_id}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                      errors.district_id ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="">Select District</option>
-                    {districts.map(district => (
-                      <option key={district.id} value={district.district_code}>
-                        {district.district_name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.district_id && (
-                    <p className="mt-1 text-sm text-red-600">{errors.district_id}</p>
-                  )}
-                </div>
+                {/* District and Email Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* District */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      District / जिला *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50">
+                      {complaintData.district_name || "N/A"}
+                    </div>
+                  </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="example@email.com"
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50">
+                      {complaintData.email || "N/A"}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Security Fee - Same as before */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+            {/* Security Fee Section */}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center gap-3 mb-4">
                 <FaRupeeSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
                 <div>
@@ -786,280 +391,218 @@ const AllComplaintsEdit = () => {
                   <p className="text-xs sm:text-sm text-gray-500">जमानत राशि</p>
                 </div>
               </div>
+              
               <div className="space-y-3 sm:space-y-4">
-                {/* Fee Exempted Radio */}
+                {/* Fee Exempted Checkbox - Read Only */}
                 <div>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <input
-                        id="exempted"
-                        name="fee_exempted"
-                        type="radio"
-                        value="true"
-                        checked={formData.fee_exempted === true}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label htmlFor="exempted" className="text-xs sm:text-sm font-medium text-gray-700">
-                        Fee Exempted / शुल्क माफ
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        id="not_exempted"
-                        name="fee_exempted"
-                        type="radio"
-                        value="false"
-                        checked={formData.fee_exempted === false}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      />
-                      <label htmlFor="not_exempted" className="text-xs sm:text-sm font-medium text-gray-700">
-                        Fee Paid / शुल्क भुगतान
-                      </label>
-                    </div>
-                  </div>
-                  {errors.fee_exempted && (
-                    <p className="mt-1 text-sm text-red-600">{errors.fee_exempted}</p>
-                  )}
-                </div>
-
-                {/* Amount */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Amount / राशि
-                  </label>
-                  <input
-                    type="number"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
-                    placeholder="Enter amount"
-                    disabled={formData.fee_exempted}
-                  />
-                  {errors.amount && (
-                    <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
-                  )}
-                </div>
-
-                {/* Challan No */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Challan No. / चालान नं.
-                  </label>
-                  <input
-                    type="text"
-                    name="challan_no"
-                    value={formData.challan_no}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-gray-100"
-                    placeholder="Enter challan number"
-                    disabled={formData.fee_exempted}
-                  />
-                  {errors.challan_no && (
-                    <p className="mt-1 text-sm text-red-600">{errors.challan_no}</p>
-                  )}
-                </div>
-
-                {/* Date of Birth - show only if NOT exempted */}
-                {!formData.fee_exempted && (
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                      Date of Birth / जन्म तिथि
-                    </label>
+                  <div className="flex items-center rounded-md space-x-2">
                     <input
-                      type="date"
-                      name="dob"
-                      value={formData.dob}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      id="exempted"
+                      type="checkbox"
+                      checked={complaintData.fee_exempted === 1}
+                      disabled
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded opacity-60"
                     />
-                    {errors.dob && (
-                      <p className="mt-1 text-sm text-red-600">{errors.dob}</p>
-                    )}
+                    <label htmlFor="exempted" className="text-xs sm:text-sm font-medium text-gray-700">
+                      Fee Exempted / शुल्क माफ
+                    </label>
                   </div>
+                </div>
+
+                {/* Show Amount, Challan No, Date when fee is NOT exempted */}
+                {complaintData.fee_exempted !== 1 && (
+                  <>
+                    {/* Amount */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Amount / राशि *
+                      </label>
+                      <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                        {complaintData.amount || "N/A"}
+                      </div>
+                    </div>
+
+                    {/* Challan No */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Challan No. / चालान नं. *
+                      </label>
+                      <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                        {complaintData.challan_no || "N/A"}
+                      </div>
+                    </div>
+
+                    {/* Date of Birth */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth / जन्म तिथि *
+                      </label>
+                      <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                        {complaintData.dob || "N/A"}
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Complaint Details - Same structure as before but truncated for brevity */}
+          {/* Complaint Details */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Complaint Details</h2>
             </div>
 
-            {complaintDetails.map((detail, index) => {
-              const correspondingFile = filePreviewData[index] || null;
+            {complaintData?.details?.length > 0 && (
+              complaintData.details.map((detail, index) => {
+                const correspondingFile = filePreviewData[index] || null;
 
-              return (
-                <div key={index} className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
-                      <div>
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Complaint Detail #{index + 1}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-500">शिकायत विवरण</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Title and File Upload Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <input type="hidden" 
-                        name="Complaint_id"
-                        value={detail.id}
-                      />
-                      
-                      {/* Title */}
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                          Title / शीर्षक *
-                        </label>
-                        <input
-                          type="text"
-                          value={detail.title}
-                          onChange={(e) => handleDetailChange(index, 'title', e.target.value)}
-                          className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                            errors.title ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="Enter complaint title"
-                        />
-                        {errors.title && (
-                          <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-                        )}
-                      </div>
-
-                      {/* File Upload */}
-                      <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                          Choose File / फ़ाइल चुनें
-                        </label>
-                        
-                        {/* File Upload Area */}
-                        {!detail.file ? (
-                          <div className="flex items-center space-x-2">
-                            <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
-                              <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                              <span className="text-sm text-gray-700">Choose PDF file</span>
-                              <input
-                                type="file"
-                                accept=".pdf"
-                                onChange={(e) => handleFileChange(index, e)}
-                                className="hidden"
-                              /> 
-                            </label>
-                          </div>
-                        ) : (
-                          // File Selected Area
-                          <div className="border border-gray-300 rounded-md p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center space-x-2">
-                                <FaFileAlt className="w-4 h-4 text-red-600" />
-                                <span className="text-sm font-medium text-gray-700">
-                                  {detail.file.name}
-                                </span>
-                                {detail.uploadSuccess && (
-                                  <FaCheck className="w-4 h-4 text-green-600" />
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFile(index)}
-                                className="text-red-600 hover:text-red-800 transition-colors"
-                                disabled={detail.isUploading}
-                              >
-                                <FaTimes className="w-4 h-4" />
-                              </button>
-                            </div>
-
-                            {/* Progress Bar */}
-                            {(detail.isUploading || detail.uploadProgress > 0) && (
-                              <div className="mb-2">
-                                <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                                  <span>Uploading...</span>
-                                  <span>{detail.uploadProgress}%</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                                    style={{ width: `${detail.uploadProgress}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Upload Status */}
-                            {detail.uploadSuccess && (
-                              <p className="text-xs text-green-600 flex items-center">
-                                <FaCheck className="w-3 h-3 mr-1" />
-                                Upload completed successfully
-                              </p>
-                            )}
-
-                            {/* File Size */}
-                            <p className="text-xs text-gray-500 mt-1">
-                              Size: {(detail.file.size / (1024 * 1024)).toFixed(2)} MB
-                            </p>
-                          </div>
-                        )}
-                        
-                        <div className="flex justify-between">
-                          <p className="mt-1 text-xs text-gray-500">Only PDF files allowed (Max: 5MB)</p>
-                          {correspondingFile && (
-                            <button
-                              type="button"
-                              onClick={() => handleFileDownload(correspondingFile)}
-                              className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 mt-1 hover:bg-green-200 rounded text-xs transition-colors"
-                            >
-                              <FaDownload className="w-3 h-3" />
-                              Download
-                            </button>
-                          )}
+                return (
+                  <div key={detail.id} className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Complaint Detail #{index + 1}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-gray-500">शिकायत विवरण</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Other form fields - department, officer, etc. (same as before) */}
-                    {/* Truncated for brevity - include all other fields from your original code */}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    <div className="space-y-4">
+                      {/* Title and File Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Title */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Title / शीर्षक *
+                          </label>
+                          <div className="w-full px-3 py-[10px] text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.title || "N/A"}
+                          </div>
+                        </div>
 
-          {/* Submit Button */}
-          <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-            <div className="flex justify-end space-x-3">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
-                  isSubmitting
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-              >
-                {isSubmitting ? (
-                  <>
-                    <FaSpinner className="w-4 h-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  <>
-                    <FaPaperPlane className="w-4 h-4" />
-                    Update Complaint
-                  </>
-                )}
-              </button>
-            </div>
+                        {/* File Display */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Attached File / फ़ाइल
+                          </label>
+                          
+                          {correspondingFile ? (
+                            <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 flex items-center justify-between">
+                              <span className="text-gray-700">File Attached</span>
+                              <div className="flex space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleFilePreview(correspondingFile)}
+                                  className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded text-xs transition-colors"
+                                >
+                                  <FaEye className="w-3 h-3" />
+                                  Preview
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleFileDownload(correspondingFile)}
+                                  className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-xs transition-colors"
+                                >
+                                  <FaDownload className="w-3 h-3" />
+                                  Download
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                              No file attached
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Department Details Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        {/* Department */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Department / विभाग *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.department_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Officer Name */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Officer Name / अधिकारी का नाम *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.officer_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Designation */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Designation / पदनाम *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.designation_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Category */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Category / श्रेणी *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 capitalize">
+                            {detail.category?.replace("_", " ") || "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Subject and Nature Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                        {/* Subject */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Subject / विषय *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.subject_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Nature */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Nature / प्रकृति *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.complaintype_name || "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                          Detailed Description / विस्तृत विवरण *
+                        </label>
+                        <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 min-h-[100px] whitespace-pre-wrap">
+                          {detail.description || "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
-      </form>
+      )}
 
       {/* Preview Modal */}
       {showPreview && <PDFPreviewModal />}
@@ -1067,73 +610,4 @@ const AllComplaintsEdit = () => {
   );
 };
 
-export default AllComplaintsEdit;
-
-
- const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrors({});
-
-    try {
-      // Create FormData for file upload
-      const submitFormData = new FormData();
-      
-      // ✅ Add all form fields to FormData with proper conversion
-      Object.keys(formData).forEach(key => {
-        if (key === 'file' && formData.file) {
-          submitFormData.append('file', formData.file);
-        } else if (key === 'fee_exempted') {
-          // ✅ Convert boolean to integer for database
-          submitFormData.append(key, formData[key] ? '1' : '0');
-        } else if (formData[key] !== null && formData[key] !== '') {
-          submitFormData.append(key, formData[key]);
-        }
-      });
-
-      // Debug: Log what we're sending
-      console.log('FormData being sent:');
-      for (let [key, value] of submitFormData.entries()) {
-        console.log(key, ':', value, typeof value);
-      }
-
-      // Use FormData with multipart/form-data headers for update
-      const response = await axios.post(
-        `${BASE_URL}/supervisor/update-complaint/${id}`,
-        submitFormData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        }
-      );
-
-      if (response.data.status === true) {
-        toast.success(response.data.message || 'Complaint updated successfully!');
-        
-        // Navigate back to view page after successful update
-        setTimeout(() => {
-          navigate(`/supervisor/all-complaints/view/${id}`);
-        }, 1500);
-      }
-    } catch (error) {
-      if (error.response?.data?.status === false && error.response?.data?.errors) {
-        // ✅ Fixed error handling
-        const backendErrors = {};
-        Object.keys(error.response.data.errors).forEach(field => {
-          backendErrors[field] = error.response.data.errors[field][0]; // ✅ Take first error message
-        });
-        setErrors(backendErrors);
-        
-        // ✅ Show first error in toast - Fixed array access
-        const firstError = Object.values(error.response.data.errors)[0][0];
-        // toast.error(firstError);
-      } else {
-        toast.error('Something went wrong. Please try again.');
-      }
-      console.error('Update error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+export default ViewPendingComplaints;

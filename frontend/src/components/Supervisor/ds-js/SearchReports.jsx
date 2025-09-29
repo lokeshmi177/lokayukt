@@ -224,11 +224,11 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (lokayuktData.length > 0) {
       options.push({
         label: "Hon'ble LokAyukta",
-        icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
+        // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
         items: lokayuktData.map((item) => ({
           value: item.id, // ✅ ID भेजेंगे backend में
           label: item.name, // ✅ Name दिखाएंगे frontend में
-          icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
+          // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
           type: "lokayukt"
         })),
       });
@@ -238,11 +238,11 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (upLokayuktData.length > 0) {
       options.push({
         label: "Hon'ble UpLokAyukta",
-        icon: <FaCrown className="w-4 h-4 text-blue-500" />,
+        // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
         items: upLokayuktData.map((item) => ({
           value: item.id, // ✅ ID भेजेंगे backend में
           label: item.name, // ✅ Name दिखाएंगे frontend में
-          icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
+          // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
           type: "uplokayukt"
         })),
       });
