@@ -10,7 +10,7 @@ import {
   FaDownload,
   FaCalendarAlt,
 } from "react-icons/fa";
-import Pagination from "../../Pagination"; // ✅ Import Pagination component
+import Pagination from "../Pagination"; // ✅ Import Pagination component
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");

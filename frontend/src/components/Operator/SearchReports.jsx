@@ -44,6 +44,7 @@ const CustomSearchableDropdown = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+ 
 
   // Flatten options for searching
   const flattenOptions = (options) => {
@@ -387,6 +388,7 @@ const SearchReports = () => {
   // Forward Modal States
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
+   const[totel, setTotel] = useState(0)
 
   // Helper function to ensure array
   const ensureArray = (data) => Array.isArray(data) ? data : [];
@@ -451,7 +453,7 @@ const SearchReports = () => {
       });
 
       saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
-      toast.success("Export successful!");
+      // toast.success("Export successful!");
     } catch(e) {
       console.error("Export failed:", e);
       toast.error("Failed to export data.");
@@ -470,6 +472,7 @@ const SearchReports = () => {
   };
 
   // Fetch initial data when component mounts
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -487,6 +490,8 @@ const SearchReports = () => {
         
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
+          const totalCount = reportsResponse.data.data.length;
+          setTotel(totalCount)
           setSearchResults(dataArray);
         }
 
@@ -587,11 +592,16 @@ const SearchReports = () => {
 
   const getStatusColor = (status) => {
     if (status === "Disposed - Accepted" || status === "Resolved")
-      return "bg-green-100 text-green-800 border-green-200";
-    if (status === "Rejected") return "bg-red-100 text-red-800 border-red-200";
-    if (status === "In Progress" || status === "Under Investigation")
+      return "bg-green-400 text-white";
+    if (status === "Rejected") 
+      return "bg-red-400 text-white";
+    if (status === "In Progress")
+      return "bg-orange-400 text-white ";
+    if (status === "Under Investigation")
       return "bg-orange-400 text-white ";
     if (status === "Pending")
+      return "bg-green-400 text-white" ;
+    if (status === "Disposed - Accepted")
       return "bg-green-400 text-white" ;
     // return "bg-gray-100 text-gray-800 border-gray-200";
   };
@@ -706,7 +716,7 @@ const SearchReports = () => {
         </div>
 
         {/* Tabs Component */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden sm:px-0 md:px-2 lg:px-2 px-2  sm:py-0 md:py-0 lg:py-0 py-2">
           {/* Tab Navigation */}
           <div className="space-y-6">
             <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
@@ -763,8 +773,8 @@ const SearchReports = () => {
                     {/* Search Criteria */}
                    <div className="bg-white  sm:p-4 shadow-sm">
  <div className="flex items-center gap-2 mb-3">
-  <FaSearch className="w-5 h-5 text-gray-700 relative bottom-3" /> {/* Icon thoda bada */}
-  <h3 className="text-2xl sm:text-xl md:text-2xl relative bottom-3 font-semibold text-gray-900">
+  <FaSearch className="w-5 h-5 text-gray-700 relative sm:bottom-3 md:bottom-3 lg:bottom-3" /> {/* Icon thoda bada */}
+  <h3 className="text-2xl sm:text-xl md:text-2xl relative  sm:bottom-3 md:bottom-3 lg:bottom-3 font-semibold text-gray-900">
     Search Criteria
   </h3>
 </div>
@@ -856,7 +866,7 @@ const SearchReports = () => {
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-gray-900">
-                          Search Results 
+                          Search Results ({totel} Found )
                         </h3>
                       </div>
 
@@ -872,10 +882,10 @@ const SearchReports = () => {
                                 <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Complainant
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Respondent
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Department
                                 </th>
                                 <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
@@ -906,10 +916,10 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.name || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.designation_name || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.department_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
@@ -952,7 +962,7 @@ const SearchReports = () => {
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
-                                          <span className="hidden text-green-600 font-semibold sm:inline">View</span>
+                                          <span className=" text-green-600 font-semibold ">View</span>
                                         </button>
                                       </div>
                                     </td>

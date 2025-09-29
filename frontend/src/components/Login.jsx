@@ -68,8 +68,8 @@ const Login = () => {
             localStorage.setItem('subrole', response.data.data.user.subrole.name);
             window.open("/supervisor/dashboard", "_self");
           }
-          else if (userRole === "lok-ayuk") {
-            window.open("/lok-ayuk/dashboard", "_self");
+          else if (userRole === "lok-ayukt") {
+            window.open("/lokayukt/dashboard", "_self");
           }
           else if (userRole === "uplokayukt") {
             window.open("/uplokayukt/dashboard", "_self");

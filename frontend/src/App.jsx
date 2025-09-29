@@ -139,12 +139,12 @@ import SupervisorAllComplaitsdea from './components/Supervisor/dea-assis/All-com
 import SupervisorViewAllComplaintdea from './components/Supervisor/dea-assis/All-complaints/ViewwAllComplaint';
 import SupervisorEditComplaintsdea from './components/Supervisor/dea-assis/All-complaints/EditAllComplaints';
 
-// //Lok-ayukt
-// import LokayuktLayout from './components/Supervisor/Layout';
-// import LokayuktDashboard from './components/Supervisor/Dashboard';
-// import LokayuktComplaints from './components/Supervisor/Complaints';
-// import LokayuktProgressRegister from './components/Supervisor/ProgressRegister';
-// import LokayuktSearchReports from './components/Supervisor/SearchReports';
+//Lok-ayukt
+import LokayuktLayout from './components/LokAyukta/Layout';
+import LokayuktDashboard from './components/LokAyukta/Dashboard';
+import LokayuktComplaints from './components/LokAyukta/Complaints';
+import LokayuktProgressRegister from './components/LokAyukta/ProgressRegister';
+import LokayuktSearchReports from './components/LokAyukta/SearchReports';
 
 // //Uplokayukt
 // import UplokayuktLayout from './components/Supervisor/Layout';
@@ -342,15 +342,15 @@ function App() {
       )} 
 
         {/* Lok-ayukt  Routes */}
-      {/* {role === 'lok-ayukt' && (
-        <Route path="/lok-ayukt" element={<LokayuktLayout />}>
+      {role === 'lok-ayukt' && (
+        <Route path="/lokayukt" element={<LokayuktLayout />}>
           <Route path="dashboard" element={<LokayuktDashboard />} />
           <Route path="complaints" element={<LokayuktComplaints />} />
           <Route path="progress-register" element={<LokayuktProgressRegister />} />
           <Route path="search-reports" element={<LokayuktSearchReports />} />
          
         </Route>
-      )} */}
+      )}
 
         {/* UPLok-ayukt  Routes */}
       {/* {role === 'uplokayukt' && (

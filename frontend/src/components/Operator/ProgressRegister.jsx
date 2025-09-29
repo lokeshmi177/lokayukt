@@ -419,18 +419,39 @@ const ProgressRegister = () => {
   };
 
   // Get status color for file movements
-  const getFileMovementStatusColor = (status) => {
-    switch (status) {
-      case "In Progress":
-        return "bg-orange-400 text-white";
-      case "Rejected":
-        return "bg-red-400 text-white";
-      case "Disposed - Accepted":
-        return "bg-green-400 text-white ";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
+  // const getFileMovementStatusColor = (status) => {
+  //   switch (status) {
+  //     case "In Progress":
+  //       return "bg-orange-400 text-white";
+  //     case "Rejected":
+  //       return "bg-red-400 text-white";
+  //     case "Disposed - Accepted":
+  //       return "bg-green-400 text-white ";
+  //     default:
+  //       return "bg-gray-100 text-gray-800 border-gray-200";
+  //   }
+  // };
+
+
+  const getDisplayStatus = (status) => {
+  if (status === "Verified") return "Pending";
+  if (status === "Forwarded") return "Completed";
+  return status;
+};
+
+const getFileMovementStatusColor = (status) => {
+  const displayStatus = getDisplayStatus(status);
+
+  switch (displayStatus) {
+    case "Pending":
+      return " bg-orange-400 text-white ";
+    case "Completed":
+      return "bg-green-500 text-white";
+    // default:
+    //   return "border-gray-400 text-gray-600 bg-gray-100";
+  }
+};
+
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -721,7 +742,7 @@ const ProgressRegister = () => {
                                         {movement.fromRole !== movement.toRole && (
                                           <>
                                             {movement.movementIcon}
-                                            <span className="text-gray-700 text-xs">{movement.toRole}</span>
+                                            <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
                                           </>
                                         )}
                                       </div>
@@ -732,15 +753,16 @@ const ProgressRegister = () => {
                                     <td className="py-2 px-2 sm:py-4 sm:px-3 text-gray-600 whitespace-nowrap">
                                       {movement.timestamp}
                                     </td>
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
-                                      <span
-                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
-                                          movement.status
-                                        )}`}
-                                      >
-                                        {movement.status}
-                                      </span>
-                                    </td>
+                                   <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
+  <span
+    className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
+      movement.status
+    )}`}
+  >
+    {getDisplayStatus(movement.status)}
+  </span>
+</td>
+
                                   </tr>
                                 ))
                               ) : (

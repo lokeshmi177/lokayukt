@@ -11,7 +11,7 @@ import {
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Pagination from '../../Pagination';
+import Pagination from '../Pagination';
 import * as XLSX from "xlsx-js-style"; 
 import { saveAs } from "file-saver"; 
 import { useNavigate } from "react-router-dom";
