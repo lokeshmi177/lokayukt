@@ -907,7 +907,7 @@ const SearchReports = () => {
                                       {result.name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
-                                      {'' || "N/A"}
+                                      {result.designation_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
                                       {result.department_name || "N/A"}
