@@ -1045,7 +1045,7 @@ const MasterData = () => {
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-[#13316C] text-white rounded-md text-sm"
           >
             <FaPlus className="w-4 h-4" />
             Add New

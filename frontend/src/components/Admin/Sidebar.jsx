@@ -15,12 +15,10 @@ import {
   FaTimes
 } from 'react-icons/fa';
 
-
 const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSidebar }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isHindi, setIsHindi] = useState(false);
-
 
   // Simple translation object
   const translations = {
@@ -35,8 +33,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
       searchReports: "Search & Reports",
       userManagement: "User Management",
       masterData: "Master Data",
-      copyright: "© 2025 LokAyukta Office",
-      version: "v1.0.0"
+      // copyright: "© 2025 LokAyukta Office",
+      // version: "v1.0.0"
     },
     hindi: {
       title: "लोकायुक्त",
@@ -49,15 +47,13 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
       masterData: "मुख्य डेटा",
-      copyright: "© 2025 लोकायुक्त कार्यालय",
-      version: "v1.0.0"
+      // copyright: "© 2025 लोकायुक्त कार्यालय",
+      // version: "v1.0.0"
     }
   };
 
-
   // Get current translations
   const t = isHindi ? translations.hindi : translations.english;
-
 
   // Check screen size and set mobile state
   useEffect(() => {
@@ -65,7 +61,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
     };
-
 
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
@@ -75,12 +70,10 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     };
   }, []);
 
-
   // Toggle language function
   const toggleLanguage = () => {
     setIsHindi(!isHindi);
   };
-
 
   // ✅ Simple isActive function for admin routes
   const isActive = (href) => {
@@ -92,7 +85,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     return location.pathname.startsWith(fullPath);
   };
 
-
   // Close mobile menu when clicking link
   const handleLinkClick = () => {
     if (isMobile) {
@@ -102,47 +94,45 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
   
   // Custom Scrollbar CSS
   const scrollbarStyles = `
-    .sidebar-scrollbar::-webkit-scrollbar {
+    .custom-scrollbar::-webkit-scrollbar {
       width: 6px;
     }
-    .sidebar-scrollbar::-webkit-scrollbar-track {
+    .custom-scrollbar::-webkit-scrollbar-track {
       background: transparent;
     }
-    .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    .custom-scrollbar::-webkit-scrollbar-thumb {
       background-color: #475569;
       border-radius: 10px;
     }
-    .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background-color: #64748b;
     }
     /* For Firefox */
-    .sidebar-scrollbar {
+    .custom-scrollbar {
       scrollbar-width: thin;
       scrollbar-color: #475569 transparent;
     }
   `;
-
 
   return (
     <>
       {/* Custom Scrollbar Styles */}
       <style>{scrollbarStyles}</style>
 
-      {/* Mobile Overlay */}
+      {/* ✅ FIXED: Mobile Overlay with higher z-index */}
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden"
           onClick={toggleMobileMenu}
         />
       )}
 
-
-      {/* Sidebar */}
+      {/* ✅ FIXED: Sidebar with proper z-index and positioning */}
       <div
-        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col z-40 ${
+        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col ${
           isMobile
-            ? `w-72 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
-            : `${isCollapsed ? 'w-16' : 'w-72'}`
+            ? `w-72 z-50 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+            : `${isCollapsed ? 'w-16' : 'w-72'} z-30`
         }`}
       >
         
@@ -176,7 +166,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           </button>
         )}
 
-
         {/* Header Section */}
         <div className={`border-b border-slate-700 transition-all duration-300 flex-shrink-0 ${
           (!isMobile && isCollapsed) ? 'p-3' : 'p-6'
@@ -197,52 +186,57 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
             )}
           </div>
           
-          {/* ✅ Admin Badge (Fixed) */}
-          {(isMobile || !isCollapsed) && (
-            <div className="mb-3 transition-all duration-300">
-              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                {t.admin}
-              </span>
+          {/* ✅ Admin Badge and Action Buttons in Same Row */}
+          <div className="flex justify-between">
+            <div>
+              {(isMobile || !isCollapsed) && (
+                <div className="mb-3 transition-all duration-300">
+                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {t.admin}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Header Actions */}
-          {(isMobile || !isCollapsed) && (
-            <div className="flex gap-2 transition-all duration-300">
-              <button 
-                onClick={toggleLanguage}
-                className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-                {isHindi ? 'EN' : 'हि'}
-              </button>
-              <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
+            
+            <div>
+              {/* Header Actions */}
+              {(isMobile || !isCollapsed) && (
+                <div className="flex gap-2 transition-all duration-300">
+                  <button 
+                    onClick={toggleLanguage}
+                    className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                    {isHindi ? 'EN' : 'हि'}
+                  </button>
+                  <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
+              
+              {/* Collapsed Header Actions */}
+              {!isMobile && isCollapsed && (
+                <div className="flex flex-col gap-2 items-center transition-all duration-300">
+                  <button 
+                    onClick={toggleLanguage}
+                    className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                  </button>
+                  <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Collapsed Header Actions */}
-          {!isMobile && isCollapsed && (
-            <div className="flex flex-col gap-2 items-center transition-all duration-300">
-              <button 
-                onClick={toggleLanguage}
-                className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-              </button>
-              <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
-            </div>
-          )}
+          </div>
         </div>
 
-
-        {/* ✅ Navigation Menu - Updated with sidebar-scrollbar */}
-        <nav className={`flex-1 transition-all duration-300 overflow-y-auto sidebar-scrollbar ${
+        {/* ✅ Navigation Menu - Updated with custom-scrollbar and exact same styling */}
+        <nav className={`flex-1 transition-all duration-300 overflow-y-auto custom-scrollbar ${
           (!isMobile && isCollapsed) ? 'py-4' : 'py-6'
         }`}>
           <ul className="space-y-1">
@@ -253,8 +247,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/dashboard')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]'
+                    : 'text-slate-300 hover:text-white hover:bg-gray-700'
                 } ${
                   (!isMobile && isCollapsed)
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
@@ -267,7 +261,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
-
             {/* Complaints */}
             <li>
               <Link
@@ -275,8 +268,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/complaints')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]'
+                    : 'text-slate-300 hover:text-white hover:bg-gray-700'
                 } ${
                   (!isMobile && isCollapsed)
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
@@ -289,7 +282,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
-
             {/* Progress Register */}
             <li>
               <Link
@@ -297,8 +289,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/progress-register')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]'
+                    : 'text-slate-300 hover:text-white hover:bg-gray-700'
                 } ${
                   (!isMobile && isCollapsed)
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
@@ -311,7 +303,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
-
             {/* Search & Reports */}
             <li>
               <Link
@@ -319,8 +310,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/search-reports')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]'
+                    : 'text-slate-300 hover:text-white hover:bg-gray-700'
                 } ${
                   (!isMobile && isCollapsed)
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
@@ -333,7 +324,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
-
             {/* User Management */}
             <li>
               <Link
@@ -341,8 +331,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/user-management')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]'
+                    : 'text-slate-300 hover:text-white hover:bg-gray-700'
                 } ${
                   (!isMobile && isCollapsed)
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
@@ -355,7 +345,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
               </Link>
             </li>
 
-
             {/* Master Data */}
             <li>
               <Link
@@ -363,8 +352,8 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive('/master-data')
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    ? 'bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]'
+                    : 'text-slate-300 hover:text-white hover:bg-gray-700'
                 } ${
                   (!isMobile && isCollapsed)
                     ? 'justify-center px-2 py-3 mx-2 rounded-lg' 
@@ -379,7 +368,6 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
           </ul>
         </nav>
 
-
         {/* Footer */}
         {(isMobile || !isCollapsed) && (
           <div className="p-6 border-t border-slate-700 text-center transition-all duration-300 flex-shrink-0 mt-auto">
@@ -391,6 +379,5 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     </>
   );
 };
-
 
 export default Sidebar;

@@ -10,15 +10,15 @@ import {
   FaPhone,
   FaSpinner,
   FaExclamationTriangle,
-  FaDownload // ✅ Added FaDownload
+  FaDownload
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Pagination from '../Pagination';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import * as XLSX from "xlsx-js-style"; // ✅ Added for Excel export
-import { saveAs } from "file-saver"; // ✅ Added for file download
+import * as XLSX from "xlsx-js-style";
+import { saveAs } from "file-saver";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
@@ -115,6 +115,9 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  // Toggle status loading state
+  const [togglingUserId, setTogglingUserId] = useState(null);
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -168,6 +171,38 @@ const UserManagement = () => {
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
 
+  // ✅ Fixed: Handle toggle user status with proper error handling
+  const toggleUserStatus = async (userId, currentStatus) => {
+    setTogglingUserId(userId);
+    
+    try {
+      const response = await api.post(`/admin/change-status/${userId}`);
+      
+      if (response.data.status === true) {
+        // ✅ Fixed: Properly calculate new status
+        const newStatus = (currentStatus === '1' || currentStatus === 1) ? '0' : '1';
+        
+        // ✅ Fixed: Update local state correctly
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, status: newStatus }
+              : user
+          )
+        );
+        
+        toast.success(response.data.message || 'Status updated successfully');
+      } else {
+        toast.error(response.data.message || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Status toggle error:', error);
+      toast.error(error.response?.data?.message || 'Failed to update status');
+    } finally {
+      setTogglingUserId(null);
+    }
+  };
+
   // Handle delete button click
   const handleDelete = (user) => {
     setDeletingUser(user);
@@ -217,9 +252,9 @@ const UserManagement = () => {
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       searchTerm === '' ||
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.user_name.toLowerCase().includes(searchTerm.toLowerCase());
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.user_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const userRole = user.role?.label || user.role?.name || 'Unknown';
     const matchesRole = selectedRole === 'all' || userRole === selectedRole;
@@ -231,10 +266,6 @@ const UserManagement = () => {
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  const toggleUserStatus = (userId) => {
-    console.log('Toggling user status for:', userId);
-  };
 
   const uniqueRoles = [...new Set(users.map(user => user.role?.label || user.role?.name).filter(Boolean))];
   const navigate = useNavigate();
@@ -278,15 +309,15 @@ const UserManagement = () => {
               <button
                 onClick={() => setActiveTab('users')}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-all flex-1 ${
-                  activeTab === 'users' ? "bg-white text-blue-600 shadow-sm" : "hover:text-gray-700"
+                  activeTab === 'users' ? "bg-white text-black shadow-sm" : "hover:text-gray-700"
                 }`}
               >
-                Users ({users.length})
+                Users 
               </button>
               <button
                 onClick={() => setActiveTab('roles')}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-all flex-1 ${
-                  activeTab === 'roles' ? "bg-white text-blue-600 shadow-sm" : "hover:text-gray-700"
+                  activeTab === 'roles' ? "bg-white text-black shadow-sm" : "hover:text-gray-700"
                 }`}
               >
                 Roles & Permissions
@@ -294,7 +325,7 @@ const UserManagement = () => {
               <button
                 onClick={() => setActiveTab('audit')}
                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-all flex-1 ${
-                  activeTab === 'audit' ? "bg-white text-blue-600 shadow-sm" : "hover:text-gray-700"
+                  activeTab === 'audit' ? "bg-white text-black shadow-sm" : "hover:text-gray-700"
                 }`}
               >
                 Audit Log
@@ -306,7 +337,7 @@ const UserManagement = () => {
               {/* Users Tab */}
               {activeTab === 'users' && (
                 <div className="space-y-4">
-                  {/* ✅ Updated Search and Filter with Export Button */}
+                  {/* Search and Filter with Export Button */}
                   <div className="bg-gray-50 p-3 rounded-md border">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base font-semibold text-gray-900">
@@ -330,16 +361,14 @@ const UserManagement = () => {
                           ))}
                         </select>
 
-                        {/* ✅ Export Button */}
+                        {/* Export Button */}
                         <button
                           onClick={() => {
                             try {
                               if (filteredUsers.length === 0) {
-                                // toast.error("No users available to export");
                                 return;
                               }
 
-                              // Prepare worksheet data
                               const wsData = [
                                 ["Sr.No", "Name", "Username", "Email", "Role", "Status", "Last Login"],
                                 ...filteredUsers.map((user, idx) => [
@@ -356,7 +385,6 @@ const UserManagement = () => {
                               const wb = XLSX.utils.book_new();
                               const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-                              // Header styling
                               const headerStyle = {
                                 font: { bold: true, color: { rgb: "000000" } },
                                 alignment: { horizontal: "center" },
@@ -371,13 +399,13 @@ const UserManagement = () => {
                               }
 
                               ws['!cols'] = [
-                                { wch: 8 },   // Sr.No
-                                { wch: 20 },  // Name
-                                { wch: 20 },  // Username
-                                { wch: 30 },  // Email
-                                { wch: 20 },  // Role
-                                { wch: 12 },  // Status
-                                { wch: 22 },  // Last Login
+                                { wch: 8 },
+                                { wch: 20 },
+                                { wch: 20 },
+                                { wch: 30 },
+                                { wch: 20 },
+                                { wch: 12 },
+                                { wch: 22 },
                               ];
 
                               XLSX.utils.book_append_sheet(wb, ws, "Users Report");
@@ -393,10 +421,8 @@ const UserManagement = () => {
                               });
 
                               saveAs(data, `users_report_${new Date().toISOString().slice(0, 10)}.xlsx`);
-                              // toast.success("Report exported successfully!");
                             } catch (error) {
-                              // console.error("Export failed:", error);
-                              // toast.error("Failed to generate report");
+                              console.error("Export failed:", error);
                             }
                           }}
                           className="flex items-center gap-2 bg-[#13316C] text-white px-4 py-2 rounded-md transition"
@@ -417,6 +443,7 @@ const UserManagement = () => {
                             <th className="text-left py-2 px-4 font-medium text-gray-900">User</th>
                             <th className="text-left py-2 px-4 font-medium text-gray-900">Contact</th>
                             <th className="text-left py-2 px-4 font-medium text-gray-900">Role</th>
+                            <th className="text-left py-2 px-4 font-medium text-gray-900">Department</th>
                             <th className="text-left py-2 px-4 font-medium text-gray-900">Status</th>
                             <th className="text-left py-2 px-4 font-medium text-gray-900">Last Login</th>
                             <th className="text-left py-2 px-4 font-medium text-gray-900">Actions</th>
@@ -425,7 +452,7 @@ const UserManagement = () => {
                         <tbody className="divide-y divide-gray-100">
                           {paginatedUsers.length === 0 ? (
                             <tr>
-                              <td colSpan="6" className="py-8 px-4 text-center text-gray-500">
+                              <td colSpan="7" className="py-8 px-4 text-center text-gray-500">
                                 No users found
                               </td>
                             </tr>
@@ -462,19 +489,37 @@ const UserManagement = () => {
                                 {/* Role */}
                                 <td className="py-2 px-4">
                                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role?.label || user.role?.name)}`}>
-                                    {displayValue( user.role?.name)}
-                                    {/* user.role?.label || */}
+                                    {displayValue(user.role?.name)}
                                   </span>
-                                  {/* {user.sub_role_id && (
-                                    <div className="text-xs text-gray-500 mt-1">Sub: {displayValue(user.sub_role_id)}</div>
-                                  )} */}
                                 </td>
 
-                                {/* Status */}
+                                {/* Department */}
+                                <td className="py-2 px-4">
+                                  <div className="text-xs text-gray-700">
+                                    {displayValue(user.department?.name || user.department)}
+                                  </div>
+                                </td>
+
+                                {/* Status with Toggle Switch */}
                                 <td className="py-2 px-4">
                                   <div className="flex items-center gap-2">
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={user.status === '1' || user.status === 1}
+                                        onChange={() => toggleUserStatus(user.id, user.status)}
+                                        disabled={togglingUserId === user.id}
+                                        className="sr-only peer"
+                                      />
+                                      <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer transition-all ease-in-out duration-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-400 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#13316C] ${
+                                        togglingUserId === user.id ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'
+                                      }`}></div>
+                                    </label>
+                                    {togglingUserId === user.id && (
+                                      <FaSpinner className="w-3 h-3 animate-spin text-gray-500" />
+                                    )}
                                     <span className={`text-xs ${user.status === '1' || user.status === 1 ? 'text-green-600' : 'text-gray-500'}`}>
-                                      {user.status === '1' || user.status === 1 ? 'Active' : 'Inactive'}
+                                      {user.status === '1' || user.status === 1 ? 'active' : 'inactive'}
                                     </span>
                                   </div>
                                 </td>
