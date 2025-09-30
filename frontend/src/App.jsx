@@ -145,6 +145,13 @@ import LokayuktDashboard from './components/LokAyukta/Dashboard';
 import LokayuktComplaints from './components/LokAyukta/Complaints';
 import LokayuktProgressRegister from './components/LokAyukta/ProgressRegister';
 import LokayuktSearchReports from './components/LokAyukta/SearchReports';
+import LokayuktViewComplait from './components/LokAyukta/ViewComplaints';
+import LokayuktAllComplaits from './components/LokAyukta/All-complaints/AllComplaits';
+import LokayuktViewAllComplaint from './components/LokAyukta/All-complaints/ViewwAllComplaint';
+import LokayuktPendingComplaints from './components/LokAyukta/Pending-complaints/PendingComplaints';
+import LokayuktViewPendingComplaints from './components/LokAyukta/Pending-complaints/ViewPendingComplaints';
+import LokayuktApprovedComplaints from './components/LokAyukta/Approved-complaints/ApprovedComplaints';
+import LokayuktViewApprovedComplaint from './components/LokAyukta/Approved-complaints/ViewApprovedComplaints';
 
 // //Uplokayukt
 // import UplokayuktLayout from './components/Supervisor/Layout';
@@ -343,11 +350,24 @@ function App() {
 
         {/* Lok-ayukt  Routes */}
       {role === 'lok-ayukt' && (
-        <Route path="/lokayukt" element={<LokayuktLayout />}>
-          <Route path="dashboard" element={<LokayuktDashboard />} />
+        <Route path="/lokayuktt" element={<LokayuktLayout />}>
+           <Route path="dashboard" element={<LokayuktDashboard />} />
           <Route path="complaints" element={<LokayuktComplaints />} />
           <Route path="progress-register" element={<LokayuktProgressRegister />} />
           <Route path="search-reports" element={<LokayuktSearchReports />} />
+          <Route path="search-reports/view/:id" element={<LokayuktViewComplait />} />
+
+          <Route path="all-complaints" element={<LokayuktAllComplaits />} />
+          <Route path="all-complaints/view/:id" element={<LokayuktViewAllComplaint />} />
+          {/* <Route path="all-complaints/edit/:id" element={<LokayuktEditComplaints />} /> */}
+
+          <Route path="pending-complaints" element={<LokayuktPendingComplaints />} />
+          <Route path="pending-complaints/view/:id" element={<LokayuktViewPendingComplaints />} />
+          {/* <Route path="pending-complaints/edit/:id" element={<LokayuktEditPendingComplaints />} /> */}
+
+          <Route path="approved-complaints" element={<LokayuktApprovedComplaints />} />   
+          <Route path="approved-complaints/view/:id" element={<LokayuktViewApprovedComplaint/>} />
+          {/* <Route path="approved-complaints/edit/:id" element={<LokayuktEditApprovedComplaint />} /> */}
          
         </Route>
       )}
