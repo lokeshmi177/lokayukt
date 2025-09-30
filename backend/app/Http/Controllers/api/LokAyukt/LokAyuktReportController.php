@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\api\Supervisor;
+namespace App\Http\Controllers\api\LokAyukt;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Complaint;
 use App\Models\ComplaintAction;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class SupervisorReportController extends Controller
+class LokAyuktReportController extends Controller
 {
       public function complainReports()
     {

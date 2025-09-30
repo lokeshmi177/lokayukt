@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\api\LokAyukt;
 
-use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Helpers\ApiResponse;
 use App\Models\ComplainType;
 use App\Models\Department;
 use App\Models\Designation;
@@ -12,12 +13,11 @@ use App\Models\RejectionReasons;
 use App\Models\Role;
 use App\Models\Subjects;
 use App\Models\SubRole;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class CommonController extends Controller
+class LokAyuktCommonController extends Controller
 {
-    public function fetch_district(){
+      public function fetch_district(){
 
         $district=District::orderBy('district_name', 'asc')->get();
         // dd($district->toArray());
@@ -29,7 +29,7 @@ class CommonController extends Controller
         // dd($designation->toArray());
         return ApiResponse::generateResponse('success','Designation fetch successfully',$designation);
     }
-    public function fetch_department(){
+       public function fetch_department(){
 
         $department = Department::get();
         // dd($designation->toArray());
