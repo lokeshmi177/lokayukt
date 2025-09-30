@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class LokAyuktReportController extends Controller
 {
-      public function complainReports()
+    public function complainReports()
     {
 
         // $user_id = Auth::id();
@@ -132,54 +132,7 @@ class LokAyuktReportController extends Controller
                             ], 400);
                     }
 
-                    // if ($departments) {
-                    //     $records->where('complaints.department_id', $department);
-                    // }
-                    // if ($designations) {
-                    //     $records->where('complaints.designation_id', $designation);
-                    // }
-                    // if ($complaintypes) {
-                    //     $records->where('complaints.complaintype_id', $complaintype);
-                    // }
-                    // if ($subjects) {
-                    //     $records->where('complaints.subject_id', $subject);
-                    // }
-                    // if (!empty($roleid) && $roleid == '7') {
-                    //     $records->where('complaints.approved_rejected_by_ri', $status);
-                    //     $records->where('complaints.approved_rejected_by_naibtahsildar', 0);
-                    //     $records->where('complaints.approved_rejected_by_tahsildar', 0);
-                    //     $records->where('complaints.approved_rejected_by_sdm', 0);
-                    //     $records->where('complaints.approved_rejected_by_adm', 0);
-                    // }
-                    // if (!empty($roleid) && $roleid == '8') {
-                    //     $records->where('complaints.approved_rejected_by_ri', 1);
-                    //     $records->where('complaints.approved_rejected_by_naibtahsildar', $status);
-                    //     $records->where('complaints.approved_rejected_by_tahsildar', 0);
-                    //     $records->where('complaints.approved_rejected_by_sdm', 0);
-                    //     $records->where('complaints.approved_rejected_by_adm', 0);
-                    // }
-                    // if (!empty($roleid) && $roleid == '9') {
-                    //     $records->where('complaints.approved_rejected_by_ri', 1);
-                    //     $records->where('complaints.approved_rejected_by_naibtahsildar', 1);
-                    //     $records->where('complaints.approved_rejected_by_tahsildar', $status);
-                    //     $records->where('complaints.approved_rejected_by_sdm', 0);
-                    //     $records->where('complaints.approved_rejected_by_adm', 0);
-                    // }
-                    // if (!empty($roleid) && $roleid == '10') {
-                    //     $records->where('complaints.approved_rejected_by_ri', 1);
-                    //     $records->where('complaints.approved_rejected_by_naibtahsildar', 1);
-                    //     $records->where('complaints.approved_rejected_by_tahsildar', 1);
-                    //     $records->where('complaints.approved_rejected_by_sdm', $status);
-                    //     $records->where('complaints.approved_rejected_by_adm', 0);
-                    // }
-                    // if (!empty($roleid) && $roleid == '11') {
-                    //     $records->where('complaints.approved_rejected_by_ri', 1);
-                    //     $records->where('complaints.approved_rejected_by_naibtahsildar', 1);
-                    //     $records->where('complaints.approved_rejected_by_tahsildar', 1);
-                    //     $records->where('complaints.approved_rejected_by_sdm', 1);
-                    //     $records->where('complaints.approved_rejected_by_adm', $status);
-                    // }
-                    // dd($records->toSql());
+                    
                     $records = $records
                     ->groupBy(
                     'complaints.id',
@@ -218,7 +171,7 @@ class LokAyuktReportController extends Controller
       
     }
 
-        public function viewComplaint($id)
+    public function viewComplaint($id)
   {
     //    $complainDetails = DB::table('complaints as cm')
     //    ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
@@ -370,9 +323,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
             ]);
     }
     
-    
    
-    public function requestReportTods(Request $request,$complainId){
+    public function requestReport(Request $request,$complainId){
         //    dd(Auth::user()->getUserByRoles);
  
         $userId = Auth::user()->id;
@@ -415,7 +367,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                     if($cmp->save()){
                         $apcAction = new ComplaintAction();
                         $apcAction->complaint_id = $complainId;
-                        $apcAction->forward_by_lokayukt = $user;
+                        $apcAction->forward_by_lokayukt = $userId;
                         $apcAction->forward_to_ds_js = $request->forward_to;
                         $apcAction->status = 'Report Requested';
                         $apcAction->type = '2';
@@ -423,10 +375,14 @@ $complainDetails->details = DB::table('complaints_details as cd')
                         $apcAction->save();
                     }
                 
-              
+               return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' =>  $apcAction,
+               ]);
             }
          
-    
+            
            
         }else{
             
@@ -676,7 +632,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
-        public function allComplains(){
+    public function allComplains(){
 
         //    $query = DB::table('complaints');
         //   $complainDetails = $query->count();
@@ -703,7 +659,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
            ]);
     }
 
-        public function complainDistrictWise()
+    public function complainDistrictWise()
     {
        
         $complainCounts = Complaint::select('district_master.district_name', DB::raw('count(*) as complain_count'))
@@ -724,7 +680,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
            ]);
     }
 
-      public function complainDepartmentWise()
+    public function complainDepartmentWise()
     {
        
         $complainCounts = Complaint::select('departments.name', DB::raw('count(*) as complain_count'))
@@ -743,7 +699,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
 
 
-        public function getMontlyTrends(){
+    public function getMontlyTrends(){
         // $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         // for ($j = 1; $j <= 12; $j++) {      
         // $months[] = date('M', mktime(0, 0, 0, $j, 10));

@@ -152,6 +152,36 @@ $complainDetails->details = DB::table('complaints_details as cd')
             return response()->json(["message"=>"Data Not Found"]);
         }
    }
+
+   public function getSubROleUsers(){
+     
+        $users = User::with('subrole')
+         ->whereNotNull('sub_role_id')
+        ->get();
+        $users = $users->map(function ($item) {
+        if($item->subrole){
+          return [
+                'id' => $item->id,
+                'name' => ucfirst($item->name),
+                'subrole_name' => $item->subrole->name,
+               
+            ];
+        }
+         
+        })->toArray();
+        // dd($users);
+        // ->groupBy(fn ($user) => $user->role->name);
+        
+
+         if($users){
+
+           return response()->json($users);
+        }else{
+
+            return response()->json(["message"=>"Data Not Found"]);
+        }
+        // dd($usersByRole['lok-ayukt']);
+   }
     public function forwardComplaintbySO(Request $request,$complainId){
         //    dd($request->all());
         $user = Auth::user()->id;

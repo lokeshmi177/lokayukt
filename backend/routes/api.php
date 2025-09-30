@@ -249,14 +249,12 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/all-approved-complaints',[LokAyuktComplaintsController::class,'allComplainsapproved']);
         Route::get('/view-complaint/{id}',[LokAyuktComplaintsController::class,'viewComplaint']);
         Route::post('/forward-by-so/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbySO']);
-        Route::post('/forward-by-ds-js/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyds']);
-        Route::post('/forward-by-da/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyda']);
-        Route::post('/forward-report-by-so/{complainId}',[LokAyuktReportController::class,'forwardReporttbySo']);
-        Route::post('/forward-report-by-ds/{complainId}',[LokAyuktReportController::class,'forwardReporttbyds']);
-        Route::post('/forward-report-by-sec/{complainId}',[LokAyuktReportController::class,'forwardReporttbysec']);
-        Route::post('/forward-report-by-cio/{complainId}',[LokAyuktReportController::class,'forwardReporttbycio']);
-        Route::post('/forward-report-by-da/{complainId}',[LokAyuktReportController::class,'forwardReporttbyda']);
-        /**
+        Route::get('/get-users',[LokAyuktComplaintsController::class,'getSubROleUsers']);
+        // Route::post('/forward-by-ds-js/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyds']);
+        // Route::post('/forward-by-da/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyda']);
+        Route::post('/request-report/{complainId}',[LokAyuktReportController::class,'requestReport']);
+        
+        /*
          * Forward Report By Subroles
          */
         Route::post('/forward-report-by-sec{complainId}',[LokAyuktReportController::class,'forwardReporttbysec']);
@@ -282,7 +280,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/montly-complaint',[LokAyuktDashboardController::class,'getDistrictGraph']);
         Route::get('/district-wise-company-type',[LokAyuktDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
         Route::get('/status-distribution',[LokAyuktDashboardController::class,'gestatusDistribution']);
-        Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
+        // Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
     });
 
     
