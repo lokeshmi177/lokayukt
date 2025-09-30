@@ -18,6 +18,7 @@ use App\Http\Controllers\api\Operator\OperatorCommonController;
 use App\Http\Controllers\api\Operator\OperatorComplaintsController;
 // use App\Http\Controllers\api\OperatorCommonController;
 // use App\Http\Controllers\api\OperatorComplaintsController;
+use App\Http\Controllers\api\Supervisor\LokAyuktDashboardController;
 use App\Http\Controllers\api\Supervisor\SupervisorCommonController;
 use App\Http\Controllers\api\Supervisor\SupervisorComplaintsController;
 use App\Http\Controllers\api\Supervisor\SupervisorDashboardController;
@@ -275,11 +276,11 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/compliance-report',[LokAyuktReportController::class,'complianceReport']);
 
         // // Daishboard
-        // Route::get('/dashboard/{date}',[LokAyuktDashboardController::class,'index']);
-        // Route::get('/montly-complaint',[LokAyuktDashboardController::class,'getDistrictGraph']);
-        // Route::get('/district-wise-company-type',[LokAyuktDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
-        // Route::get('/status-distribution',[LokAyuktDashboardController::class,'gestatusDistribution']);
-        // Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
+        Route::get('/dashboard/{date}',[LokAyuktDashboardController::class,'index']);
+        Route::get('/montly-complaint',[LokAyuktDashboardController::class,'getDistrictGraph']);
+        Route::get('/district-wise-company-type',[LokAyuktDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
+        Route::get('/status-distribution',[LokAyuktDashboardController::class,'gestatusDistribution']);
+        Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
     });
 
     
