@@ -181,7 +181,7 @@ const ProgressRegister = () => {
       });
 
       saveAs(data, `Current_Status_${new Date().toISOString().slice(0,10)}.xlsx`);
-      toast.success("Export successful!");
+      // toast.success("Export successful!");
 
     } catch (e) {
       console.error("Export failed:", e);

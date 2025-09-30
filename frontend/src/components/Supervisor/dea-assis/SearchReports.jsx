@@ -91,7 +91,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-2 pl-10 pr-8 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between ${
+        className={`w-full p-2 pr-8 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         required={required}
@@ -312,7 +312,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
       <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="px-4 py-3 border-b flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Forward Complaint</h3>
+          <h3 className="text-lg font-semibold">Forward Report</h3>
           <button
             type="button"
             onClick={onClose}
@@ -389,7 +389,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !forward.forward_to || isLoadingData
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  : "bg-[#13316C]"
               } text-white`}
             >
               {isSubmitting ? (
@@ -510,7 +510,7 @@ const SearchReports = () => {
       });
 
       saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
-      toast.success("Export successful!");
+      // toast.success("Export successful!");
     } catch(e) {
       console.error("Export failed:", e);
       toast.error("Failed to export data.");

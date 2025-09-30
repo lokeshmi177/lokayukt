@@ -91,7 +91,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
+        className={`w-full p-2 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         required={required}
@@ -312,7 +312,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
       <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
         {/* Header */}
         <div className="px-4 py-3 border-b flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Forward Complaint</h3>
+          <h3 className="text-lg font-semibold">Forward Report</h3>
           <button
             type="button"
             onClick={onClose}

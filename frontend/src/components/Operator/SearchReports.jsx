@@ -102,7 +102,7 @@ const CustomSearchableDropdown = ({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-2 pl-10 pr-8 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between"
+        className="w-full p-2 pr-8 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between"
         required={required}
       >
         <span className="flex items-center">
