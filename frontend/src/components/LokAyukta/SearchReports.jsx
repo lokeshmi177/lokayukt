@@ -42,10 +42,8 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   // Flatten options for searching
   const flattenOptions = (options) => {
     const flattened = [];
-    options.forEach((group) => {
-      group.items.forEach((item) => {
-        flattened.push({ ...item, groupLabel: group.label, groupIcon: group.icon });
-      });
+    options.forEach((item) => {
+      flattened.push(item);
     });
     return flattened;
   };
@@ -54,30 +52,12 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
 
-    const flatOptions = flattenOptions(options);
-    const filtered = flatOptions.filter((option) =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      option.groupLabel.toLowerCase().includes(searchTerm.toLowerCase())
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    // Group filtered options back
-    const groupedFiltered = {};
-    filtered.forEach((option) => {
-      if (!groupedFiltered[option.groupLabel]) {
-        const originalGroup = options.find((g) => g.label === option.groupLabel);
-        groupedFiltered[option.groupLabel] = {
-          label: option.groupLabel,
-          icon: originalGroup?.icon,
-          items: [],
-        };
-      }
-      groupedFiltered[option.groupLabel].items.push(option);
-    });
-
-    return Object.values(groupedFiltered);
   };
 
-  const selectedOption = flattenOptions(options).find((opt) => opt.value === value);
+  const selectedOption = options.find((opt) => opt.value === value);
 
   const handleSelect = (optionValue) => {
     onChange(optionValue);
@@ -99,7 +79,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
         <span className="flex items-center">
           {selectedOption ? (
             <>
-              {selectedOption.icon}
+              <FaUsers className="w-4 h-4 text-blue-600" />
               <span className="ml-2">{selectedOption.label}</span>
             </>
           ) : (
@@ -142,29 +122,19 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions().length > 0 ? (
-              filteredOptions().map((group) => (
-                <div key={group.label}>
-                  {/* Group Header */}
-                  <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
-                    {group.icon}
-                    <span className="ml-2">{group.label}</span>
-                  </div>
-                  {/* Group Items */}
-                  {group.items.map((item) => (
-                    <button
-                      key={item.value}
-                      type="button"
-                      onClick={() => handleSelect(item.value)}
-                      className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-sm border-b border-gray-100 last:border-b-0"
-                    >
-                      {item.icon}
-                      <span className="ml-2">{item.label}</span>
-                      {value === item.value && (
-                        <FaUsers className="ml-auto w-4 h-4 text-blue-600" />
-                      )}
-                    </button>
-                  ))}
-                </div>
+              filteredOptions().map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => handleSelect(item.value)}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-sm border-b border-gray-100 last:border-b-0"
+                >
+                  <FaUser className="w-4 h-4 text-gray-600" />
+                  <span className="ml-2">{item.label}</span>
+                  {value === item.value && (
+                    <FaUsers className="ml-auto w-4 h-4 text-blue-600" />
+                  )}
+                </button>
               ))
             ) : (
               <div className="px-4 py-8 text-center text-gray-500 text-sm">
@@ -178,7 +148,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// ✅ Forward Modal Component
+// ✅ Forward Modal Component - UPDATED
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -186,95 +156,62 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lokayuktData, setLokayuktData] = useState([]);
-  const [upLokayuktData, setUpLokayuktData] = useState([]);
+  const [usersData, setUsersData] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Fetch LokAyukta and UpLokAyukta data
-  const fetchForwardingData = async () => {
+  // ✅ Fetch Users Data from /get-users API
+  const fetchUsersData = async () => {
     setIsLoadingData(true);
     try {
-      // Fetch LokAyukta data
-      const lokayuktResponse = await api.get("/lokayuktt/get-lokayukt");
-      console.log("LokAyukta Response:", lokayuktResponse.data);
-
-      // Fetch UpLokAyukta data
-      const upLokayuktResponse = await api.get("/lokayuktt/get-uplokayukt");
-      console.log("UpLokAyukta Response:", upLokayuktResponse.data);
+      const response = await api.get("/lokayuktt/get-users");
+      console.log("Get Users Response:", response.data);
 
       // Set data - assuming response is array directly
-      setLokayuktData(Array.isArray(lokayuktResponse.data) ? lokayuktResponse.data : []);
-      setUpLokayuktData(Array.isArray(upLokayuktResponse.data) ? upLokayuktResponse.data : []);
+      setUsersData(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error("Error fetching forwarding data:", error);
-      toast.error("Error loading forwarding options");
-      setLokayuktData([]);
-      setUpLokayuktData([]);
+      console.error("Error fetching users data:", error);
+      toast.error("Error loading users data");
+      setUsersData([]);
     } finally {
       setIsLoadingData(false);
     }
   };
 
-  // ✅ Build dropdown options - ID as value, Name as label for display
+  // ✅ Build dropdown options from /get-users API response
   const buildDropdownOptions = () => {
-    const options = [];
+    if (usersData.length === 0) return [];
 
-    // Add LokAyukta options if data exists
-    if (lokayuktData.length > 0) {
-      options.push({
-        label: "Hon'ble LokAyukta",
-        // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
-        items: lokayuktData.map((item) => ({
-          value: item.id, // ✅ ID भेजेंगे backend में
-          label: item.name, // ✅ Name दिखाएंगे frontend में
-          // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
-          type: "lokayukt"
-        })),
-      });
-    }
-
-    // Add UpLokAyukta options if data exists
-    if (upLokayuktData.length > 0) {
-      options.push({
-        label: "Hon'ble UpLokAyukta",
-        // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
-        items: upLokayuktData.map((item) => ({
-          value: item.id, // ✅ ID भेजेंगे backend में
-          label: item.name, // ✅ Name दिखाएंगे frontend में
-          // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
-          type: "uplokayukt"
-        })),
-      });
-    }
-
-    return options;
+    return usersData.map((user) => ({
+      value: user.id, // ID bhejenge backend mein
+      label: `${user.name} (${user.subrole_name})`, // Name aur subrole display karenge
+    }));
   };
 
   useEffect(() => {
     if (isOpen) {
       setForward({ forward_to: "", remark: "" });
       setErrors({});
-      fetchForwardingData();
+      fetchUsersData();
     }
   }, [isOpen]);
 
-  // ✅ Handle Submit - Only ID send होगा backend में
+  // ✅ Handle Submit - request-report/{complaintId} API call
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      console.log("Forwarding complaint:", complaintId, "with payload:", forward);
+      console.log("Requesting report for complaint:", complaintId, "with payload:", forward);
 
-      // ✅ forward.forward_to में अब सिर्फ ID है, name नहीं
-      const response = await api.post(`/lokayuktt/forward-report-by-so/${complaintId}`, forward);
+      // ✅ API call to request-report/{complaintId}
+      const response = await api.post(`/request-report/${complaintId}`, forward);
 
-      console.log("Forward API Response:", response.data);
+      console.log("Request Report API Response:", response.data);
 
       if (response.data.status !== false) {
-        toast.success("Complaint forwarded successfully!");
+        toast.success("Report requested successfully!");
         onSubmit && onSubmit();
         onClose();
       } else {
@@ -282,17 +219,17 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           setErrors(response.data.errors);
           console.log("Validation errors:", response.data.errors);
         } else {
-          toast.error("Failed to forward complaint");
+          toast.error("Failed to request report");
         }
       }
     } catch (error) {
-      console.error("Error forwarding complaint:", error);
+      console.error("Error requesting report:", error);
       
       if (error.response && error.response.data && error.response.data.errors) {
         setErrors(error.response.data.errors);
         console.log("API Validation Errors:", error.response.data.errors);
       } else {
-        toast.error("Error forwarding complaint");
+        toast.error("Error requesting report");
       }
     } finally {
       setIsSubmitting(false);
@@ -333,7 +270,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 name="forward_to"
                 value={forward.forward_to}
                 onChange={(value) => {
-                  // ✅ यहाँ सिर्फ ID set होगी, name नहीं
                   setForward((prev) => ({ ...prev, forward_to: value }));
                 
                   if (errors.forward_to) {
@@ -341,7 +277,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                   }
                 }}
                 options={buildDropdownOptions()}
-                placeholder="Select LokAyukta/UpLokAyukta"
+                placeholder="Select User"
                 error={errors.forward_to && errors.forward_to[0]} 
               />
             </div>
@@ -362,7 +298,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.remark ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Enter Forwarding Remarks..."
+                placeholder="Enter Remarks..."
                 rows={3}
               />
               {errors.remark && (
@@ -395,7 +331,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
               {isSubmitting ? (
                 <>
                   <FaSpinner className="w-4 h-4 animate-spin" />
-                  Requsting...
+                  Requesting...
                 </>
               ) : (
                 <>
@@ -450,7 +386,7 @@ const SearchReports = () => {
 
   const handleForwardSubmit = () => {
     // Refresh data or update state as needed
-    console.log("Complaint forwarded");
+    console.log("Report requested");
   };
 
   const handleHeaderExport = () => {
@@ -789,7 +725,7 @@ const SearchReports = () => {
                     {/* Search Criteria */}
                    <div className="bg-white  sm:p-4 shadow-sm">
  <div className="flex items-center gap-2 mb-3">
-  <FaSearch className="w-5 h-5 text-gray-700 relative  sm:bottom-3 md:bottom-3 lg:bottom-3 " /> {/* Icon thoda bada */}
+  <FaSearch className="w-5 h-5 text-gray-700 relative  sm:bottom-3 md:bottom-3 lg:bottom-3 " />
   <h3 className="text-2xl sm:text-xl md:text-2xl relative sm:bottom-3 md:bottom-3 lg:bottom-3  font-semibold text-gray-900">
     Search Criteria
   </h3>
@@ -978,13 +914,13 @@ const SearchReports = () => {
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
-                                        {/* ✅ Forward Button */}
+                                        {/* ✅ Request Button - Opens Modal */}
                                         <button 
                                           onClick={() => handleForward(result.id)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaArrowRight className="w-3 text-blue-600 h-3" />
-                                          <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
+                                          <span className="hidden text-blue-600 font-semibold sm:inline">Request</span>
                                         </button>
                                       </div>
                                     </td>
@@ -1236,7 +1172,7 @@ const SearchReports = () => {
           </div>
         </div>
 
-        {/* ✅ Forward Modal */}
+        {/* ✅ Request Report Modal */}
         <ForwardModal
           isOpen={isForwardModalOpen}
           onClose={() => setIsForwardModalOpen(false)}
