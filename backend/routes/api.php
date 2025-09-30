@@ -5,6 +5,9 @@ use App\Http\Controllers\api\Admin\AdminReportController;
 // use App\Http\Controllers\api\Admin\AdminDashboardController;
 // use App\Http\Controllers\api\Admin\OperatorReportController;
 
+use App\Http\Controllers\api\LokAyukt\LokAyuktCommonController;
+use App\Http\Controllers\api\LokAyukt\LokAyuktComplaintsController;
+use App\Http\Controllers\api\LokAyukt\LokAyuktReportController;
 use App\Http\Controllers\api\Operator\OperatorDashboardController;
 use App\Http\Controllers\api\Operator\OperatorReportController;
 // use App\Http\Controllers\api\Admin\OperatorReportController;
@@ -214,7 +217,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/forward-report-by-da/{complainId}',[SupervisorReportController::class,'forwardReporttbyda']);
        
         Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
-        Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
+        Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayukttUsers']);
         Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);
         Route::get('/progress-register',[SupervisorReportController::class,'progress_report']);
         Route::get('/complain-report',[SupervisorReportController::class,'complainReports']);
@@ -232,51 +235,51 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/montly-complaint',[SupervisorDashboardController::class,'getDistrictGraph']);
         Route::get('/district-wise-company-type',[SupervisorDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
         Route::get('/status-distribution',[SupervisorDashboardController::class,'gestatusDistribution']);
-        Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
+        // Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
         
     });
 
-    Route::middleware('role:lok-ayukt')->prefix('lokayukt')->group(function () {
-         Route::get('/all-district',[SupervisorCommonController::class,'fetch_district']);
-        Route::get('/all-complaints',[SupervisorComplaintsController::class,'allComplains']);
-        Route::get('/all-pending-complaints',[SupervisorComplaintsController::class,'allComplainspending']);
-        Route::get('/all-approved-complaints',[SupervisorComplaintsController::class,'allComplainsapproved']);
-        Route::get('/view-complaint/{id}',[SupervisorComplaintsController::class,'viewComplaint']);
-        Route::post('/forward-by-so/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbySO']);
-        Route::post('/forward-by-ds-js/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbyds']);
-        Route::post('/forward-by-da/{complainId}',[SupervisorComplaintsController::class,'forwardComplaintbyda']);
-        Route::post('/forward-report-by-so/{complainId}',[SupervisorReportController::class,'forwardReporttbySo']);
-        Route::post('/forward-report-by-ds/{complainId}',[SupervisorReportController::class,'forwardReporttbyds']);
-        Route::post('/forward-report-by-sec/{complainId}',[SupervisorReportController::class,'forwardReporttbysec']);
-        Route::post('/forward-report-by-cio/{complainId}',[SupervisorReportController::class,'forwardReporttbycio']);
-        Route::post('/forward-report-by-da/{complainId}',[SupervisorReportController::class,'forwardReporttbyda']);
+    Route::middleware('role:lok-ayukt')->prefix('lokayuktt')->group(function () {
+         Route::get('/all-district',[LokAyuktCommonController::class,'fetch_district']);
+        Route::get('/all-complaints',[LokAyuktComplaintsController::class,'allComplains']);
+        Route::get('/all-pending-complaints',[LokAyuktComplaintsController::class,'allComplainspending']);
+        Route::get('/all-approved-complaints',[LokAyuktComplaintsController::class,'allComplainsapproved']);
+        Route::get('/view-complaint/{id}',[LokAyuktComplaintsController::class,'viewComplaint']);
+        Route::post('/forward-by-so/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbySO']);
+        Route::post('/forward-by-ds-js/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyds']);
+        Route::post('/forward-by-da/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyda']);
+        Route::post('/forward-report-by-so/{complainId}',[LokAyuktReportController::class,'forwardReporttbySo']);
+        Route::post('/forward-report-by-ds/{complainId}',[LokAyuktReportController::class,'forwardReporttbyds']);
+        Route::post('/forward-report-by-sec/{complainId}',[LokAyuktReportController::class,'forwardReporttbysec']);
+        Route::post('/forward-report-by-cio/{complainId}',[LokAyuktReportController::class,'forwardReporttbycio']);
+        Route::post('/forward-report-by-da/{complainId}',[LokAyuktReportController::class,'forwardReporttbyda']);
         /**
          * Forward Report By Subroles
          */
-        Route::post('/forward-report-by-sec{complainId}',[SupervisorReportController::class,'forwardReporttbysec']);
-        Route::post('/forward-report-by-cio/{complainId}',[SupervisorReportController::class,'forwardReporttbycio']);
-        Route::post('/forward-report-by-da/{complainId}',[SupervisorReportController::class,'forwardReporttbyda']);
+        Route::post('/forward-report-by-sec{complainId}',[LokAyuktReportController::class,'forwardReporttbysec']);
+        Route::post('/forward-report-by-cio/{complainId}',[LokAyuktReportController::class,'forwardReporttbycio']);
+        Route::post('/forward-report-by-da/{complainId}',[LokAyuktReportController::class,'forwardReporttbyda']);
        
-        Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
-        Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
-        Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);
-        Route::get('/progress-register',[SupervisorReportController::class,'progress_report']);
-        Route::get('/complain-report',[SupervisorReportController::class,'complainReports']);
-        Route::get('/current-report',[SupervisorReportController::class,'current_report']);
-        Route::get('/analytic-report',[SupervisorReportController::class,'analytics']);
-        // Route::get('/detail-by-complaintype',[SupervisorReportController::class,'complainComplaintypeWise']);
-         Route::get('/all-complains',[SupervisorReportController::class,'allComplains']);
-        Route::get('/district-wise-complaint',[SupervisorReportController::class,'complainDistrictWise']);
-        Route::get('/department-wise-complaint',[SupervisorReportController::class,'complainDepartmentWise']);
-        Route::get('/montly-trends',[SupervisorReportController::class,'getMontlyTrends']);
-        Route::get('/compliance-report',[SupervisorReportController::class,'complianceReport']);
+        Route::get('/get-lokayukt',[LokAyuktComplaintsController::class,'getLokayuktUsers']);
+        Route::get('/get-uplokayukt',[LokAyuktComplaintsController::class,'getUpLokayuktUsers']);
+        Route::get('/get-dealing-assistant',[LokAyuktComplaintsController::class,'getDealingAssistantUsers']);
+        Route::get('/progress-register',[LokAyuktReportController::class,'progress_report']);
+        Route::get('/complain-report',[LokAyuktReportController::class,'complainReports']);
+        Route::get('/current-report',[LokAyuktReportController::class,'current_report']);
+        Route::get('/analytic-report',[LokAyuktReportController::class,'analytics']);
+        // Route::get('/detail-by-complaintype',[LokAyuktReportController::class,'complainComplaintypeWise']);
+         Route::get('/all-complains',[LokAyuktReportController::class,'allComplains']);
+        Route::get('/district-wise-complaint',[LokAyuktReportController::class,'complainDistrictWise']);
+        Route::get('/department-wise-complaint',[LokAyuktReportController::class,'complainDepartmentWise']);
+        Route::get('/montly-trends',[LokAyuktReportController::class,'getMontlyTrends']);
+        Route::get('/compliance-report',[LokAyuktReportController::class,'complianceReport']);
 
         // // Daishboard
-        Route::get('/dashboard/{date}',[SupervisorDashboardController::class,'index']);
-        Route::get('/montly-complaint',[SupervisorDashboardController::class,'getDistrictGraph']);
-        Route::get('/district-wise-company-type',[SupervisorDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
-        Route::get('/status-distribution',[SupervisorDashboardController::class,'gestatusDistribution']);
-        Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
+        // Route::get('/dashboard/{date}',[LokAyuktDashboardController::class,'index']);
+        // Route::get('/montly-complaint',[LokAyuktDashboardController::class,'getDistrictGraph']);
+        // Route::get('/district-wise-company-type',[LokAyuktDashboardController::class,'getdistrictWiseCompanyTypeGraph']);
+        // Route::get('/status-distribution',[LokAyuktDashboardController::class,'gestatusDistribution']);
+        // Route::get('/status-distribution',action: [SupervisorDashboardController::class,'gestatusDistribution']);
     });
 
     
