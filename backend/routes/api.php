@@ -219,7 +219,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::post('/forward-report-by-da/{complainId}',[SupervisorReportController::class,'forwardReporttbyda']);
        
         Route::get('/get-lokayukt',[SupervisorComplaintsController::class,'getLokayuktUsers']);
-        Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayukttUsers']);
+        Route::get('/get-uplokayukt',[SupervisorComplaintsController::class,'getUpLokayuktUsers']);
         Route::get('/get-dealing-assistant',[SupervisorComplaintsController::class,'getDealingAssistantUsers']);
         Route::get('/progress-register',[SupervisorReportController::class,'progress_report']);
         Route::get('/complain-report',[SupervisorReportController::class,'complainReports']);
