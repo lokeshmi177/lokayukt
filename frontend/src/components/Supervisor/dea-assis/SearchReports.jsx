@@ -6,7 +6,7 @@ import {
   FaFileAlt,
   FaChartBar,
   FaSpinner,
-  FaArrowRight, // Added Forward icon
+  FaArrowRight, // ✅ Forward icon add kiya
   FaChevronDown,
   FaUser,
   FaUserTie,
@@ -34,7 +34,7 @@ const api = axios.create({
   },
 });
 
-// Custom Searchable Dropdown Component
+// ✅ Custom Searchable Dropdown Component
 const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select option...", required = false, error = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,7 +91,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-2 pl-10 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
+        className={`w-full p-2 pl-10 pr-8 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         required={required}
@@ -133,7 +133,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
                 placeholder="Search options..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none text-sm"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -178,7 +178,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// ✅ UPDATED: Forward Modal Component - ID bhejega backend mein, Name dikhega frontend mein
+// ✅ Forward Modal Component
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -216,7 +216,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     }
   };
 
-  // ✅ UPDATED: Build dropdown options - ID as value, Name as label for display
+  // ✅ Build dropdown options - ID as value, Name as label for display
   const buildDropdownOptions = () => {
     const options = [];
 
@@ -226,10 +226,10 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
         label: "Hon'ble LokAyukta",
         // icon: <FaCrown className="w-4 h-4 text-yellow-500" />,
         items: lokayuktData.map((item) => ({
-          value: item.id, // ✅ ID bhejenge backend mein
-          label: item.name, // ✅ Name dikhayenge frontend mein
+          value: item.id, // ✅ ID भेजेंगे backend में
+          label: item.name, // ✅ Name दिखाएंगे frontend में
           // icon: <FaUserTie className="w-4 h-4 text-yellow-500" />,
-          type: "lokayukt" // Optional: type tracking ke liye
+          type: "lokayukt"
         })),
       });
     }
@@ -240,10 +240,10 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
         label: "Hon'ble UpLokAyukta",
         // icon: <FaCrown className="w-4 h-4 text-blue-500" />,
         items: upLokayuktData.map((item) => ({
-          value: item.id, // ✅ ID bhejenge backend mein
-          label: item.name, // ✅ Name dikhayenge frontend mein
+          value: item.id, // ✅ ID भेजेंगे backend में
+          label: item.name, // ✅ Name दिखाएंगे frontend में
           // icon: <FaUserTie className="w-4 h-4 text-blue-500" />,
-          type: "uplokayukt" // Optional: type tracking ke liye
+          type: "uplokayukt"
         })),
       });
     }
@@ -259,7 +259,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     }
   }, [isOpen]);
 
-  // ✅ UPDATED: Handle Submit - Only ID send hoga backend mein
+  // ✅ Handle Submit - Only ID send होगा backend में
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -268,7 +268,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     try {
       console.log("Forwarding complaint:", complaintId, "with payload:", forward);
 
-      // ✅ forward.forward_to mein ab sirf ID hai, name nahi
+      // ✅ forward.forward_to में अब सिर्फ ID है, name नहीं
       const response = await api.post(`/supervisor/forward-report-by-da/${complaintId}`, forward);
 
       console.log("Forward API Response:", response.data);
@@ -333,7 +333,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 name="forward_to"
                 value={forward.forward_to}
                 onChange={(value) => {
-                  // ✅ Yahan sirf ID set hogi, name nahi
+                  // ✅ यहाँ सिर्फ ID set होगी, name नहीं
                   setForward((prev) => ({ ...prev, forward_to: value }));
                 
                   if (errors.forward_to) {
@@ -359,7 +359,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                     setErrors((prev) => ({ ...prev, remark: null }));
                   }
                 }}
-                className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full p-2 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] ${
                   errors.remark ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter forwarding remarks..."
@@ -452,6 +452,70 @@ const SearchReports = () => {
     // Refresh data or update state as needed
     console.log("Complaint forwarded");
   };
+
+  const handleHeaderExport = () => {
+    try {
+      if (filteredResults.length === 0) {
+        toast.error("No data to export.");
+        return;
+      }
+
+      const wsData = [
+        ["Sr. No", "Complain No", "Application No", "Name", "Officer", "Department", "District", "Nature", "Status", "Entry Date"],
+        ...filteredResults.map((item, index) => [
+          index + 1,
+          item.complain_no || "NA",
+          item.application_no || "NA", 
+          item.name || "NA",
+          item.officer_name || "NA",
+          item.department_name || "NA",
+          item.district_name || "NA",
+          item.complaintype_name || "NA",
+          item.status || "NA",
+          item.created_at || "NA"
+        ])
+      ];
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+      // Header styling
+      const headerStyle = {
+        font: { bold: true, color: { rgb: "000000" } },
+        alignment: { horizontal: "center" },
+        fill: { fgColor: { rgb: "D3D3D3" } }
+      };
+
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = {};
+        ws[cellAddress].s = headerStyle;
+      }
+
+      ws['!cols'] = [
+        {wch: 8}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 20}
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, "Search Reports");
+
+      const excelBuffer = XLSX.write(wb, {
+        bookType: 'xlsx',
+        type: 'array',
+        cellStyles: true
+      });
+
+      const data = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      saveAs(data, `Search_Reports_${new Date().toISOString().slice(0,10)}.xlsx`);
+      toast.success("Export successful!");
+    } catch(e) {
+      console.error("Export failed:", e);
+      toast.error("Failed to export data.");
+    }
+  }
 
   // Fetch initial data when component mounts
   useEffect(() => {
@@ -656,12 +720,22 @@ const SearchReports = () => {
       />
       
       <div className="max-w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
-              Search Reports
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-2 text-gray-900 truncate">
+              Search & Reports / खोज और रिपोर्ट
             </h1>
+          </div>
+          
+          {/* ✅ Export button with functionality */}
+          <div className="flex items-center flex-shrink-0">
+            <button 
+              onClick={handleHeaderExport}
+              className="flex items-center gap-2 px-4 py-2 border hover:bg-[#e69a0c] text-gray-700 rounded-lg transition-colors text-sm font-medium"
+            >
+              <FaDownload className="w-4 h-4" />
+              Export
+            </button>
           </div>
         </div>
 
@@ -713,216 +787,199 @@ const SearchReports = () => {
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
                     {/* Search Criteria */}
-                    <div className="bg-white p-3 sm:p-4 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FaSearch className="w-4 h-4 text-blue-600" />
-                        <h3 className="text-sm sm:text-base font-semibold text-gray-900">Search Filter</h3>
-                      </div>
+                   <div className="bg-white  sm:p-4 shadow-sm">
+ <div className="flex items-center gap-2 mb-3">
+  <FaSearch className="w-5 h-5 text-gray-700 relative  sm:bottom-3 md:bottom-3 lg:bottom-3 " /> {/* Icon thoda bada */}
+  <h3 className="text-2xl sm:text-xl md:text-2xl relative sm:bottom-3 md:bottom-3 lg:bottom-3  font-semibold text-gray-900">
+    Search Criteria
+  </h3>
+</div>
 
-                      <div className="space-y-3">
-                        {/* Search Term */}
-                        <div className="w-full">
-                          <input
-                            id="search-term"
-                            type="text"
-                            placeholder="Search by Complaints No., Name, Officer, Department, District..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full px-2.5 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                          />
-                        </div>
+  {/* ✅ UPDATED: 4 Grid Layout with Equal Sizes */}
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+    {/* Search Term */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Search Term</label>
+      <input
+        id="search-term"
+        type="text"
+        placeholder="Complaint No., Name, etc."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none"
+      />
+    </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          {/* District Filter */}
-                          <div className="flex-1">
-                            <select
-                              id="district"
-                              value={selectedDistrict}
-                              onChange={(e) => setSelectedDistrict(e.target.value)}
-                              className="w-full px-2.5 py-2 text-xs sm:text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
-                            >
-                              <option value="all">All Districts ({ensureArray(districts).length} total)</option>
-                              {ensureArray(districts).map((district) => (
-                                <option key={district.id} value={district.id.toString()}>
-                                  {district.districtname} - {district.distnamehi}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+    {/* District Dropdown */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+      <select
+        id="district"
+        value={selectedDistrict}
+        onChange={(e) => setSelectedDistrict(e.target.value)}
+        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
+      >
+        <option value="all">All Districts</option>
+        <option value="bhopal">Bhopal</option>
+        <option value="indore">Indore</option>
+        <option value="gwalior">Gwalior</option>
+        <option value="ujjain">Ujjain</option>
+        {ensureArray(districts).map((district) => (
+          <option key={district.id} value={district.id.toString()}>
+            {district.district_name} - {district.dist_name_hi}
+          </option>
+        ))}
+      </select>
+    </div>
 
-                          {/* Status Filter */}
-                          <div className="flex-1">
-                            <select
-                              id="status"
-                              value={selectedStatus}
-                              onChange={(e) => setSelectedStatus(e.target.value)}
-                              className="w-full px-2.5 py-2 text-xs sm:text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
-                            >
-                              <option value="all">All Status</option>
-                              <option value="In Progress">In Progress</option>
-                              <option value="Disposed - Accepted">Disposed - Accepted</option>
-                              <option value="Resolved">Resolved</option>
-                              <option value="Rejected">Rejected</option>
-                              <option value="Under Investigation">Under Investigation</option>
-                              <option value="Pending">Pending</option>
-                            </select>
-                          </div>
+    {/* Status Dropdown */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+      <select
+        id="status"
+        value={selectedStatus}
+        onChange={(e) => setSelectedStatus(e.target.value)}
+        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
+      >
+        <option value="all">All Status</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Disposed - Accepted">Disposed - Accepted</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Under Investigation">Under Investigation</option>
+        <option value="Pending">Pending</option>
+      </select>
+    </div>
 
-                          {/* Buttons Side by Side with Same Blue Color */}
-                          <div className="flex gap-3 flex-shrink-0">
-                            <button
-                              onClick={handleSearch}
-                              disabled={isSearching}
-                              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors text-xs sm:text-sm ${
-                                isSearching
-                                  ? "bg-gray-400 text-white cursor-not-allowed"
-                                  : "bg-blue-600 text-white hover:bg-blue-700"
-                              }`}
-                            >
-                              {isSearching ? (
-                                <>
-                                  <FaSpinner className="w-3 h-3 animate-spin" />
-                                  <span>Refreshing...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <FaSearch className="w-3 h-3" />
-                                  <span>Refresh</span>
-                                </>
-                              )}
-                            </button>
-
-                            {/* Export Button - Same Blue Color Icon */}
-                            <button
-                              onClick={() => {
-                                try {
-                                  if (filteredResults.length === 0) {
-                                    toast.error("No data to export.");
-                                    return;
-                                  }
-
-                                  const wsData = [
-                                    ["Sr. No", "Complain No", "Name", "Department", "District", "Nature", "Status", "Entry Date"],
-                                    ...filteredResults.map((item, index) => [
-                                      index + 1,
-                                      item.complain_no || "NA",
-                                      item.name || "NA",
-                                      item.department_name || "NA",
-                                      item.district_name || "NA",
-                                      item.complaintype_name || "NA",
-                                      item.status || "NA",
-                                      item.created_at || "NA",
-                                    ]),
-                                  ];
-
-                                  const wb = XLSX.utils.book_new();
-                                  const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-                                  // Header styling
-                                  const headerStyle = {
-                                    font: { bold: true, color: { rgb: "000000" } },
-                                    alignment: { horizontal: "center" },
-                                    fill: { fgColor: { rgb: "D3D3D3" } },
-                                  };
-
-                                  const range = XLSX.utils.decode_range(ws["!ref"]);
-                                  for (let C = range.s.c; C <= range.e.c; ++C) {
-                                    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
-                                    if (!ws[cellAddress]) continue;
-                                    ws[cellAddress].s = headerStyle;
-                                  }
-
-                                  ws["!cols"] = [
-                                    { wch: 8 },
-                                    { wch: 15 },
-                                    { wch: 20 },
-                                    { wch: 20 },
-                                    { wch: 15 },
-                                    { wch: 15 },
-                                    { wch: 15 },
-                                    { wch: 20 },
-                                  ];
-
-                                  XLSX.utils.book_append_sheet(wb, ws, "Search Reports");
-
-                                  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array", cellStyles: true });
-                                  const data = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-                                  saveAs(data, `SearchReports_${new Date().toISOString().slice(0, 10)}.xlsx`);
-
-                                  toast.success("Export successful!");
-                                } catch (e) {
-                                  console.error("Export failed:", e);
-                                  toast.error("Failed to export data.");
-                                }
-                              }}
-                              className="flex items-center justify-center gap-2 px-4 py-2 rounded-md text-xs sm:text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                            >
-                              <FaDownload className="w-3 h-3" />
-                              <span>Export</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+    {/* Search Button */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1 opacity-0">Search</label>
+      <button
+        onClick={handleSearch}
+        disabled={isSearching}
+        style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
+        className="w-full flex items-center justify-center gap-2 px-6 py-2 rounded-md transition-colors text-sm font-medium h-[38px]"
+      >
+        {isSearching ? (
+          <>
+            <FaSpinner className="w-4 h-4 text-white animate-spin" />
+            <span className="text-white">Search...</span>
+          </>
+        ) : (
+          <>
+            <FaSearch className="w-4 h-4 text-white" />
+            <span className="text-white">Search</span>
+          </>
+        )}
+      </button>
+    </div>
+  </div>
+</div>
 
                     {/* Search Results */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-semibold text-gray-900">
+                          Search Results 
+                        </h3>
+                      </div>
+
                       {/* Table wrapper */}
                       <div className="w-full overflow-hidden rounded-md border border-gray-200">
                         <div className="overflow-x-auto">
                           <table className="min-w-full text-[11px] sm:text-xs">
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Complaints No.</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Complainant</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">Department</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">District</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Nature</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Status</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Entry Date</th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">Actions</th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Complaint No.
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Complainant
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
+                                  Respondent
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
+                                  Department
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  District
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Nature
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Status
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Entry Date
+                                </th>
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                  Actions
+                                </th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
                               {paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
                                   <tr key={result.id} className="hover:bg-gray-50">
-                                    <td className="py-2 px-2 sm:px-3 font-medium text-gray-900">
-                                      <div className="mt-2 text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transform transition duration-200 hover:scale-105" onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}>
-                                        {result.complain_no || "NA"}
-                                      </div>
+                                    <td className="py-2 px-2 sm:px-3 font-medium text-gray-700 hover:text-blue-800 hover:underline cursor-pointer" 
+                                        onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}>
+                                      {result.complain_no || result.application_no || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700">{result.name || "NA"}</td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">{result.department_name || "NA"}</td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      <span className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" title={`District ID: ${result.district_id}`}>
-                                        {result.district_name || "NA"}
+                                      {result.name || "N/A"}
+                                    </td>
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
+                                      {result.designation_name || "N/A"}
+                                    </td>
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
+                                      {result.department_name || "N/A"}
+                                    </td>
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700">
+                                      <span 
+                                        className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" 
+                                        title={`District Code: ${result.district_id}`}
+                                      >
+                                        {result.district_name || "N/A"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${result.complaintype_name === "Allegation" ? "bg-red-100 text-red-800" : "bg-gray-100 text-gray-800"}`}>
-                                        {result.complaintype_name || "NA"}
+                                      <span
+                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${
+                                          result.complaintype_name === "Allegation"
+                                            ? "bg-red-400 text-white"
+                                            : "bg-green-400 text-white"
+                                        }`}
+                                      >
+                                        {result.complaintype_name || "N/A"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${getStatusColor(result.status)}`}>
-                                        {result.status || "NA"}
+                                      <span
+                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] font-medium ${getStatusColor(
+                                          result.status
+                                        )}`}
+                                      >
+                                        {result.status || "N/A"}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span className="text-xs text-gray-600">{result.created_at || "NA"}</span>
+                                      <span className="text-xs text-gray-600">
+                                        {result.created_at || "N/A"}
+                                      </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <div className="flex gap-1">
-                                        <button
-                                          onClick={() => navigate(`/supervisor/search-reports/view/${result.id}`)}
+                                        <button 
+                                          onClick={() => navigate(`view/${result.id}`)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
                                         {/* ✅ Forward Button */}
-                                        <button
+                                        <button 
                                           onClick={() => handleForward(result.id)}
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
@@ -935,10 +992,10 @@ const SearchReports = () => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="8" className="py-8 text-center text-gray-500">
+                                  <td colSpan="9" className="py-8 text-center text-gray-500">
                                     {searchTerm || selectedDistrict !== "all" || selectedStatus !== "all"
                                       ? "No results match your filter criteria. Try adjusting your filters."
-                                      : "No data available. Click Refresh to load data."}
+                                      : "Loading..."}
                                   </td>
                                 </tr>
                               )}
@@ -1179,7 +1236,7 @@ const SearchReports = () => {
           </div>
         </div>
 
-        {/* ✅ UPDATED: Forward Modal with ID backend submission */}
+        {/* ✅ Forward Modal */}
         <ForwardModal
           isOpen={isForwardModalOpen}
           onClose={() => setIsForwardModalOpen(false)}
