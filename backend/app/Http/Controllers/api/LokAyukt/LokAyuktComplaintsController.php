@@ -18,9 +18,6 @@ class LokAyuktComplaintsController extends Controller
       public function allComplains(){
         $user = Auth::user()->id;
         // dd($user);
-      $userSubrole = Auth::user()->subrole->name; 
-   
-    if ($userSubrole) {
     $query = DB::table('complaints')
         //  ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
         ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
@@ -32,106 +29,18 @@ class LokAyuktComplaintsController extends Controller
         ->select(
             'complaints.*',
             'dd.district_name as district_name',
-            // 'dp.name as department_name',
-            // 'ds.name as designation_name',
-            // 'ct.name as complaintype_name',
-            // 'sub.name as subject_name',
-            // // 'rep.*',
-            // 'rep.forward_by_so_us as forward_so',
-            // 'rep.forward_to_ds_js as forward_ds',
-            // 'rep.forward_to_sec as forward_sec',
-            // 'rep.forward_to_cio_io as forward_cio',
-            // 'rep.forward_to_lokayukt as forward_lokayukt',
-            // 'rep.forward_to_uplokayukt as forward_uplokayukt',
-            // 'rep.forward_by_so_us as by_so',
-            // 'rep.forward_by_ds_js as by_ds',
-            // 'rep.forward_by_sec as by_sec',
-            // 'rep.forward_by_cio_io as by_cio',
-            // 'rep.forward_by_lokayukt as by_lokayukt',
-            // 'rep.forward_by_uplokayukt as by_uplokayukt',
-            //  'cd.department_id',
-            //  'cd.officer_name',
-            //   'cd.designation_id',
-            //    'cd.designation_id',
-            //    'cd.category',
-            //     'cd.title',
-            //     'cd.file',
-            //     'cd.subject_id',
-            //     'cd.complaintype_id',
-            //     'cd.description',
-            
 
         );
-//     $query = DB::table('complaints')
-//     ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
-//     ->select(
-//         'complaints.*',
-//         'dd.district_name as district_name'
-//     )
-//     // ->where('complaints.id', $id)
-//     ->first();
 
-// $query->details = DB::table('complaints_details as cd')
-//     ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-//     ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-//     ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-//     ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
-//     ->select(
-//         'cd.*',
-//         'dp.name as department_name',
-//         'ds.name as designation_name',
-//         'ct.name as complaintype_name',
-//         'sub.name as subject_name'
-//     );
-        // ->where('form_status', 1)
-        // ->where('approved_by_ro', 1);
 
-    switch ($userSubrole) {
-        case "so-us":
-            $query->where('form_status', 1)
+     $query->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_ds_js', 0);
-                //   ->where('approved_by_ro', 1);
-            // $query->where('complaints.added_by', $user);
-            break;
-
-        case "ds-js":
-          $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_so_us', 0);
-                //   ->where('forward_so', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "sec":
-           $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('forward_to_lokayukt', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "cio-io":
-           $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('forward_to_lokayukt', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "dea-assis":
-          $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                   ->where('approved_rejected_by_so_us', 1)
-                    ->orWhere('approved_rejected_by_ds_js', 1)
-                    ->whereNotNull('forward_to_d_a');
-            break;
-
-        default:
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid subrole',
-                'data' => [],
-            ], 400);
-    }
+                    ->where(function($q){
+                            $q->where('approved_rejected_by_so_us',1)
+                            ->Orwhere('approved_rejected_by_ds_js', 1);               
+                         })
+                    ->where('approved_rejected_by_d_a', 1);
+                    // ->whereNotNull('forward_to_d_a');
 
     $records = $query->get();
 
@@ -140,7 +49,6 @@ class LokAyuktComplaintsController extends Controller
         'message' => 'Records fetched successfully',
         'data' => $records,
     ]);
-}
 
 }
        public function viewComplaint($id)
@@ -403,7 +311,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     public function allComplainspending(){
 
-        $userSubrole = Auth::user()->subrole->name; 
+        // $userSubrole = Auth::user()->subrole->name; 
            $complainDetails = DB::table('complaints as cm')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
                 // ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
@@ -424,57 +332,13 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // ->where('approved_rejected_by_so_us',0)
                 // ->get();
                 
-    switch ($userSubrole) {
-        case "so-us":
-            $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_so_us', 0)
-                  ->whereNot('approved_rejected_by_ds_js', 1);
-                  
-                //   ->where('approved_by_ro', 1);
-            // $complainDetails->where('complaints.added_by', $user);
-            break;
-
-        case "ds-js":
-          $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_so_us', 0)
-                  ->where('approved_rejected_by_ds_js', 0);
-                //   ->where('forward_so', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "sec":
-           $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('forward_to_lokayukt', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "cio-io":
-           $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('forward_to_lokayukt', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "dea-assis":
-          $complainDetails->where('form_status', 1)
+    $complainDetails->where('form_status', 1)
             ->where('approved_rejected_by_ro', 1)
-                        ->where('approved_rejected_by_d_a',0)
+                        ->where('approved_rejected_by_d_a',1)
                          ->where(function($q){
                             $q->where('approved_rejected_by_so_us',1)
                             ->Orwhere('approved_rejected_by_ds_js', 1);               
                          });
-            break;
-
-        default:
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid subrole',
-                'data' => [],
-            ], 400);
-    }
     $complainDetails = $complainDetails->get();
         // dd($deadpersondetails);
 
@@ -486,7 +350,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
 
      public function allComplainsapproved(){
-       $userSubrole = Auth::user()->subrole->name; 
+    //    $userSubrole = Auth::user()->subrole->name; 
            $complainDetails = DB::table('complaints as cm')
                 ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
                 // ->leftJoin('departments as dp', 'cm.department_id', '=', 'dp.id')
@@ -504,59 +368,14 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 );
 
                 
-    switch ($userSubrole) {
-        case "so-us":
-            $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_so_us', 1);
-               
-                //   ->where('approved_by_ro', 1);
-            // $complainDetails->where('complaints.added_by', $user);
-            break;
-
-        case "ds-js":
-          $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1)
-                  ->where('approved_rejected_by_so_us', 0)
-                //   ->whereOr('approved_rejected_by_so_us', 1)
-                  ->where('approved_rejected_by_ds_js', 1);
-                //   ->where('forward_so', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1); 
-            break;
-
-        case "sec":
-           $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('forward_to_lokayukt', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "cio-io":
-           $complainDetails->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
-                //    ->where('forward_to_lokayukt', 1)
-                //   ->whereOr('forward_to_uplokayukt', 1);
-            break;
-
-        case "dea-assis":
-          $complainDetails->where('form_status', 1)
+     $complainDetails->where('form_status', 1)
             ->where('approved_rejected_by_ro', 1)
                         ->where('approved_rejected_by_d_a',1)
+                        ->where('approved_rejected_by_lokayukt',1)
                          ->where(function($q){
                             $q->where('approved_rejected_by_so_us',1)
                             ->Orwhere('approved_rejected_by_ds_js', 1);               
                          });
-                       
-                   
-            break;
-
-        default:
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid subrole',
-                'data' => [],
-            ], 400);
-    }
     $complainDetails = $complainDetails
                       
                         // ->toSql();

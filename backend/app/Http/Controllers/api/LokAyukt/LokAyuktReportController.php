@@ -371,114 +371,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
     
     
-    public function forwardReporttbySo(Request $request,$complainId){
-        //    dd(Auth::user()->getUserByRoles);
- 
-        $userId = Auth::user()->id;
-        // $usersubrole = Auth::user()->subrole->name;
-        // dd($usersubrole);
-        
-
-        $validation = Validator::make($request->all(), [
-            // 'forward_by_ds_js' => 'required|exists:users,id',
-            'forward_to' => 'required|exists:users,id',
-            'remark' => 'required',
-         
-          
-        ], [
-            // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
-            // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
-            'forward_to.required' => 'Forward to user is required.',
-            'forward_to.exists' => 'Forward to user does not exist.',
-            'remark.required' => 'Remark is required.',
-           
-        ]);
-
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validation->errors()
-            ], 422);
-        }
-        if(isset($complainId) && $request->isMethod('post')){
-            $user = User::with('role')->where('id',$request->forward_to)->get();
-            // dd($user[0]->role->name);
-            $roleFwd = $user[0]->role->name;
-            // dd($roleFwd);
-             $cmp =  Complaint::findOrFail($complainId);
-             $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
-    
-            if($cmp){
-                 $cmp->report_status = "Forwarded";
-                 $cmp->save();
-                if($cmpAct){
-
-                $cmpAct->complaint_id = $complainId;
-                $cmpAct->forward_by_so_us = $userId;
-                // $cmpAct->report_status = "Forwarded";
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAct->forward_to_lokayukt = $request->forward_to;
-                    $cmpAct->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAct->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAct->status_uplokayukt = 1;
-                }
-                // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
-                
-                //
-                $remark ='Remark By Section Officer / Under Secretary';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAct->remarks = $remark;
-                $cmpAct->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Update Successfully',
-                    'data' => $cmp
-                ], 200);
-                }
-                $cmpAction =new ComplaintAction();
-                $cmpAction->complaint_id = $complainId;
-                $cmpAction->forward_by_so_us = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAction->forward_to_lokayukt = $request->forward_to;
-                    $cmpAction->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAction->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAction->status_uplokayukt = 1;
-                }
-                // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
-                
-                // $cmpAction->action_type = "Forwarded";
-                $remark ='Remark By Section Officer / Under Secretary';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAction->remarks = $remark;
-                $cmpAction->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Successfully',
-                    'data' => $cmp
-                ], 200);
-            }
-            // $cmp->forward_by = $request->forward_by;
-            // $cmp->forward_to_d_a = $request->forward_to_d_a;
-            // $cmp->sup_status = 1;
-            // $cmp->save();
-    
-           
-        }else{
-            
-             return response()->json([
-                    'status' => false,
-                    'message' => 'Please check Id'
-                ], 401);
-        }
-
-    }
-    public function forwardReporttbyds(Request $request,$complainId){
+   
+    public function requestReportTods(Request $request,$complainId){
         //    dd(Auth::user()->getUserByRoles);
  
         $userId = Auth::user()->id;
@@ -516,61 +410,22 @@ $complainDetails->details = DB::table('complaints_details as cd')
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
             if($cmp){
-                  $cmp->report_status = "Forwarded";
-                 $cmp->save();
-                if($cmpAct){
-
-                $cmpAct->complaint_id = $complainId;
-                $cmpAct->forward_by_ds_js = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAct->forward_to_lokayukt = $request->forward_to;
-                    $cmpAct->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAct->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAct->status_uplokayukt = 1;
-                }
-                // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
+                $cmp->approved_rejected_by_lokayukt = 1;
+                // $cmp->report_status = "Report Requested";
+                    if($cmp->save()){
+                        $apcAction = new ComplaintAction();
+                        $apcAction->complaint_id = $complainId;
+                        $apcAction->forward_by_lokayukt = $user;
+                        $apcAction->forward_to_ds_js = $request->forward_to;
+                        $apcAction->status = 'Report Requested';
+                        $apcAction->type = '2';
+                        $apcAction->remarks = $request->remarks;
+                        $apcAction->save();
+                    }
                 
-                $remark ='Remark By Deputy Secretary / Joint Secretary';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAct->remarks = $remark;
-                $cmpAct->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Update Successfully',
-                    'data' => $cmp
-                ], 200);
-                }
-                $cmpAction =new ComplaintAction();
-                $cmpAction->complaint_id = $complainId;
-                $cmpAction->forward_by_ds_js = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAction->forward_to_lokayukt = $request->forward_to;
-                    $cmpAction->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAction->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAction->status_uplokayukt = 1;
-                }
-                // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
-                
-                $remark ='Remark By Deputy Secretary / Joint Secretary';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAction->remarks = $remark;
-                $cmpAction->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Successfully',
-                    'data' => $cmp
-                ], 200);
+              
             }
-            // $cmp->forward_by = $request->forward_by;
-            // $cmp->forward_to_d_a = $request->forward_to_d_a;
-            // $cmp->sup_status = 1;
-            // $cmp->save();
+         
     
            
         }else{
@@ -583,213 +438,138 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
-     public function forwardReporttbysec(Request $request,$complainId){
-        //    dd(Auth::user()->getUserByRoles);
+    //  public function requestReportTosec(Request $request,$complainId){
+    //     //    dd(Auth::user()->getUserByRoles);
  
-        $userId = Auth::user()->id;
-        // $usersubrole = Auth::user()->subrole->name;
-        // dd($usersubrole);
+    //     $userId = Auth::user()->id;
+    //     // $usersubrole = Auth::user()->subrole->name;
+    //     // dd($usersubrole);
         
 
-        $validation = Validator::make($request->all(), [
-            // 'forward_by_ds_js' => 'required|exists:users,id',
-            'forward_to' => 'required|exists:users,id',
-            // 'remark' => 'required',
+    //     $validation = Validator::make($request->all(), [
+    //         // 'forward_by_ds_js' => 'required|exists:users,id',
+    //         'forward_to' => 'required|exists:users,id',
+    //         // 'remark' => 'required',
          
           
-        ], [
-            // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
-            // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
-            'forward_to.required' => 'Forward to user is required.',
-            'forward_to.exists' => 'Forward to user does not exist.',
-            // 'remark.required' => 'Remark is required.',
+    //     ], [
+    //         // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
+    //         // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
+    //         'forward_to.required' => 'Forward to user is required.',
+    //         'forward_to.exists' => 'Forward to user does not exist.',
+    //         // 'remark.required' => 'Remark is required.',
            
-        ]);
+    //     ]);
 
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validation->errors()
-            ], 422);
-        }
-        if(isset($complainId) && $request->isMethod('post')){
-            $user = User::with('role')->where('id',$request->forward_to)->get();
-            // dd($user[0]->role->name);
-            $roleFwd = $user[0]->role->name;
-            // dd($roleFwd);
-             $cmp =  Complaint::findOrFail($complainId);
-             $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
+    //     if ($validation->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errors' => $validation->errors()
+    //         ], 422);
+    //     }
+    //     if(isset($complainId) && $request->isMethod('post')){
+    //         $user = User::with('role')->where('id',$request->forward_to)->get();
+    //         // dd($user[0]->role->name);
+    //         $roleFwd = $user[0]->role->name;
+    //         // dd($roleFwd);
+    //          $cmp =  Complaint::findOrFail($complainId);
+    //         //  $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
-            if($cmp){
-                  $cmp->report_status = "Forwarded";
-                 $cmp->save();
-                if($cmpAct){
-
-                $cmpAct->complaint_id = $complainId;
-                $cmpAct->forward_by_sec = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAct->forward_to_lokayukt = $request->forward_to;
-                    $cmpAct->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAct->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAct->status_uplokayukt = 1;
-                }
-                // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
+    //         if($cmp){
+    //             $cmp->approved_rejected_by_lokayukt = 1;
+    //             // $cmp->report_status = "Report Requested";
+    //                 if($cmp->save()){
+    //                     $apcAction = new ComplaintAction();
+    //                     $apcAction->complaint_id = $complainId;
+    //                     $apcAction->forward_by_lokayukt = $user;
+    //                     $apcAction->forward_to_sec = $request->forward_to;
+    //                     $apcAction->status = 'Report Requested';
+    //                     $apcAction->type = '2';
+    //                     $apcAction->remarks = $request->remarks;
+    //                     $apcAction->save();
+    //                 }
                 
-               
-               $remark ='Remark By Secretary';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAct->remarks = $remark;
-                $cmpAct->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Update Successfully',
-                    'data' => $cmp
-                ], 200);
-                }
-                $cmpAction =new ComplaintAction();
-                $cmpAction->complaint_id = $complainId;
-                $cmpAction->forward_by_sec = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAction->forward_to_lokayukt = $request->forward_to;
-                    $cmpAction->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAction->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAction->status_uplokayukt = 1;
-                }
-                // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
-                
-                $cmpAction->action_type = "Forwarded";
-               $remark ='Remark By Secretary';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAction->remarks = $remark;
-                $cmpAction->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Successfully',
-                    'data' => $cmp
-                ], 200);
-            }    
-           
-        }else{
+              
+    //         }
+         
+    //     }else{
             
-             return response()->json([
-                    'status' => false,
-                    'message' => 'Please check Id'
-                ], 401);
-        }
+    //          return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Please check Id'
+    //             ], 401);
+    //     }
 
-    }
+    // }
 
-    public function forwardReporttbycio(Request $request,$complainId){
+    // public function requestReportTocio(Request $request,$complainId){
         
-        $userId = Auth::user()->id;
+    //     $userId = Auth::user()->id;
  
 
-        $validation = Validator::make($request->all(), [
-            // 'forward_by_ds_js' => 'required|exists:users,id',
-            'forward_to' => 'required|exists:users,id',
-            // 'remark' => 'required',
+    //     $validation = Validator::make($request->all(), [
+    //         // 'forward_by_ds_js' => 'required|exists:users,id',
+    //         'forward_to' => 'required|exists:users,id',
+    //         // 'remark' => 'required',
          
           
-        ], [
-            // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
-            // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
-            'forward_to.required' => 'Forward to user is required.',
-            'forward_to.exists' => 'Forward to user does not exist.',
-            // 'remark.required' => 'Remark is required.',
+    //     ], [
+    //         // 'forward_by_ds_js.required' => 'Forward by Supervisor is required.',
+    //         // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
+    //         'forward_to.required' => 'Forward to user is required.',
+    //         'forward_to.exists' => 'Forward to user does not exist.',
+    //         // 'remark.required' => 'Remark is required.',
            
-        ]);
+    //     ]);
 
-        if ($validation->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validation->errors()
-            ], 422);
-        }
-        if(isset($complainId) && $request->isMethod('post')){
-            $user = User::with('role')->where('id',$request->forward_to)->get();
-            // dd($user[0]->role->name);
-            $roleFwd = $user[0]->role->name;
-            // dd($roleFwd);
-             $cmp =  Complaint::findOrFail($complainId);
-             $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
+    //     if ($validation->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errors' => $validation->errors()
+    //         ], 422);
+    //     }
+    //     if(isset($complainId) && $request->isMethod('post')){
+    //         $user = User::with('role')->where('id',$request->forward_to)->get();
+    //         // dd($user[0]->role->name);
+    //         $roleFwd = $user[0]->role->name;
+    //         // dd($roleFwd);
+    //          $cmp =  Complaint::findOrFail($complainId);
+    //          $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
     
-            if($cmp){
-                  $cmp->report_status = "Forwarded";
-                 $cmp->save();
-                if($cmpAct){
-
-                $cmpAct->complaint_id = $complainId;
-                $cmpAct->forward_by_cio_io = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAct->forward_to_lokayukt = $request->forward_to;
-                    $cmpAct->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAct->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAct->status_uplokayukt = 1;
-                }
-                // $cmpAct->forward_to = $request->forward_to; //add supervisor user_id 
+    //       if($cmp){
+    //             $cmp->approved_rejected_by_lokayukt = 1;
+    //             $cmp->report_status = "Report Requested";
+    //                 if($cmp->save()){
+    //                     $apcAction = new ComplaintAction();
+    //                     $apcAction->complaint_id = $complainId;
+    //                     $apcAction->forward_by_lokayukt = $user;
+    //                     $apcAction->forward_to_cio_io = $request->forward_to;
+    //                     $apcAction->status = 'Report Requested';
+    //                     $apcAction->type = '2';
+    //                     $apcAction->remarks = $request->remarks;
+    //                     $apcAction->save();
+    //                 }
                 
-               
-                $remark ='Remark By CIO / Investigation Officer';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAct->remarks = $remark;
-                $cmpAct->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Update Successfully',
-                    'data' => $cmp
-                ], 200);
-                }
-                $cmpAction =new ComplaintAction();
-                $cmpAction->complaint_id = $complainId;
-                $cmpAction->forward_by_cio_io = $userId;
-                if($roleFwd == "lok-ayukt"){
-                    $cmpAction->forward_to_lokayukt = $request->forward_to;
-                    $cmpAction->status_lokayukt = 1;
-                }elseif($roleFwd =="up-lok-ayukt"){
-                    $cmpAction->forward_to_uplokayukt = $request->forward_to;
-                    $cmpAction->status_uplokayukt = 1;
-                }
-                // $cmpAction->forward_to = $request->forward_to; //add supervisor user_id 
-                
-                $cmpAction->action_type = "Forwarded";
-                $remark ='Remark By CIO / Investigation Officer';
-                $remark.='\n';
-                $remark.= $request->remark;
-                $remark.='\n';
-                $cmpAction->remarks = $remark;
-                $cmpAction->save();
-                  return response()->json([
-                    'status' => true,
-                    'message' => 'Forwarded Successfully',
-                    'data' => $cmp
-                ], 200);
-            }
-            // $cmp->forward_by = $request->forward_by;
-            // $cmp->forward_to_d_a = $request->forward_to_d_a;
-            // $cmp->sup_status = 1;
-            // $cmp->save();
+              
+    //         }
+         
+    //         // $cmp->forward_by = $request->forward_by;
+    //         // $cmp->forward_to_d_a = $request->forward_to_d_a;
+    //         // $cmp->sup_status = 1;
+    //         // $cmp->save();
     
            
-        }else{
+    //     }else{
             
-             return response()->json([
-                    'status' => false,
-                    'message' => 'Please check Id'
-                ], 401);
-        }
+    //          return response()->json([
+    //                 'status' => false,
+    //                 'message' => 'Please check Id'
+    //             ], 401);
+    //     }
 
-    }
+    // }
 
-     public function forwardReporttbyda(Request $request,$complainId){
+     public function requestReportToda(Request $request,$complainId){
         //    dd(Auth::user()->getUserByRoles);
  
         $userId = Auth::user()->id;
