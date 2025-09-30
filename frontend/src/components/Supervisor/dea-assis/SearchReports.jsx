@@ -35,7 +35,7 @@ const api = axios.create({
 });
 
 // ✅ Custom Searchable Dropdown Component
-const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select option...", required = false, error = null }) => {
+const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select Option...", required = false, error = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -130,7 +130,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search options..."
+                placeholder="Search Options..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none text-sm"
@@ -362,7 +362,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 className={`w-full p-2 border rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] ${
                   errors.remark ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Enter forwarding remarks..."
+                placeholder="Enter Forwarding Remarks..."
                 rows={3}
               />
               {errors.remark && (
