@@ -264,7 +264,7 @@ const UserManagement = () => {
           </div>
           <button
             onClick={() => navigate("add")}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#13316C] text-white rounded-md text-sm "
           >
             <FaUserPlus className="w-4 h-4" />
             Add User
@@ -399,7 +399,7 @@ const UserManagement = () => {
                               // toast.error("Failed to generate report");
                             }
                           }}
-                          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+                          className="flex items-center gap-2 bg-[#13316C] text-white px-4 py-2 rounded-md transition"
                         >
                           <FaDownload className="text-base" />
                           <span className="text-sm">Export</span>

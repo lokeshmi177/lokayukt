@@ -225,4 +225,22 @@ class UserManagement extends Controller
             'message' => 'User deleted successfully'
         ]);
     }
+
+    public function changeStatus(Request $request, $id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+        $user->status = "1" ? "0" : "1";
+        $user->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'User status updated successfully',
+            'data' => $user
+        ]);
+    }
 }

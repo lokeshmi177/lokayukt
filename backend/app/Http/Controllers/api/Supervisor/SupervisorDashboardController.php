@@ -207,9 +207,11 @@ class SupervisorDashboardController extends Controller
         case "dea-assis":
           $query->where('cmp.form_status', 1)
                   ->where('cmp.approved_rejected_by_ro', 1)
-                   ->where('cmp.approved_rejected_by_so_us', 1)
-                    ->orWhere('cmp.approved_rejected_by_ds_js', 1)
-                    ->whereNotNull('cmp.forward_to_d_a');
+                    ->where(function($q){
+                            $q->where('approved_rejected_by_so_us',1)
+                            ->Orwhere('approved_rejected_by_ds_js', 1);               
+                         });
+                    // ->whereNotNull('cmp.forward_to_d_a');
             $query1->where('cmp.form_status', 1)
             ->where('cmp.approved_rejected_by_ro', 1)
                         ->where('approved_rejected_by_d_a',0)

@@ -59,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/edit-users/{id}',[UserManagement::class,'editUser']);
         Route::post('/update-users/{id}',[UserManagement::class,'updateUser']);
         Route::post('/delete-users/{id}',[UserManagement::class,'deleteUser']);
+        Route::post('/change-status/{id}',[UserManagement::class,'changeStatus']);
 
         /**
          * District
@@ -240,8 +241,9 @@ Route::middleware('auth:sanctum')->group(function(){
         
     });
 
-    Route::middleware('role:lok-ayukt')->prefix('lokayuktt')->group(function () {
-         Route::get('/all-district',[LokAyuktCommonController::class,'fetch_district']);
+    Route::middleware('role:lok-ayukt')->prefix('lokayukt')->group(function () {
+        
+        Route::get('/all-district',[LokAyuktCommonController::class,'fetch_district']);
         Route::get('/all-complaints',[LokAyuktComplaintsController::class,'allComplains']);
         Route::get('/all-pending-complaints',[LokAyuktComplaintsController::class,'allComplainspending']);
         Route::get('/all-approved-complaints',[LokAyuktComplaintsController::class,'allComplainsapproved']);

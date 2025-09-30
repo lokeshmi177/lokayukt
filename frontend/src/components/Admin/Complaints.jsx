@@ -82,6 +82,12 @@ const Complaints = () => {
   });
   const [modalErrors, setModalErrors] = useState({});
 
+  
+const [isCompareClicked, setIsCompareClicked] = useState(false);
+
+
+
+
   // Fetch all required data on component mount
   useEffect(() => {
     const fetchAllData = async () => {
@@ -120,10 +126,10 @@ const Complaints = () => {
 
   // ✅ FIXED: Compare button handler
   const handleCompare = () => {
-    console.log("Comparing duplicate...");
-    // Match visible karo
-    setShowMatch(true);
-  };
+  setIsCompareClicked(true);  // Merge button enable karne ke liye
+  setShowMatch(true);         // Match percentage show karne ke liye
+  console.log("Compare clicked - Match percentage visible!");
+};
 
   const handleMergeeDuplicate = () => {
     // Original merge function (aapka existing logic)
@@ -670,60 +676,69 @@ const Complaints = () => {
         </div>
       </div>
 
-      {/* Duplicate Warning Box */}
-      {duplicate && (
-        <div className="mb-6 border border-orange-400 bg-orange-50 rounded-lg shadow-sm p-2">
-          <div className="flex items-center gap-2 px-2 pt-1">
-            <div className="text-orange-500">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <h3 className="font-semibold text-orange-700 text-sm">
-              Potential Duplicates Found
-            </h3>
-          </div>
+{duplicate && (
+  <div className="mb-6 border border-orange-400 bg-orange-50 rounded-lg shadow-sm p-2">
+    <div className="flex items-center gap-2 px-2 pt-1">
+      <div className="text-orange-500">
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </div>
+      <h3 className="font-semibold text-orange-700 text-sm">
+        Potential Duplicates Found
+      </h3>
+    </div>
 
-          <div className="bg-white border border-gray-200 rounded-md p-4 mt-2 flex items-center justify-between shadow-sm">
-            <div>
-              <div className="text-sm font-semibold text-black">
-                {duplicate.complain_no}
-              </div>
-              <div className="text-sm text-black">{duplicate.name}</div>
-              <div className="text-sm text-gray-700">{duplicate.title}</div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* ✅ Match percentage - Shows when showMatch is true */}
-              {showMatch && (
-                <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
-                  {duplicate.match}% Match
-                </span>
-              )}
-
-              {/* ✅ FIXED: Added onClick handler to Compare button */}
-              <button 
-                onClick={handleCompare}
-                className="border text-black hover:text-blue-800 text-sm font-medium px-3 py-1 hover:bg-blue-50 rounded transition-colors"
-              >
-                Compare
-              </button>
-
-              <button
-                onClick={handleMergeeDuplicate}
-                style={{ backgroundColor: "hsl(220, 70%, 25%)" }}
-                className="text-white px-4 py-1.5 rounded text-sm font-medium hover:opacity-90 transition-colors"
-              >
-                Merge
-              </button>
-            </div>
-          </div>
+    <div className="bg-white border border-gray-200 rounded-md p-4 mt-2 flex items-center justify-between shadow-sm">
+      <div>
+        <div className="text-sm font-semibold text-black">
+          {duplicate.complain_no}
         </div>
-      )}
+        <div className="text-sm text-black">{duplicate.name}</div>
+        <div className="text-sm text-gray-700">{duplicate.title}</div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {/* ✅ Match percentage - Compare click के बाद ही show होगा */}
+        {showMatch && (
+          <span className="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+            {duplicate.match}% Match
+          </span>
+        )}
+
+        {/* Compare button */}
+        <button 
+          onClick={handleCompare}
+          className="border text-black hover:text-blue-800 text-sm font-medium px-3 py-1 hover:bg-blue-50 rounded transition-colors"
+        >
+          Compare
+        </button>
+
+        
+        <button
+          onClick={handleMergeeDuplicate}
+          disabled={!isCompareClicked}
+          className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
+            !isCompareClicked 
+              ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+              : 'text-white hover:opacity-90'
+          }`}
+          style={{ 
+            backgroundColor: !isCompareClicked ? '#9ca3af' : "hsl(220, 70%, 25%)" 
+          }}
+        >
+          {!isCompareClicked ? 'Merge' : 'Merge'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
       <form id="complaint-form" onSubmit={handleSubmit}>
         <div className="space-y-4 sm:space-y-6">
