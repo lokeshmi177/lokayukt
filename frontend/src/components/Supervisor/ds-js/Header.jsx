@@ -83,6 +83,7 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');
           localStorage.removeItem('role'); 
+          localStorage.removeItem('subrole'); 
           window.open("/login", "_self");
         }, 1500);
        

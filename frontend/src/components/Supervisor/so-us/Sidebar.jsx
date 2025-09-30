@@ -41,8 +41,7 @@ const Sidebar = ({
       searchReports: "Search & Reports",
       userManagement: "User Management",
       masterData: "Master Data",
-      copyright: "© 2025 LokAyukta Office",
-      version: "v1.0.0",
+    
     },
     hindi: {
       title: "लोकायुक्त",
@@ -55,8 +54,6 @@ const Sidebar = ({
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
       masterData: "मुख्य डेटा",
-      copyright: "© 2025 लोकायुक्त कार्यालय",
-      version: "v1.0.0",
     },
   };
 
