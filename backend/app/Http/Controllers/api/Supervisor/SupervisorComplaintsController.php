@@ -524,8 +524,6 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
     
 
-
-
     public function allComplainspending(){
 
         $userSubrole = Auth::user()->subrole->name; 

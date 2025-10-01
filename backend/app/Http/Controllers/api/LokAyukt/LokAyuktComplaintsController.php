@@ -163,7 +163,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
           return [
                 'id' => $item->id,
                 'name' => ucfirst($item->name),
-                'subrole_name' => $item->subrole->name,
+                'subrole_name' => $item->subrole->label,
                
             ];
         }
@@ -363,12 +363,12 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 // ->get();
                 
     $complainDetails->where('form_status', 1)
-            ->where('approved_rejected_by_ro', 1)
-                        ->where('approved_rejected_by_d_a',1)
-                         ->where(function($q){
+        ->where('approved_rejected_by_ro', 1)
+                    ->where(function($q){
                             $q->where('approved_rejected_by_so_us',1)
                             ->Orwhere('approved_rejected_by_ds_js', 1);               
-                         });
+                         })
+                    ->where('approved_rejected_by_d_a', 1);
     $complainDetails = $complainDetails->get();
         // dd($deadpersondetails);
 
