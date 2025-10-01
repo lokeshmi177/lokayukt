@@ -17,6 +17,11 @@ import {
   FaEye,
   FaExpand,
   FaTimes,
+  FaSpinner,
+  FaUpload,
+  FaCheck,
+  FaPlus,
+  FaTrash,
 } from "react-icons/fa";
 import { FaRegEdit } from "react-icons/fa";
 import { IoMdArrowBack } from "react-icons/io";
@@ -48,7 +53,7 @@ const ViewAllComplaint = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch complaint data and file preview
+  // Fetch complaint data
   useEffect(() => {
     const fetchData = async () => {
       if (!id) {
@@ -60,7 +65,7 @@ const ViewAllComplaint = () => {
       try {
         setLoading(true);
 
-        // Fetch complaint data
+        // Fetch complaint data using edit endpoint for consistency
         const complaintResponse = await api.get(
           `/supervisor/view-complaint/${id}`
         );
@@ -132,7 +137,7 @@ const ViewAllComplaint = () => {
     });
   };
 
-  // Handle file download - Updated for specific file
+  // Handle file download
   const handleFileDownload = (filePath) => {
     if (!filePath) {
       toast.error("No file available for download");
@@ -144,7 +149,7 @@ const ViewAllComplaint = () => {
     window.open(fileUrl, "_blank");
   };
 
-  // Handle file preview - Updated for specific file
+  // Handle file preview
   const handleFilePreview = (filePath) => {
     if (filePath) {
       setCurrentPreviewFile(filePath);
@@ -152,16 +157,6 @@ const ViewAllComplaint = () => {
     } else {
       toast.error("File preview not available");
     }
-  };
-
-  // Check if file is PDF
-  const isPDF = (filePath) => {
-    return filePath && filePath.toLowerCase().endsWith(".pdf");
-  };
-
-  // Check if file is image
-  const isImage = (filePath) => {
-    return filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   };
 
   // Handle edit navigation
@@ -173,6 +168,16 @@ const ViewAllComplaint = () => {
     } else {
       toast.error("Unable to edit: Missing complaint data");
     }
+  };
+
+  // Check if file is PDF
+  const isPDF = (filePath) => {
+    return filePath && filePath.toLowerCase().endsWith(".pdf");
+  };
+
+  // Check if file is image
+  const isImage = (filePath) => {
+    return filePath && /\.(jpg|jpeg|png|gif|webp)$/i.test(filePath);
   };
 
   // PDF Preview Modal Component
@@ -259,7 +264,7 @@ const ViewAllComplaint = () => {
             onClick={() => navigate("/supervisor/approved-complaints")}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Back
+            Back to Complaints
           </button>
         </div>
       </div>
@@ -267,347 +272,337 @@ const ViewAllComplaint = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      <div className="px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                Complaint Details
-              </h1>
-              {complaintData?.status && (
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
-                    complaintData.status
-                  )}`}
-                >
-                  {complaintData.status}
-                </span>
-              )}
-            </div>
+      {/* Header - Same as edit form with Edit Button */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">View Complaint Details</h1>
+            <p className="text-xs sm:text-sm text-gray-600">शिकायत विवरण देखें</p>
           </div>
-
-          <div className="flex gap-4">
-           
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+            {/* Edit Button - Show based on subRole */}
+            {subRole === "review-operator" && (
+              <button
+                onClick={handleEditNavigation}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
+                disabled={!id || !complaintData}
+              >
+                <FaRegEdit className="text-lg" />
+                <span>Edit</span>
+              </button>
+            )}
             
-            <button
+            <button 
               onClick={() => navigate("/supervisor/approved-complaints")}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+              style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
+              className="flex items-center justify-center gap-2 px-4 py-2 text-white rounded transition"
             >
-              <IoMdArrowBack className="mr-2 text-lg" />
-              Back
+              <IoMdArrowBack className="text-lg" />
+              <span>Back</span>
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        {complaintData && (
-          <div className="space-y-6">
-            {/* Complainant Information */}
-             <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <FaUser className="w-5 h-5 text-blue-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Complainant Details
-                </h2>
-              </div>
-
-              {/* First Row: 4 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Main Content - Same structure as edit form */}
+      {complaintData && (
+        <div className="space-y-4 sm:space-y-6">
+          {/* Top Row: Complainant Details + Security Fee */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+            
+            {/* Complainant Details */}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <FaUser className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Complaint No
-                  </label>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {complaintData?.complain_no || "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name
-                  </label>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {complaintData.name || "N/A"}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <div className="flex items-center gap-2">
-                   <FaEnvelope className="w-4 h-4 text-blue-500" /> 
-                    <p className="text-sm text-gray-900">{complaintData.email || "N/A"}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mobile
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FaPhone  className="w-4 h-4 text-green-500 " />
-                    <p className="text-sm text-gray-900 font-mono">
-                      {complaintData.mobile || "N/A"}
-                    </p>
-                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">Complainant Details</h2>
+                  <p className="text-sm text-gray-500">शिकायतकर्ता विवरण</p>
                 </div>
               </div>
 
-              {/* Second Row: District + Address */}
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    District
-                  </label>
-                  <div className="flex items-center gap-2 relative mt-3">
-                    <FaMapMarkerAlt className="w-4 h-4 text-red-500" />
-                    <p className="text-sm text-gray-900 font-medium">
-                      {complaintData.district_name || "N/A"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="md:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Address
-                  </label>
-                  <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-md border min-h-[60px]">
-                    {complaintData.address || "N/A"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Security Fee Section */}
-              <div className="mt-6 flex items-center gap-3 mb-4">
-                <FaRupeeSign className="w-5 h-5 text-green-600" />
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Security Fee
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Amount
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FaRupeeSign className="w-4 h-4 text-green-400" />
-                    <p className="text-sm text-gray-900">
-                      {complaintData.amount || (complaintData.fee_exempted ? "Fee Exempted" : "N/A")}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Challan No
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <FaIdCard className="w-4 h-4 text-yellow-400" />
-                    <p className="text-sm text-gray-900">
-                      {complaintData.challan_no || "N/A"}
-                    </p>
-                  </div>
-                </div>
-
-                {complaintData.dob && (
+              <div className="space-y-4">
+                {/* Name and Mobile Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Name */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Date of Birth
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Name / नाम *
                     </label>
-                    <div className="flex items-center gap-2">
-                      <FaCalendarAlt className="w-4 h-4 text-gray-400" />
-                      <p className="text-sm text-gray-900">{complaintData.dob}</p>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50">
+                      {complaintData.name || "N/A"}
                     </div>
                   </div>
-                )}
 
+                  {/* Mobile */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mobile / मोबाइल *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50 font-mono">
+                      {complaintData.mobile || "N/A"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Address */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Submitted Date
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address / पता *
                   </label>
-                  <div className="flex items-center gap-2">
-                    <FaCalendarAlt className="w-4 h-4 text-blue-400" />
-                    <p className="text-sm text-gray-900">
-                      {formatDate(complaintData.created_at)}
-                    </p>
+                  <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50 min-h-[80px] whitespace-pre-wrap">
+                    {complaintData.address || "N/A"}
+                  </div>
+                </div>
+
+                {/* District and Email Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* District */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      District / जिला *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50">
+                      {complaintData.district_name || "N/A"}
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email *
+                    </label>
+                    <div className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-md bg-gray-50">
+                      {complaintData.email || "N/A"}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Loop through all complaint details */}
-            {complaintData?.details?.length > 0 && (
-              <div className="space-y-6">
-                {complaintData.details.map((detail, index) => {
-                  // Get corresponding file from filePreviewData array
-                  const correspondingFile = filePreviewData[index] || null;
-                  
-                  return (
-                    <div key={detail.id} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                      {/* Header for each complaint detail */}
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <FaBuilding className="w-5 h-5 text-green-600" />
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Complaint Detail #{index + 1}
-                          </h2>
-                        </div>
-                       
-                      </div>
-                      
-                      {/* Respondent Department Section */}
-                      <div className="mb-6">
-                        <h3 className="text-md font-medium text-gray-800 mb-3">Respondent Department</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Department
-                            </label>
-                            <p className="text-sm text-gray-900 font-medium">
-                              {detail.department_name || "N/A"}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Officer Name
-                            </label>
-                            <p className="text-sm text-gray-900 font-medium">
-                              {detail.officer_name || "N/A"}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Designation
-                            </label>
-                            <p className="text-sm text-gray-900">
-                              {detail.designation_name || "N/A"}
-                            </p>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Category
-                            </label>
-                            <p className="text-sm text-gray-900 capitalize">
-                              {detail.category?.replace("_", " ") || "N/A"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+            {/* Security Fee Section */}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+              <div className="flex items-center gap-3 mb-4">
+                <FaRupeeSign className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Security Fee</h2>
+                  <p className="text-xs sm:text-sm text-gray-500">जमानत राशि</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 sm:space-y-4">
+                {/* Fee Exempted Checkbox - Read Only */}
+                <div>
+                  <div className="flex items-center rounded-md space-x-2">
+                    <input
+                      id="exempted"
+                      type="checkbox"
+                      checked={complaintData.fee_exempted === 1}
+                      disabled
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded opacity-60"
+                    />
+                    <label htmlFor="exempted" className="text-xs sm:text-sm font-medium text-gray-700">
+                      Fee Exempted / शुल्क माफ
+                    </label>
+                  </div>
+                </div>
 
-                      {/* Complaint Details Section */}
-                      <div className="mb-6">
-                        <div className="flex items-center gap-3 mb-3">
-                          <FaFileAlt className="w-4 h-4 text-orange-600" />
-                          <h3 className="text-md font-medium text-gray-800">Complaint Information</h3>
+                {/* Show Amount, Challan No, Date when fee is NOT exempted */}
+                {complaintData.fee_exempted !== 1 && (
+                  <>
+                    {/* Amount */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Amount / राशि *
+                      </label>
+                      <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                        {complaintData.amount || "N/A"}
+                      </div>
+                    </div>
+
+                    {/* Challan No */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Challan No. / चालान नं. *
+                      </label>
+                      <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                        {complaintData.challan_no || "N/A"}
+                      </div>
+                    </div>
+
+                    {/* Date of Birth */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth / जन्म तिथि *
+                      </label>
+                      <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                        {complaintData.dob || "N/A"}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Complaint Details */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Complaint Details</h2>
+            </div>
+
+            {complaintData?.details?.length > 0 && (
+              complaintData.details.map((detail, index) => {
+                const correspondingFile = filePreviewData[index] || null;
+
+                return (
+                  <div key={detail.id} className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Complaint Detail #{index + 1}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-gray-500">शिकायत विवरण</p>
                         </div>
-                        
-                        <div className="space-y-4">
-                          {/* Subject and Complaint Type */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="md:col-span-2">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Subject
-                              </label>
-                              <p className="text-sm text-gray-900">
-                                {detail.subject_name || "N/A"}
-                              </p>
-                            </div>
-                            
-                            <div className="md:col-span-2">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Complaint Type
-                              </label>
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  detail.complaintype_name === "Allegation"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-blue-100 text-blue-800"
-                                }`}
-                              >
-                                {detail.complaintype_name || "N/A"}
-                              </span>
-                            </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Title and File Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Title */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Title / शीर्षक *
+                          </label>
+                          <div className="w-full px-3 py-[10px] text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.title || "N/A"}
                           </div>
+                        </div>
+
+                        {/* File Display */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Attached File / फ़ाइल
+                          </label>
                           
-                          {/* Description */}
-                          {detail.description && (
-                            <div className="grid grid-cols-1">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Description
-                                </label>
-                                <div className="bg-gray-50 p-4 rounded-md border">
-                                  <p className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
-                                    {detail.description}
-                                  </p>
-                                </div>
+                          {correspondingFile ? (
+                            <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 flex items-center justify-between">
+                              <span className="text-gray-700">File Attached</span>
+                              <div className="flex space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleFilePreview(correspondingFile)}
+                                  className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded text-xs transition-colors"
+                                >
+                                  <FaEye className="w-3 h-3" />
+                                  Preview
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleFileDownload(correspondingFile)}
+                                  className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded text-xs transition-colors"
+                                >
+                                  <FaDownload className="w-3 h-3" />
+                                  Download
+                                </button>
                               </div>
+                            </div>
+                          ) : (
+                            <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                              No file attached
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Outside Correspondence Section */}
-                      <div>
-                        <div className="flex items-center gap-3 mb-3">
-                          <FaFileAlt className="w-4 h-4 text-purple-600" />
-                          <h3 className="text-md font-medium text-gray-800">Outside Correspondence</h3>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Title
-                            </label>
-                            <p className="text-sm text-gray-900 font-medium">
-                              {detail.title || "N/A"}
-                            </p>
+                      {/* Department Details Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        {/* Department */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Department / विभाग *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.department_name || "N/A"}
                           </div>
-                          
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Attached File
-                            </label>
-                            {correspondingFile ? (
-                              <div className="flex flex-wrap gap-2">
-                                <button
-                                  onClick={() => handleFilePreview(correspondingFile)}
-                                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition-colors text-sm"
-                                >
-                                  <FaEye className="w-4 h-4" />
-                                  <span>Preview</span>
-                                </button>
-                                <button
-                                  onClick={() => handleFileDownload(correspondingFile)}
-                                  className="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-600 hover:bg-green-100 rounded transition-colors text-sm"
-                                >
-                                  <FaDownload className="w-4 h-4" />
-                                  <span>Download</span>
-                                </button>
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-900">No file attached</p>
-                            )}
+                        </div>
+
+                        {/* Officer Name */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Officer Name / अधिकारी का नाम *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.officer_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Designation */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Designation / पदनाम *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.designation_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Category */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Category / श्रेणी *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 capitalize">
+                            {detail.category?.replace("_", " ") || "N/A"}
                           </div>
                         </div>
                       </div>
+
+                      {/* Subject and Nature Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                        {/* Subject */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Subject / विषय *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.subject_name || "N/A"}
+                          </div>
+                        </div>
+
+                        {/* Nature */}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                            Nature / प्रकृति *
+                          </label>
+                          <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50">
+                            {detail.complaintype_name || "N/A"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                          Detailed Description / विस्तृत विवरण *
+                        </label>
+                        <div className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 min-h-[100px] whitespace-pre-wrap">
+                          {detail.description || "N/A"}
+                        </div>
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       {showPreview && <PDFPreviewModal />}

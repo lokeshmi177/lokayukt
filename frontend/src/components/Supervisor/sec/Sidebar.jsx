@@ -1,5 +1,5 @@
 // components/Sidebar.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaHome,
@@ -26,6 +26,7 @@ const Sidebar = ({
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isHindi, setIsHindi] = useState(false);
+  const sidebarRef = useRef(null); // ✅ Added ref for outside click detection
 
   // Simple translation object with updated route names
   const translations = {
@@ -35,16 +36,12 @@ const Sidebar = ({
       description: "Complaint Management",
       supervisor: "Supervisor",
       dashboard: "Dashboard",
-      // complaints: "New Complaints",
-      allComplaints: "All Complaints",
-      pendingComplaints: "Pending Complaints",
-      approvedComplaints: "Approved Complaints",
+      allComplaints: "Complaints",
       progressRegister: "Progress Register",
       searchReports: "Search & Reports",
       userManagement: "User Management",
       masterData: "Master Data",
-      copyright: "© 2025 LokAyukta Office",
-      version: "v1.0.0",
+  
     },
     hindi: {
       title: "लोकायुक्त",
@@ -52,27 +49,52 @@ const Sidebar = ({
       description: "शिकायत प्रबंधन",
       supervisor: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
-      complaints: "शिकायतें",
-      allComplaints: "सभी शिकायतें",
-      pendingComplaints: "लंबित शिकायतें",
-      approvedComplaints: "स्वीकृत शिकायतें",
+      allComplaints: "शिकायतें", // ✅ Fixed: was "Complaints"
       progressRegister: "प्रगति रजिस्टर",
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
       masterData: "मुख्य डेटा",
-      copyright: "© 2025 लोकायुक्त कार्यालय",
-      version: "v1.0.0",
+     
     },
   };
 
   // Get current translations
   const t = isHindi ? translations.hindi : translations.english;
 
+  // ✅ Outside click handler for mobile menu
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        isMobile &&
+        isMobileMenuOpen &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target)
+      ) {
+        toggleMobileMenu();
+      }
+    };
+
+    if (isMobile && isMobileMenuOpen) {
+      document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("touchstart", handleOutsideClick); // ✅ Added for mobile touch
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [isMobile, isMobileMenuOpen, toggleMobileMenu]);
+
   // Check screen size and set mobile state
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
+      
+      // ✅ Auto-close mobile menu on desktop resize
+      if (!mobile && isMobileMenuOpen) {
+        toggleMobileMenu();
+      }
     };
 
     checkScreenSize();
@@ -81,14 +103,14 @@ const Sidebar = ({
     return () => {
       window.removeEventListener("resize", checkScreenSize);
     };
-  }, []);
+  }, [isMobileMenuOpen, toggleMobileMenu]);
 
   // Toggle language function
   const toggleLanguage = () => {
     setIsHindi(!isHindi);
   };
 
-  // ✅ Simple isActive function for supervisor routes
+  // Simple isActive function for supervisor routes
   const isActive = (href) => {
     const fullPath = `/supervisor${href}`;
 
@@ -100,10 +122,23 @@ const Sidebar = ({
 
   // Close mobile menu when clicking link
   const handleLinkClick = () => {
-    if (isMobile) {
+    if (isMobile && isMobileMenuOpen) {
       toggleMobileMenu();
     }
   };
+
+  // ✅ Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobile && isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobile, isMobileMenuOpen]);
 
   // Custom Scrollbar CSS
   const scrollbarStyles = `
@@ -132,27 +167,29 @@ const Sidebar = ({
       {/* Custom Scrollbar Styles */}
       <style>{scrollbarStyles}</style>
 
-      {/* Mobile Overlay */}
+      {/* ✅ Mobile Overlay with higher z-index */}
       {isMobile && isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={toggleMobileMenu}
+          aria-label="Close menu overlay"
         />
       )}
 
-      {/* Sidebar */}
+      {/* ✅ Sidebar with proper z-index and ref */}
       <div
-        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col z-40 ${
+        ref={sidebarRef}
+        className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col ${
           isMobile
-            ? `w-72 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
-            : `${isCollapsed ? "w-16" : "w-72"}`
+            ? `w-72 z-50 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
+            : `${isCollapsed ? "w-16" : "w-72"} z-30`
         }`}
       >
         {/* Mobile Close Button */}
         {isMobile && isMobileMenuOpen && (
           <button
             onClick={toggleMobileMenu}
-            className="absolute top-4 right-4 p-2 text-white hover:bg-slate-700 rounded-lg transition-colors z-50"
+            className="absolute top-4 right-4 p-2 text-white hover:bg-slate-700 rounded-lg transition-colors z-10"
             aria-label="Close menu"
           >
             <FaTimes className="w-5 h-5" />
@@ -206,50 +243,57 @@ const Sidebar = ({
             )}
           </div>
 
-          {/* ✅ supervisor Badge (Fixed) */}
-          {(isMobile || !isCollapsed) && (
-            <div className="mb-3 transition-all duration-300">
-              <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                {t.supervisor}
-              </span>
+          {/* Supervisor Badge & Header Actions Layout */}
+          <div className="flex justify-between">
+            <div>
+              {/* Supervisor Badge */}
+              {(isMobile || !isCollapsed) && (
+                <div className="mb-3 transition-all duration-300">
+                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {t.supervisor}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Header Actions */}
-          {(isMobile || !isCollapsed) && (
-            <div className="flex gap-2 transition-all duration-300">
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-                {isHindi ? "EN" : "हि"}
-              </button>
-              <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
-            </div>
-          )}
+            <div>
+              {/* Header Actions */}
+              {(isMobile || !isCollapsed) && (
+                <div className="flex gap-2 transition-all duration-300">
+                  <button
+                    onClick={toggleLanguage}
+                    className="flex items-center gap-1 px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                    {isHindi ? "EN" : "हि"}
+                  </button>
+                  <button className="relative flex items-center px-2 py-1 border border-slate-600 rounded text-xs hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
 
-          {/* Collapsed Header Actions */}
-          {!isMobile && isCollapsed && (
-            <div className="flex flex-col gap-2 items-center transition-all duration-300">
-              <button
-                onClick={toggleLanguage}
-                className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
-              >
-                <FaGlobe className="w-3 h-3" />
-              </button>
-              <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
-                <FaBell className="w-3 h-3" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
-              </button>
+              {/* Collapsed Header Actions */}
+              {!isMobile && isCollapsed && (
+                <div className="flex flex-col gap-2 items-center transition-all duration-300">
+                  <button
+                    onClick={toggleLanguage}
+                    className="p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors"
+                  >
+                    <FaGlobe className="w-3 h-3" />
+                  </button>
+                  <button className="relative p-1.5 border border-slate-600 rounded hover:bg-slate-700 transition-colors">
+                    <FaBell className="w-3 h-3" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* ✅ Navigation Menu - Updated with custom-scrollbar */}
+        {/* Navigation Menu - Updated with custom-scrollbar */}
         <nav
           className={`flex-1 transition-all duration-300 overflow-y-auto custom-scrollbar ${
             !isMobile && isCollapsed ? "py-4" : "py-6"
@@ -263,8 +307,8 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/dashboard")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -281,40 +325,17 @@ const Sidebar = ({
               </Link>
             </li>
 
-            {/* Complaints */}
-            {/* <li>
-              <Link
-                to="/supervisor/complaints"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/complaints")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                } ${
-                  !isMobile && isCollapsed
-                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
-                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
-                }`}
-                title={!isMobile && isCollapsed ? t.complaints : ""}
-              >
-                <FaFileAlt className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && (
-                  <span className="transition-all duration-300">
-                    {t.complaints}
-                  </span>
-                )}
-              </Link>
-            </li> */}
-
             {/* All Complaints */}
             <li>
               <Link
                 to="/supervisor/all-complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/all-complaints")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                  ["/all-complaints", "/pending-complaints", "/approved-complaints"].some(path =>
+                    isActive(path)
+                  )
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -331,56 +352,6 @@ const Sidebar = ({
               </Link>
             </li>
 
-            {/* ✅ UPDATED: Pending Complaints */}
-            <li>
-              <Link
-                to="/supervisor/pending-complaints"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/pending")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                } ${
-                  !isMobile && isCollapsed
-                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
-                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
-                }`}
-                title={!isMobile && isCollapsed ? t.pendingComplaints : ""}
-              >
-                <FaClock className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && (
-                  <span className="transition-all duration-300">
-                    {t.pendingComplaints}
-                  </span>
-                )}
-              </Link>
-            </li>
-
-            {/* ✅ UPDATED: Approved Complaints */}
-            <li>
-              <Link
-                to="/supervisor/approved-complaints"
-                onClick={handleLinkClick}
-                className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  isActive("/approved")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
-                } ${
-                  !isMobile && isCollapsed
-                    ? "justify-center px-2 py-3 mx-2 rounded-lg"
-                    : "gap-3 px-6 py-3 rounded-r-3xl mr-5"
-                }`}
-                title={!isMobile && isCollapsed ? t.approvedComplaints : ""}
-              >
-                <FaCheckCircle className="w-5 h-5 flex-shrink-0" />
-                {(isMobile || !isCollapsed) && (
-                  <span className="transition-all duration-300">
-                    {t.approvedComplaints}
-                  </span>
-                )}
-              </Link>
-            </li>
-
             {/* Progress Register */}
             <li>
               <Link
@@ -388,8 +359,8 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/progress-register")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -413,8 +384,8 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/search-reports")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-slate-300 hover:text-white hover:bg-slate-700/50"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
