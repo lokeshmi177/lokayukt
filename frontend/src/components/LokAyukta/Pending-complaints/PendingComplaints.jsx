@@ -58,6 +58,7 @@ const CustomSearchableSelect = ({
     setSearchTerm("");
   };
 
+  
   return (
     <div className="relative">
       {/* Hidden select element - यह form submit के लिए है */}
@@ -681,9 +682,12 @@ const PendingComplaints = () => {
   const canForward = (complaint) => {
     // If complaint is approved by LokAyukt, it's already forwarded
     if (complaint.approved_rejected_by_lokayukt === 1) {
-      return false; // Cannot forward - show "Forwarded"
+      return false; 
     }
     return true; // Can forward - show "Forward" button
+  };
+   const isForwarded = (complaint) => {
+    return complaint.approved_rejected_by_lokayukt === 1;
   };
 
   // Get tab title
@@ -806,10 +810,16 @@ const PendingComplaints = () => {
                     {/* Header Section */}
                     <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
-                      <div className="mt-2 sm:mt-0">
-                        <span className="text-xs text-gray-600">Status:</span>
-                        <span className="ml-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-                          {complaint.status || 'Pending'}
+                     <div className="mt-2 sm:mt-0">
+                        <span className="text-xs text-gray-600">Current Stage:</span>
+                        <span
+                          className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                            isForwarded(complaint)
+                              ? "bg-green-100 text-green-700 border border-green-200"
+                              : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                          }`}
+                        >
+                          {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
                         </span>
                       </div>
                     </div>
@@ -859,11 +869,7 @@ const PendingComplaints = () => {
                           <span className="text-sm font-medium text-gray-900">
                             {formatDate(complaint.created_at)}
                           </span>
-                          {complaint.report_status && (
-                            <span className="mt-2 text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200">
-                              {complaint.report_status}
-                            </span>
-                          )}
+                          
                         </div>
                       </div>
 
