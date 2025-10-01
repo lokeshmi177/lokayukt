@@ -722,6 +722,7 @@ const AllComplaints = () => {
         color: 'bg-green-500'
       });
     }
+   
     
     return statuses;
   };

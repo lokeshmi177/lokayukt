@@ -235,7 +235,8 @@ class UserManagement extends Controller
                 'message' => 'User not found'
             ], 404);
         }
-        $user->status = "1" ? "0" : "1";
+        // $user->status = "1" ? "0" : "1";
+        $user->status = ($user->status == "1") ? "0" : "1";
         $user->save();
         return response()->json([
             'status' => true,

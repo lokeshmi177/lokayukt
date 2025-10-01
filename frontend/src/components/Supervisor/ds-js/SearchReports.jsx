@@ -269,7 +269,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
       console.log("Forwarding complaint:", complaintId, "with payload:", forward);
 
       // ✅ forward.forward_to में अब सिर्फ ID है, name नहीं
-      const response = await api.post(`/supervisor/forward-report-by-so/${complaintId}`, forward);
+      const response = await api.post(`/supervisor/forward-report-by-ds/${complaintId}`, forward);
 
       console.log("Forward API Response:", response.data);
 

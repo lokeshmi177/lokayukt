@@ -6,7 +6,9 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Footer from './Footer';
 
+
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const Login = () => {
     user_name: '',
     password: ''
   });
+
 
   const handleInputChange = (e) => {
     setFormData({
@@ -33,11 +36,13 @@ const Login = () => {
     setGeneralError('');
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
     setGeneralError('');
+
 
     try {
       const loginApi = axios.create({
@@ -47,7 +52,9 @@ const Login = () => {
         },
       });
 
+
       const response = await loginApi.post('/login', formData);
+
 
       if (response.data.status === 'success') {
         // Store authentication data in localStorage
@@ -81,13 +88,19 @@ const Login = () => {
         }, 1500);
       }
 
+
     } catch (error) {
       console.log("Full Error:", error);
       console.log("Error Response:", error.response?.data);
       
       if (error.response?.data) {
+        // Check for "error" field format: { "error": "You are blocked by admin." }
+        if (error.response.data.error) {
+          setGeneralError(error.response.data.error);
+          console.log("Blocked user error set:", error.response.data.error);
+        }
         // Direct error format check - your backend sends errors directly
-        if (error.response.data.user_name || error.response.data.password) {
+        else if (error.response.data.user_name || error.response.data.password) {
           // Direct format: { "user_name": ["message"], "password": ["message"] }
           const formattedErrors = {};
           
@@ -135,6 +148,7 @@ const Login = () => {
         }
       }
 
+
       else if (error.response?.status === 401) {
         setGeneralError('Invalid credentials');
       }
@@ -149,6 +163,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -168,6 +183,7 @@ const Login = () => {
               लोकायुक्त शिकायत निवारण प्रबंधन प्रणाली
             </p>
           </div>
+
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -198,6 +214,7 @@ const Login = () => {
               )}
             </div>
 
+
             {/* Password Field */}
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -223,7 +240,7 @@ const Login = () => {
                   {errors.password}
                 </p>
               )}
-              {/* Show general error like "Wrong password" below password field */}
+              {/* Show general error like "Wrong password" or "You are blocked by admin." below password field */}
               {generalError && (
                 <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
                   <FaExclamationTriangle className="text-xs" />
@@ -231,6 +248,7 @@ const Login = () => {
                 </p>
               )}
             </div>
+
 
             {/* Login Button */}
             <button
@@ -257,16 +275,21 @@ const Login = () => {
               )}
             </button>
 
+
           </form>
+
 
           {/* Footer */}
          
 
+
         </div>
       </div>
 
+
       {/* Page Footer - Bottom में fixed */}
       <Footer />
+
 
       {/* ToastContainer for react-toastify */}
       <ToastContainer
@@ -284,5 +307,6 @@ const Login = () => {
     </div>
   );
 };
+
 
 export default Login;

@@ -171,7 +171,7 @@ const UserManagement = () => {
     return colors[role] || 'bg-gray-100 text-gray-800';
   };
 
-  // ✅ Fixed: Handle toggle user status with proper error handling
+  // Fixed: Handle toggle user status with proper error handling
   const toggleUserStatus = async (userId, currentStatus) => {
     setTogglingUserId(userId);
     
@@ -179,10 +179,10 @@ const UserManagement = () => {
       const response = await api.post(`/admin/change-status/${userId}`);
       
       if (response.data.status === true) {
-        // ✅ Fixed: Properly calculate new status
+      
         const newStatus = (currentStatus === '1' || currentStatus === 1) ? '0' : '1';
         
-        // ✅ Fixed: Update local state correctly
+       
         setUsers(prevUsers => 
           prevUsers.map(user => 
             user.id === userId 
@@ -341,7 +341,8 @@ const UserManagement = () => {
                   <div className="bg-gray-50 p-3 rounded-md border">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base font-semibold text-gray-900">
-                        User List ({filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'})
+                        User List 
+                        {/* ({filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}) */}
                       </h3>
                       <div className="flex gap-3">
                         <input

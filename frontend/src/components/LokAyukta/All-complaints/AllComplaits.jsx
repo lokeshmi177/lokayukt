@@ -256,7 +256,7 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      const response = await api.post(`/lokayukt/forward-by-ds-js/${complaintId}`, {
+      const response = await api.post(`/lokayukt/forward-by-lokayukt/${complaintId}`, {
         forward_to_d_a: parseInt(formData.forwardTo),
         remarks: formData.remarks
       });
@@ -708,13 +708,21 @@ const AllComplaints = () => {
         color: 'bg-green-500'
       });
     }
+
+     if (complaint.approved_rejected_by_lokayukt === 1) {
+      statuses.push({
+        status: 'approved_by_lokayukt',
+        label: 'Approved by Lokayukt',
+        color: 'bg-green-500'
+      });
+    }
     
     return statuses;
   };
 
   // Forward status helper - Updated logic
   const isForwarded = (complaint) => {
-    return complaint.approved_rejected_by_ds_js === 1;
+    return complaint.approved_rejected_by_lokayukt === 1;
   };
 
 
@@ -893,43 +901,44 @@ const AllComplaints = () => {
           </div>
 
           {/* Actions and Badges in Same Row */}
-          <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            {/* Approval Badges */}
-            <div className="flex flex-wrap gap-2">
-              {approvalStatuses.map((status, index) => (
-                <span
-                  key={index}
-                  className={`inline-flex items-center px-3 py-1 rounded text-xs font-medium text-white ${status.color}`}
-                >
-                  <FaCheck className="w-3 h-3 mr-1" />
-                  {status.label}
-                </span>
-              ))}
-            </div>
+        <div className="mt-5 pt-4 border-t border-gray-200 flex  flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  {/* Approval Badges */}
+  <div className="flex sm:flex-nowrap md:flex-nowrap lg:flex-nowrap flex-wrap gap-2 sm:max-w-[90%]  ">
+    {approvalStatuses.map((status, index) => (
+      <span
+        key={index}
+        className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${status.color}`}
+      >
+        <FaCheck className="w-3 h-3 mr-1" />
+        {status.label}
+      </span>
+    ))}
+  </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button
-                onClick={(e) => handleViewDetails(e, complaint.id)}
-                className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-              >
-                View Details
-              </button>
+  {/* Action Buttons */}
+  <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:flex-shrink-0">
+    <button
+      onClick={(e) => handleViewDetails(e, complaint.id)}
+      className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+    >
+      View Details
+    </button>
 
-              {isForwarded(complaint) ? (
-                <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
-                  ✓ Forwarded
-                </span>
-              ) : (
-                <button
-                  onClick={(e) => handleForward(e, complaint.id)}
-                  className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-                >
-                  Forward
-                </button>
-              )}
-            </div>
-          </div>
+    {isForwarded(complaint) ? (
+      <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+        ✓ Forwarded
+      </span>
+    ) : (
+      <button
+        onClick={(e) => handleForward(e, complaint.id)}
+        className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+      >
+        Forward
+      </button>
+    )}
+  </div>
+</div>
+
         </div>
       </div>
     );
