@@ -71,7 +71,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-2 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
+        className={`w-full p-2 pr-8 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] bg-white text-left cursor-pointer flex items-center justify-between ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         required={required}
@@ -113,7 +113,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
                 placeholder="Search Options..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] outline-none text-sm"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -259,89 +259,120 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           </button>
         </div>
 
-        <form className="w-full max-w-5xl" onSubmit={handleSubmit}>
-          <div className="p-4 space-y-4 max-w-5xl ">
-          
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Request To <span className="text-red-500">*</span>
-              </label>
-              <CustomSearchableDropdown
-                name="forward_to"
-                value={forward.forward_to}
-                onChange={(value) => {
-                  setForward((prev) => ({ ...prev, forward_to: value }));
-                
-                  if (errors.forward_to) {
-                    setErrors((prev) => ({ ...prev, forward_to: null }));
-                  }
-                }}
-                options={buildDropdownOptions()}
-                placeholder="Select User"
-                error={errors.forward_to && errors.forward_to[0]} 
-              />
-            </div>
+       <form className="w-full max-w-5xl" onSubmit={handleSubmit}>
+  <div className="p-4 space-y-4 max-w-5xl ">
+    
+    {/* Request To */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Request To <span className="text-red-500">*</span>
+      </label>
+      <CustomSearchableDropdown
+        name="forward_to"
+        value={forward.forward_to}
+        onChange={(value) => {
+          setForward((prev) => ({ ...prev, forward_to: value }));
+          if (errors.forward_to) {
+            setErrors((prev) => ({ ...prev, forward_to: null }));
+          }
+        }}
+        options={buildDropdownOptions()}
+        placeholder="Select User"
+        error={errors.forward_to && errors.forward_to[0]} 
+      />
+    </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Remarks <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="remark"
-                value={forward.remark}
-                onChange={(e) => {
-                  setForward((prev) => ({ ...prev, remark: e.target.value }));
-                  if (errors.remark) {
-                    setErrors((prev) => ({ ...prev, remark: null }));
-                  }
-                }}
-                className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.remark ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Enter Remarks..."
-                rows={3}
-              />
-              {errors.remark && (
-                <div className="mt-1 text-sm text-red-600">
-                  {errors.remark[0]}
-                </div>
-              )}
-            </div>
-          </div>
+     {/* Target Date */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Target Date <span className="text-red-500">*</span>
+      </label>
+      <input
+        type="date"
+        name="target_date"
+        value={forward.target_date || ""}
+        min={new Date().toISOString().split("T")[0]} // disables past dates
+        onChange={(e) => {
+          setForward((prev) => ({ ...prev, target_date: e.target.value }));
+          if (errors.target_date) {
+            setErrors((prev) => ({ ...prev, target_date: null }));
+          }
+        }}
+        className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
+          errors.target_date ? "border-red-500" : "border-gray-300"
+        }`}
+      />
+      {errors.target_date && (
+        <div className="mt-1 text-sm text-red-600">
+          {errors.target_date[0]}
+        </div>
+      )}
+    </div>
 
-          {/* Footer */}
-          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !forward.forward_to || isLoadingData}
-              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
-                isSubmitting || !forward.forward_to || isLoadingData
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              } text-white`}
-            >
-              {isSubmitting ? (
-                <>
-                  <FaSpinner className="w-4 h-4 animate-spin" />
-                  Requesting...
-                </>
-              ) : (
-                <>
-                  <FaArrowRight className="w-4 h-4" />
-                  Request
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+    {/* Remarks */}
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Remarks <span className="text-red-500">*</span>
+      </label>
+      <textarea
+        name="remark"
+        value={forward.remark}
+        onChange={(e) => {
+          setForward((prev) => ({ ...prev, remark: e.target.value }));
+          if (errors.remark) {
+            setErrors((prev) => ({ ...prev, remark: null }));
+          }
+        }}
+        className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
+          errors.remark ? 'border-red-500' : 'border-gray-300'
+        }`}
+        placeholder="Enter Remarks..."
+        rows={3}
+      />
+      {errors.remark && (
+        <div className="mt-1 text-sm text-red-600">
+          {errors.remark[0]}
+        </div>
+      )}
+    </div>
+
+   
+  </div>
+
+  {/* Footer */}
+  <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+    <button
+      type="button"
+      onClick={onClose}
+      className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+      disabled={isSubmitting}
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      disabled={isSubmitting || !forward.forward_to || isLoadingData}
+      className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+        isSubmitting || !forward.forward_to || isLoadingData
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-[#13316C]"
+      } text-white`}
+    >
+      {isSubmitting ? (
+        <>
+          <FaSpinner className="w-4 h-4 animate-spin" />
+          Requesting...
+        </>
+      ) : (
+        <>
+          <FaArrowRight className="w-4 h-4" />
+          Request
+        </>
+      )}
+    </button>
+  </div>
+</form>
+
       </div>
     </div>
   );
