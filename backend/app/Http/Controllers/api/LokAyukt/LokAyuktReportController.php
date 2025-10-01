@@ -80,12 +80,20 @@ class LokAyuktReportController extends Controller
                             ->orWhere('complaints.mobile', 'like', "%{$search}%");
                         });
                     }
-                     $records->where('form_status', 1)
+                      $records->where('form_status', 1)
                   ->where('approved_rejected_by_ro', 1)
-                   ->where(function($q){
+                    ->where(function($q){
                             $q->where('approved_rejected_by_so_us',1)
                             ->Orwhere('approved_rejected_by_ds_js', 1);               
-                         });
+                         })
+                    ->where('approved_rejected_by_d_a', 1);
+                    // ->whereNotNull('forward_to_d_a');
+                //      $records->where('form_status', 1)
+                //   ->where('approved_rejected_by_ro', 1)
+                //    ->where(function($q){
+                //             $q->where('approved_rejected_by_so_us',1)
+                //             ->Orwhere('approved_rejected_by_ds_js', 1);               
+                //          });
                      $records = $records
                     ->groupBy(
                     'complaints.id',
@@ -191,25 +199,6 @@ class LokAyuktReportController extends Controller
 
     public function viewComplaint($id)
   {
-    //    $complainDetails = DB::table('complaints as cm')
-    //    ->leftJoin('complaints_details as cd', 'cm.id', '=', 'cd.complain_id')
-    // ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
-    // ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-    // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-    // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-    // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id') // <-- should be subject_id, not department_id
-    // ->select(
-    //     'cm.*',
-    //     'dd.district_name',
-    //     'dp.name as department_name',
-    //     'ds.name as designation_name',
-    //     'ct.name as complaintype_name',
-    //     'sub.name as subject_name',
-    //     // 'cd.*'
-    // )
-    // ->where('cm.id', $id)
-    // ->first();
-
     $complainDetails = DB::table('complaints as cm')
     ->leftJoin('district_master as dd', 'cm.district_id', '=', 'dd.district_code')
     ->select(
@@ -348,6 +337,10 @@ $complainDetails->details = DB::table('complaints_details as cd')
    
     public function requestReport(Request $request,$complainId){
         //    dd(Auth::user()->getUserByRoles);
+
+         $user = User::with('role','subrole')->where('id',$request->forward_to)->get();
+            // dd($user[0]->subrole->name);
+           $subroleFwd = $user[0]->subrole->name;
  
         $userId = Auth::user()->id;
         // $usersubrole = Auth::user()->subrole->name;
@@ -357,6 +350,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
             'forward_to' => 'required|exists:users,id',
+            'target_date' => 'required|date|after:today',
             // 'remark' => 'required',
          
           
@@ -365,6 +359,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // 'forward_by_ds_js.exists' => 'Forward by user does not exist.',
             'forward_to.required' => 'Forward to user is required.',
             'forward_to.exists' => 'Forward to user does not exist.',
+            'target_date.required' => 'Target date is required.',
+            'target_date.date' => 'Target date must be a valid date.',
+            'target_date.after' => 'Target date must be a future date.',
             // 'remark.required' => 'Remark is required.',
            
         ]);
@@ -376,9 +373,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
             ], 422);
         }
         if(isset($complainId) && $request->isMethod('post')){
-            $user = User::with('role')->where('id',$request->forward_to)->get();
+            // $user = User::with('role')->where('id',$request->forward_to)->get();
             // dd($user[0]->role->name);
-            $roleFwd = $user[0]->role->name;
+            // $subroleFwd = $user[0]->subrole->name;
             // dd($roleFwd);
              $cmp =  Complaint::findOrFail($complainId);
              $cmpAct =  ComplaintAction::where('complaint_id',$complainId)->first();
@@ -390,10 +387,23 @@ $complainDetails->details = DB::table('complaints_details as cd')
                         $apcAction = new ComplaintAction();
                         $apcAction->complaint_id = $complainId;
                         $apcAction->forward_by_lokayukt = $userId;
-                        $apcAction->forward_to_ds_js = $request->forward_to;
+
+                          if($subroleFwd === "ds-js"){
+                                $apcAction->forward_to_ds_js = $request->forward_to;
+                              
+                          }elseif($subroleFwd ==="sec"){
+                                $apcAction->forward_to_sec = $request->forward_to;
+                                
+                        }elseif($subroleFwd ==="cio-io"){
+                                $apcAction->forward_to_cio_io = $request->forward_to;
+                                
+                        }  
+
+                        // $apcAction->forward_to_ds_js = $request->forward_to;
+                        $apcAction->target_date = $request->target_date;
                         $apcAction->status = 'Report Requested';
                         $apcAction->type = '2';
-                        $apcAction->remarks = $request->remarks;
+                        $apcAction->remarks = $request->remark;
                         $apcAction->save();
                     }
                 
