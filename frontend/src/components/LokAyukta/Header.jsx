@@ -122,9 +122,9 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
   const getUserRole = () => {
     try {
       const role = localStorage.getItem('role');
-      return role || 'lokayuktt';
+      return role || 'lokayukt';
     } catch (error) {
-      return 'lokayuktt';
+      return 'lokayukt';
     }
   };
 

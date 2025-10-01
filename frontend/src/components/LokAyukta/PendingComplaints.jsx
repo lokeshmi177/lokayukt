@@ -30,7 +30,7 @@ const PendingComplaints = () => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const response = await api.get("/lokayuktt/all-pending-complaints");
+        const response = await api.get("/lokayukt/all-pending-complaints");
         
         if (response.data.status === true) {
           setComplaintsData(response.data.data);
@@ -50,7 +50,7 @@ const PendingComplaints = () => {
   // ✅ Handle view details with navigation - Only button click
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation(); // Prevent any parent event
-    navigate(`/lokayuktt/search-reports/view/${complaintId}`);
+    navigate(`/lokayukt/search-reports/view/${complaintId}`);
   };
 
   // ✅ Handle modal view - Only for modal
@@ -73,7 +73,7 @@ const PendingComplaints = () => {
     setIsApproving(true);
     
     try {
-      const response = await api.post(`/lokayuktt/approved-by-ro/${complaintToApprove.id}`);
+      const response = await api.post(`/lokayukt/approved-by-ro/${complaintToApprove.id}`);
       
       if (response.data.success || response.status === 200) {
         // Show success toast using react-toastify

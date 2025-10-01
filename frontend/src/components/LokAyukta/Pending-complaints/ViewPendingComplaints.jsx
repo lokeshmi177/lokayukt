@@ -67,9 +67,8 @@ const ViewPendingComplaints = () => {
 
         // Fetch complaint data using edit endpoint for consistency
         const complaintResponse = await api.get(
-          `/lokayuktt/view-complaint/${id}`
+          `/lokayukt/view-complaint/${id}`
         );
-
         if (complaintResponse.data.status === true) {
           setComplaintData(complaintResponse.data.data);
           console.log("Complaint Data:", complaintResponse.data.data);
@@ -77,7 +76,7 @@ const ViewPendingComplaints = () => {
           // Fetch file preview data
           try {
             const fileResponse = await api.get(
-              `/lokayuktt/get-file-preview/${id}`
+              `/lokayukt/get-file-preview/${id}`
             );
             if (fileResponse.data.status === true) {
               setFilePreviewData(fileResponse.data.data || []);
@@ -164,7 +163,7 @@ const ViewPendingComplaints = () => {
     if (id && complaintData) {
       console.log("Navigating to edit with ID:", id);
       console.log("Complaint data:", complaintData);
-      navigate(`/lokayuktt/pending-complaints/edit/${id}`);
+      navigate(`/lokayukt/pending-complaints/edit/${id}`);
     } else {
       toast.error("Unable to edit: Missing complaint data");
     }
@@ -261,7 +260,7 @@ const ViewPendingComplaints = () => {
           <FaExclamationTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <p className="text-red-600 font-medium">{error}</p>
           <button
-            onClick={() => navigate("/lokayuktt/pending-complaints")}
+            onClick={() => navigate("/lokayukt/pending-complaints")}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Back to Complaints
@@ -296,7 +295,7 @@ const ViewPendingComplaints = () => {
             )}
             
             <button 
-              onClick={() => navigate("/lokayuktt/pending-complaints")}
+              onClick={() => navigate("/lokayukt/pending-complaints")}
               style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
               className="flex items-center justify-center gap-2 px-4 py-2 text-white rounded transition"
             >

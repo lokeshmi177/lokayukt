@@ -274,7 +274,7 @@ const ProgressRegister = () => {
     const fetchComplaints = async () => {
       setIsLoadingMovements(true);
       try {
-        const response = await api.get("/lokayuktt/progress-register");
+        const response = await api.get("/lokayukt/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
         } else {
@@ -297,7 +297,7 @@ const ProgressRegister = () => {
     const fetchCurrentReport = async () => {
       setIsLoadingStatus(true);
       try {
-        const response = await api.get("/lokayuktt/current-report");
+        const response = await api.get("/lokayukt/current-report");
         console.log("Current Report API Response:", response.data);
         
         if (response.data.status && response.data.data) {
@@ -322,7 +322,7 @@ const ProgressRegister = () => {
     const fetchAnalytics = async () => {
       setIsLoadingAnalytics(true);
       try {
-        const response = await api.get("/lokayuktt/analytic-report");
+        const response = await api.get("/lokayukt/analytic-report");
         console.log("Analytics API Response:", response.data);
         
         if (response.data.status && response.data.data) {

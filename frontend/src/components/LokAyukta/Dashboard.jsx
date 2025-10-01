@@ -256,7 +256,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 
 // Main Dashboard Component
-const Dashboard = ({ userRole = "lokayuktty" }) => {
+const Dashboard = ({ userRole = "lokayukt" }) => {
 
   const navigate = useNavigate()
   //  API State Management + Date Picker State
@@ -315,14 +315,14 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
   const fetchDashboardData = async (monthParam) => {
     try {
       // 1. Dashboard Stats API
-      const dashResponse = await api.get(`/lokayuktty/dashboard/${monthParam}`);
+      const dashResponse = await api.get(`/lokayukt/dashboard/${monthParam}`);
       if (dashResponse.data.status) {
         setDashboardData(dashResponse.data.dataDashboard);
       }
 
 
       // 2. Monthly Complaint API
-      const monthlyResponse = await api.get('/lokayuktty/montly-complaint');
+      const monthlyResponse = await api.get('/lokayukt/montly-complaint');
       if (monthlyResponse.data) {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyTrends = months.map((month, index) => ({
@@ -336,7 +336,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
 
 
       // 3. Status Distribution API
-      const statusResponse = await api.get('/lokayuktty/status-distribution');
+      const statusResponse = await api.get('/lokayukt/status-distribution');
       if (statusResponse.data && statusResponse.data.data) {
         const statusInfo = statusResponse.data.data;
         const statusDistribution = [
@@ -366,7 +366,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
 
 
       // 4. Department-wise API
-      const deptResponse = await api.get('/lokayuktty/department-wise-complaint');
+      const deptResponse = await api.get('/lokayukt/department-wise-complaint');
       if (deptResponse.data.status) {
         const deptData = Object.entries(deptResponse.data.data).map(([department, complaints]) => ({
           department,
@@ -378,7 +378,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
 
 
       // 5. District-wise API
-      const districtResponse = await api.get('/lokayuktty/district-wise-company-type');
+      const districtResponse = await api.get('/lokayukt/district-wise-company-type');
       if (districtResponse.data) {
         const { district, total, allegations, grievances } = districtResponse.data;
         const districtFormatted = district.map((districtName, index) => ({
@@ -612,7 +612,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
         {/* Total Complaints */}
         <div
         onClick={()=>{
-          navigate("/lokayuktty/all-complaints ")
+          navigate("/lokayukt/all-complaints ")
         }}
          className="p-5 rounded-2xl shadow-md border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -632,7 +632,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
         {/* Today's Entry */}
         <div
          onClick={()=>{
-          navigate("/lokayuktty/pending-complaints")
+          navigate("/lokayukt/pending-complaints")
         }}
          className="p-5 rounded-2xl shadow-md border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -652,7 +652,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
         {/* Approved */}
         <div 
           onClick={()=>{
-          navigate("/lokayuktty/approved-complaints")
+          navigate("/lokayukt/approved-complaints")
         }}
         className="p-5 rounded-2xl shadow-md border border-green-200 bg-green-50 hover:bg-green-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -688,7 +688,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
         {/* Pending */}
         <div
           onClick={()=>{
-          navigate("/lokayuktty/pending-complaints")
+          navigate("/lokayukt/pending-complaints")
         }}
          className="p-5 rounded-2xl shadow-md border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">
@@ -707,7 +707,7 @@ const Dashboard = ({ userRole = "lokayuktty" }) => {
         {/* Avg. Processing */}
         <div
           onClick={()=>{
-          navigate("/lokayuktty/pending-complaints")
+          navigate("/lokayukt/pending-complaints")
         }}
          className="p-5 rounded-2xl shadow-md border border-teal-200 bg-teal-50 hover:bg-teal-100 transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer">
           <div className="flex justify-between items-start">

@@ -181,7 +181,7 @@ const ForwardModal = ({
       
       setIsLoadingOptions(true);
       try {
-        const response = await api.get("/lokayuktt/get-dealing-assistant");
+        const response = await api.get("/lokayukt/get-dealing-assistant");
         
         if (response.data && Array.isArray(response.data)) {
           // Options बनाते time: value में ID (string), display में name
@@ -239,7 +239,7 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      const response = await api.post(`/lokayuktt/forward-by-ds-js/${complaintId}`, {
+      const response = await api.post(`/lokayukt/forward-by-ds-js/${complaintId}`, {
         forward_to_d_a: parseInt(formData.forwardTo),
         remarks: formData.remarks
       });
@@ -451,16 +451,16 @@ const PendingComplaints = () => {
     // Route navigation
     switch(tab) {
       case 'all':
-        navigate('/lokayuktt/all-complaints');
+        navigate('/lokayukt/all-complaints');
         break;
       case 'pending':
-        navigate('/lokayuktt/pending-complaints');
+        navigate('/lokayukt/pending-complaints');
         break;
       case 'approved':
-        navigate('/lokayuktt/approved-complaints');
+        navigate('/lokayukt/approved-complaints');
         break;
       default:
-        navigate('/lokayuktt/pending-complaints');
+        navigate('/lokayukt/pending-complaints');
     }
   };
 
@@ -468,7 +468,7 @@ const PendingComplaints = () => {
   const fetchAllComplaints = async () => {
     setIsLoadingAll(true);
     try {
-      const response = await api.get("/lokayuktt/all-complaints");
+      const response = await api.get("/lokayukt/all-complaints");
       
       if (response.data.status === true) {
         setComplaintsData(response.data.data);
@@ -488,7 +488,7 @@ const PendingComplaints = () => {
   const fetchPendingComplaints = async () => {
     setIsLoadingPending(true);
     try {
-      const response = await api.get("/lokayuktt/all-pending-complaints");
+      const response = await api.get("/lokayukt/all-pending-complaints");
       
       if (response.data.status === true) {
         setPendingData(response.data.data);
@@ -512,7 +512,7 @@ const PendingComplaints = () => {
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
     try {
-      const response = await api.get("/lokayuktt/approved-complaints");
+      const response = await api.get("/lokayukt/approved-complaints");
       
       if (response.data.status === true) {
         setApprovedData(response.data.data);
@@ -607,7 +607,7 @@ const PendingComplaints = () => {
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
-    navigate(`/lokayuktt/pending-complaints/view/${complaintId}`);
+    navigate(`/lokayukt/pending-complaints/view/${complaintId}`);
     window.scrollTo({ top: 2, behavior: 'smooth' });
   };
 

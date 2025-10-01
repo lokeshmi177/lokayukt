@@ -164,7 +164,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const fetchUsersData = async () => {
     setIsLoadingData(true);
     try {
-      const response = await api.get("/lokayuktt/get-users");
+      const response = await api.get("/lokayukt/get-users");
       console.log("Get Users Response:", response.data);
 
       // Set data - assuming response is array directly
@@ -206,7 +206,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
       console.log("Requesting report for complaint:", complaintId, "with payload:", forward);
 
       // ✅ API call to request-report/{complaintId}
-      const response = await api.post(`/request-report/${complaintId}`, forward);
+      const response = await api.post(`/lokayukt/request-report/${complaintId}`, forward);
 
       console.log("Request Report API Response:", response.data);
 
@@ -458,13 +458,13 @@ const SearchReports = () => {
     const fetchInitialData = async () => {
       try {
         // Existing API calls
-        const districtsResponse = await api.get("/lokayuktt/all-district");
+        const districtsResponse = await api.get("/lokayukt/all-district");
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
         }
 
-        const reportsResponse = await api.get("/lokayuktt/complain-report");
+        const reportsResponse = await api.get("/lokayukt/complain-report");
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
           setSearchResults(dataArray);
@@ -473,7 +473,7 @@ const SearchReports = () => {
         // EXISTING API CALLS
         // Fetch overall stats
         try {
-          const overallResponse = await api.get("/lokayuktt/all-complains");
+          const overallResponse = await api.get("/lokayukt/all-complains");
           if (overallResponse.data.status === true) {
             setOverallStats(overallResponse.data.data);
           }
@@ -483,7 +483,7 @@ const SearchReports = () => {
 
         // Fetch district-wise stats
         try {
-          const districtWiseResponse = await api.get("/lokayuktt/district-wise-complaint");
+          const districtWiseResponse = await api.get("/lokayukt/district-wise-complaint");
           if (districtWiseResponse.data.status === true) {
             setDistrictWiseStats(districtWiseResponse.data.data);
           }
@@ -493,7 +493,7 @@ const SearchReports = () => {
 
         // Fetch department-wise stats
         try {
-          const departmentWiseResponse = await api.get("/lokayuktt/department-wise-complaint");
+          const departmentWiseResponse = await api.get("/lokayukt/department-wise-complaint");
           if (departmentWiseResponse.data.status === true) {
             setDepartmentWiseStats(departmentWiseResponse.data.data);
           }
@@ -504,7 +504,7 @@ const SearchReports = () => {
         // NEW API CALLS
         // Fetch monthly trends
         try {
-          const monthlyTrendsResponse = await api.get("/lokayuktt/montly-trends");
+          const monthlyTrendsResponse = await api.get("/lokayukt/montly-trends");
           if (monthlyTrendsResponse.data.status === true) {
             setMonthlyTrends(monthlyTrendsResponse.data.data);
           }
@@ -514,7 +514,7 @@ const SearchReports = () => {
 
         // Fetch compliance report
         try {
-          const complianceReportResponse = await api.get("/lokayuktt/compliance-report");
+          const complianceReportResponse = await api.get("/lokayukt/compliance-report");
           if (complianceReportResponse.data.status === true) {
             setComplianceReport(complianceReportResponse.data.data);
           }
@@ -524,7 +524,7 @@ const SearchReports = () => {
 
         // NEW: Fetch average processing time by complaint type
         try {
-          const avgProcessingResponse = await api.get("/lokayuktt/detail-by-complaintype");
+          const avgProcessingResponse = await api.get("/lokayukt/detail-by-complaintype");
           if (avgProcessingResponse.data.status === true) {
             setAvgProcessingTimes(avgProcessingResponse.data.data);
           }
@@ -545,7 +545,7 @@ const SearchReports = () => {
   const handleSearch = async () => {
     setIsSearching(true);
     try {
-      const response = await api.get("/lokayuktt/complain-report");
+      const response = await api.get("/lokayukt/complain-report");
       if (response.data.status === true) {
         const dataArray = ensureArray(response.data.data);
         setSearchResults(dataArray);
@@ -860,7 +860,7 @@ const SearchReports = () => {
                                 paginatedResults.map((result, index) => (
                                   <tr key={result.id} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-700 hover:text-blue-800 hover:underline cursor-pointer" 
-                                        onClick={() => navigate(`/lokayuktt/search-reports/view/${result.id}`)}>
+                                        onClick={() => navigate(`/lokayukt/search-reports/view/${result.id}`)}>
                                       {result.complain_no || result.application_no || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">

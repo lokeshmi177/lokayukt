@@ -34,7 +34,7 @@ const Sidebar = ({
       title: "LokAyukta",
       subtitle: "CRMS",
       description: "Complaint Management",
-      lokayuktt: "lokayuktt",
+      lokayukt: "lokayukt",
       dashboard: "Dashboard",
       allComplaints: "Complaints",
       progressRegister: "Progress Register",
@@ -47,7 +47,7 @@ const Sidebar = ({
       title: "लोकायुक्त",
       subtitle: "CRMS",
       description: "शिकायत प्रबंधन",
-      lokayuktt: "व्यवस्थापक",
+      lokayukt: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
       allComplaints: "शिकायतें", // ✅ Fixed: was "Complaints"
       progressRegister: "प्रगति रजिस्टर",
@@ -110,9 +110,9 @@ const Sidebar = ({
     setIsHindi(!isHindi);
   };
 
-  // Simple isActive function for lokayuktt routes
+  // Simple isActive function for lokayukt routes
   const isActive = (href) => {
-    const fullPath = `/lokayuktt${href}`;
+    const fullPath = `/lokayukt${href}`;
 
     if (href === "/dashboard") {
       return location.pathname === fullPath;
@@ -243,14 +243,14 @@ const Sidebar = ({
             )}
           </div>
 
-          {/* lokayuktt Badge & Header Actions Layout */}
+          {/* lokayukt Badge & Header Actions Layout */}
           <div className="flex justify-between">
             <div>
-              {/* lokayuktt Badge */}
+              {/* lokayukt Badge */}
               {(isMobile || !isCollapsed) && (
                 <div className="mb-3 transition-all duration-300">
                   <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {t.lokayuktt}
+                    {t.lokayukt}
                   </span>
                 </div>
               )}
@@ -303,7 +303,7 @@ const Sidebar = ({
             {/* Dashboard */}
             <li>
               <Link
-                to="/lokayuktt/dashboard"
+                to="/lokayukt/dashboard"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/dashboard")
@@ -328,7 +328,7 @@ const Sidebar = ({
             {/* All Complaints */}
             <li>
               <Link
-                to="/lokayuktt/all-complaints"
+                to="/lokayukt/all-complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   ["/all-complaints", "/pending-complaints", "/approved-complaints"].some(path =>
@@ -355,7 +355,7 @@ const Sidebar = ({
             {/* Progress Register */}
             <li>
               <Link
-                to="/lokayuktt/progress-register"
+                to="/lokayukt/progress-register"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/progress-register")
@@ -380,7 +380,7 @@ const Sidebar = ({
             {/* Search & Reports */}
             <li>
               <Link
-                to="/lokayuktt/search-reports"
+                to="/lokayukt/search-reports"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/search-reports")

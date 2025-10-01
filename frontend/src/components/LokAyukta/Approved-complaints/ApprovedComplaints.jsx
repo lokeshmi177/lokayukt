@@ -181,7 +181,7 @@ const ForwardModal = ({
       
       setIsLoadingOptions(true);
       try {
-        const response = await api.get("/lokayuktt/get-dealing-assistant");
+        const response = await api.get("/lokayukt/get-dealing-assistant");
         
         if (response.data && Array.isArray(response.data)) {
           // Options बनाते time: value में ID (string), display में name
@@ -239,7 +239,7 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      const response = await api.post(`/lokayuktt/forward-by-so/${complaintId}`, {
+      const response = await api.post(`/lokayukt/forward-by-so/${complaintId}`, {
         forward_to_d_a: parseInt(formData.forwardTo),
         remarks: formData.remarks
       });
@@ -451,16 +451,16 @@ const ApprovedComplaints = () => {
     // Route navigation
     switch(tab) {
       case 'all':
-        navigate('/lokayuktt/all-complaints');
+        navigate('/lokayukt/all-complaints');
         break;
       case 'pending':
-        navigate('/lokayuktt/pending-complaints');
+        navigate('/lokayukt/pending-complaints');
         break;
       case 'approved':
-        navigate('/lokayuktt/approved-complaints');
+        navigate('/lokayukt/approved-complaints');
         break;
       default:
-        navigate('/lokayuktt/approved-complaints');
+        navigate('/lokayukt/approved-complaints');
     }
   };
 
@@ -468,7 +468,7 @@ const ApprovedComplaints = () => {
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
     try {
-      const response = await api.get("/lokayuktt/all-approved-complaints");
+      const response = await api.get("/lokayukt/all-approved-complaints");
       
       if (response.data.status === true) {
         setApprovedData(response.data.data);
@@ -530,7 +530,7 @@ const ApprovedComplaints = () => {
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
-    navigate(`/lokayuktt/approved-complaints/view/${complaintId}`);
+    navigate(`/lokayukt/approved-complaints/view/${complaintId}`);
     window.scrollTo({ top: 2, behavior: 'smooth' }); // Scroll to top smoothly
   };
 

@@ -351,7 +351,7 @@ function App() {
 
         {/* Lok-ayukt  Routes */}
       {role === 'lok-ayukt' && (
-        <Route path="/lokayuktt" element={<LokayuktLayout />}>
+        <Route path="/lokayukt" element={<LokayuktLayout />}>
            <Route path="dashboard" element={<LokayuktDashboard />} />
           <Route path="complaints" element={<LokayuktComplaints />} />
           <Route path="progress-register" element={<LokayuktProgressRegister />} />
