@@ -75,7 +75,7 @@ const Login = () => {
             localStorage.setItem('subrole', response.data.data.user.subrole.name);
             window.open("/supervisor/dashboard", "_self");
           }
-          else if (userRole === "lok-ayukt") {
+          else if (userRole === "lokayukt") {
             window.open("/lokayukt/dashboard", "_self");
           }
           else if (userRole === "uplokayukt") {
