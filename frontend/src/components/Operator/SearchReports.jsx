@@ -1166,18 +1166,9 @@ const SearchReports = () => {
                           </>
                         ) : (
                           <>
-                            <div className="flex justify-between">
-                              <span className="text-sm sm:text-base text-gray-700">Allegations</span>
-                              <span className="font-medium text-gray-900">18.5 days</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm sm:text-base text-gray-700">Grievances</span>
-                              <span className="font-medium text-gray-900">12.3 days</span>
-                            </div>
-                            <div className="flex justify-between border-t pt-2">
-                              <span className="font-medium text-gray-900">Overall Average</span>
-                              <span className="font-bold text-gray-900">15.4 days</span>
-                            </div>
+                            <div className="text-center text-gray-500 py-4">
+                            Loading Average Processing Time...
+                          </div>
                           </>
                         )}
                       </div>

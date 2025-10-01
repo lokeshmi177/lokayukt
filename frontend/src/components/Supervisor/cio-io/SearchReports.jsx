@@ -800,7 +800,7 @@ const SearchReports = () => {
               {/* Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                  <div className="space-y-3 sm:space-y-4 overflow-hidden">
+                  <div className="space-y-3 sm:space-y-4 overflow-hidden px-2 sm:px-0 md:px-0 lg:px-0">
                     {/* Search Criteria */}
                     <div className="bg-white sm:p-4 shadow-sm">
                       <div className="flex items-center gap-2 mb-3">
@@ -1172,18 +1172,9 @@ const SearchReports = () => {
                           </>
                         ) : (
                           <>
-                            <div className="flex justify-between">
-                              <span className="text-sm sm:text-base text-gray-700">Allegations</span>
-                              <span className="font-medium text-gray-900">18.5 days</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm sm:text-base text-gray-700">Grievances</span>
-                              <span className="font-medium text-gray-900">12.3 days</span>
-                            </div>
-                            <div className="flex justify-between border-t pt-2">
-                              <span className="font-medium text-gray-900">Overall Average</span>
-                              <span className="font-bold text-gray-900">15.4 days</span>
-                            </div>
+                              <div className="text-center text-gray-500 py-4">
+                            Loading Average Processing Time...
+                          </div>
                           </>
                         )}
                       </div>

@@ -17,11 +17,9 @@ import {
   FaCheck
 } from "react-icons/fa";
 
-
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
 const subRole = localStorage.getItem("subrole");
-
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -30,7 +28,6 @@ const api = axios.create({
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
-
 
 // Custom Searchable Select Component - ID save होगी, Name display होगी
 const CustomSearchableSelect = ({ 
@@ -44,7 +41,6 @@ const CustomSearchableSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-
   // Filter options based on search (केवल name में search)
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
@@ -54,16 +50,13 @@ const CustomSearchableSelect = ({
     );
   };
 
-
   const selectedOption = options.find(opt => opt.value === value);
-
 
   const handleSelect = (optionValue) => {
     onChange(optionValue); // यहाँ ID pass होती है
     setIsOpen(false);
     setSearchTerm("");
   };
-
 
   return (
     <div className="relative">
@@ -83,7 +76,6 @@ const CustomSearchableSelect = ({
           </option>
         ))}
       </select>
-
 
       {/* Custom Dropdown Button - केवल name दिखेगा */}
       <button
@@ -107,7 +99,6 @@ const CustomSearchableSelect = ({
         <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
@@ -125,7 +116,6 @@ const CustomSearchableSelect = ({
               />
             </div>
           </div>
-
 
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
@@ -169,7 +159,6 @@ const CustomSearchableSelect = ({
   );
 };
 
-
 // Forward Modal Component
 const ForwardModal = ({ 
   isOpen, 
@@ -184,7 +173,6 @@ const ForwardModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
-
 
   // Fetch dealing assistants from API
   useEffect(() => {
@@ -223,10 +211,8 @@ const ForwardModal = ({
       }
     };
 
-
     fetchDealingAssistants();
   }, [isOpen]);
-
 
   useEffect(() => {
     if (isOpen) {
@@ -237,7 +223,6 @@ const ForwardModal = ({
     }
   }, [isOpen]);
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -246,12 +231,10 @@ const ForwardModal = ({
       return;
     }
 
-
     if (!formData.remarks.trim()) {
       toast.error("Please enter remarks");
       return;
     }
-
 
     setIsSubmitting(true);
     
@@ -261,9 +244,7 @@ const ForwardModal = ({
         remarks: formData.remarks
       });
 
-
       console.log("API Response:", response.data);
-
 
       // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
@@ -313,7 +294,6 @@ const ForwardModal = ({
     }
   };
 
-
   // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -321,9 +301,7 @@ const ForwardModal = ({
     }
   };
 
-
   if (!isOpen) return null;
-
 
   return (
     <div 
@@ -341,7 +319,6 @@ const ForwardModal = ({
             <FaTimes className="w-5 h-5" />
           </button>
         </div>
-
 
         <form onSubmit={handleSubmit}>
           <div className="p-4 space-y-4">
@@ -380,7 +357,6 @@ const ForwardModal = ({
               )}
             </div>
 
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Remarks / टिप्पणी *
@@ -396,7 +372,6 @@ const ForwardModal = ({
               />
             </div>
           </div>
-
 
           <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
             <button
@@ -435,7 +410,6 @@ const ForwardModal = ({
   );
 };
 
-
 const PendingComplaints = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -449,17 +423,14 @@ const PendingComplaints = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-
   // Loading states for each tab
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [isLoadingApproved, setIsLoadingApproved] = useState(false);
 
-
   // Forward Modal State
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
-
 
   // Determine active tab from URL
   const getActiveTabFromURL = () => {
@@ -468,12 +439,10 @@ const PendingComplaints = () => {
     return 'all';
   };
 
-
   // Set active tab based on URL on mount
   useEffect(() => {
     setActiveTab(getActiveTabFromURL());
   }, [location.pathname]);
-
 
   // Handle tab change with routing
   const handleTabChange = (tab) => {
@@ -494,7 +463,6 @@ const PendingComplaints = () => {
         navigate('/lokayukt/pending-complaints');
     }
   };
-
 
   // Fetch all complaints data from API
   const fetchAllComplaints = async () => {
@@ -519,7 +487,6 @@ const PendingComplaints = () => {
       setIsLoadingAll(false);
     }
   };
-
 
   // Fetch pending complaints data
   const fetchPendingComplaints = async () => {
@@ -547,7 +514,6 @@ const PendingComplaints = () => {
     }
   };
 
-
   // Fetch approved complaints data
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
@@ -571,7 +537,6 @@ const PendingComplaints = () => {
     }
   };
 
-
   // Fetch data based on active tab
   useEffect(() => {
     switch(activeTab) {
@@ -589,7 +554,6 @@ const PendingComplaints = () => {
     }
   }, [activeTab]);
 
-
   // Get current data based on active tab - NO FILTERING
   const getCurrentData = () => {
     switch(activeTab) {
@@ -603,7 +567,6 @@ const PendingComplaints = () => {
         return [];
     }
   };
-
 
   // Get current loading state
   const getCurrentLoadingState = () => {
@@ -619,7 +582,6 @@ const PendingComplaints = () => {
     }
   };
 
-
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
@@ -627,13 +589,11 @@ const PendingComplaints = () => {
     window.scrollTo({ top: 2, behavior: 'smooth' });
   };
 
-
   // Handle modal view
   const handleModalView = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
   };
-
 
   // Handle Forward button click
   const handleForward = (e, complaintId) => {
@@ -642,7 +602,6 @@ const PendingComplaints = () => {
     setSelectedComplaintId(complaintId);
     setIsForwardModalOpen(true);
   };
-
 
   // Handle forward submit with improved local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
@@ -664,7 +623,6 @@ const PendingComplaints = () => {
     console.log(`Complaint ${forwardedComplaintId} forwarded successfully`);
   };
 
-
   // Format date helper
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -675,7 +633,6 @@ const PendingComplaints = () => {
       day: 'numeric'
     });
   };
-
 
   // Get approval statuses
   const getApprovalStatuses = (complaint) => {
@@ -720,14 +677,14 @@ const PendingComplaints = () => {
     return statuses;
   };
 
-
-  // Check if complaint can be forwarded
+  // ✅ CORRECTED: Check if complaint can be forwarded
   const canForward = (complaint) => {
-    // Complaint can be forwarded if it's not already forwarded by SO/US
-    // and has necessary approvals
-    return complaint.approved_rejected_by_so_us !== 1;
+    // If complaint is approved by LokAyukt, it's already forwarded
+    if (complaint.approved_rejected_by_lokayukt === 1) {
+      return false; // Cannot forward - show "Forwarded"
+    }
+    return true; // Can forward - show "Forward" button
   };
-
 
   // Get tab title
   const getTabTitle = () => {
@@ -742,7 +699,6 @@ const PendingComplaints = () => {
         return 'Pending Complaints';
     }
   };
-
 
   if (error) {
     return (
@@ -760,14 +716,12 @@ const PendingComplaints = () => {
     );
   }
 
-
   const currentData = getCurrentData();
   const isLoading = getCurrentLoadingState();
 
   console.log("Current Tab:", activeTab);
   console.log("Current Data:", currentData);
   console.log("Is Loading:", isLoading);
-
 
   return (
     <>
@@ -785,14 +739,12 @@ const PendingComplaints = () => {
         style={{ zIndex: 9999 }}
       />
 
-
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {getTabTitle()} / लंबित शिकायतें
           </h1>
         </div>
-
 
         {/* JUSTIFY-BETWEEN TABS COMPONENT */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
@@ -832,12 +784,10 @@ const PendingComplaints = () => {
           </div>
         </div>
 
-
         {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="flex flex-col items-center space-y-4">
-              {/* <FaSpinner className="w-8 h-8 animate-spin text-blue-600" /> */}
               <p className="text-gray-700 text-md font-semibold">Loading...</p>
             </div>
           </div>
@@ -864,7 +814,6 @@ const PendingComplaints = () => {
                       </div>
                     </div>
 
-
                     {/* Main Content */}
                     <div className="p-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
@@ -886,7 +835,6 @@ const PendingComplaints = () => {
                           </div>
                         </div>
 
-
                         {/* Column 2 */}
                         <div className="space-y-2">
                           <div className="flex gap-x-2">
@@ -905,7 +853,6 @@ const PendingComplaints = () => {
                           )}
                         </div>
 
-
                         {/* Column 3 */}
                         <div className="flex flex-col sm:items-end">
                           <span className="text-xs text-gray-600">Created:</span>
@@ -919,7 +866,6 @@ const PendingComplaints = () => {
                           )}
                         </div>
                       </div>
-
 
                       {/* Actions and Badges in Same Row */}
                       <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -940,7 +886,6 @@ const PendingComplaints = () => {
                           )}
                         </div>
 
-
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
                           <button
@@ -949,7 +894,6 @@ const PendingComplaints = () => {
                           >
                             View Details
                           </button>
-
 
                           {showForwardButton ? (
                             <button
@@ -971,7 +915,6 @@ const PendingComplaints = () => {
               })}
             </div>
 
-
             {/* Empty State */}
             {currentData.length === 0 && (
               <div className="text-center py-8 sm:py-12 bg-white rounded-lg border border-gray-200">
@@ -984,7 +927,6 @@ const PendingComplaints = () => {
         )}
       </div>
 
-
       {/* Forward Modal */}
       <ForwardModal
         isOpen={isForwardModalOpen}
@@ -992,7 +934,6 @@ const PendingComplaints = () => {
         complaintId={selectedComplaintId}
         onSubmit={handleForwardSubmit}
       />
-
 
       {/* Details Modal */}
       {isModalOpen && selectedComplaint && (
@@ -1029,6 +970,5 @@ const PendingComplaints = () => {
     </>
   );
 };
-
 
 export default PendingComplaints;
