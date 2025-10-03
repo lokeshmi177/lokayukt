@@ -627,7 +627,10 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 'complaints.complain_no',
                 'complaints.name',
                 'complaints.approved_rejected_by_ro',
-                'complaints.remark as remark',
+                'complaints.approved_rejected_by_so_us',
+                'complaints.approved_rejected_by_ds_js',
+                'complaints.approved_rejected_by_d_a',
+                'complaints.approved_rejected_by_lokayukt',
                 // 'u.id as user_id',
                 // 'srole.name as subrole_name',
                 
@@ -746,14 +749,21 @@ $records = DB::table('complaints')
     }
 
     public function analytics(){
-        $stats = DB::table('complaints')
-    ->leftJoin('complaint_actions as ca', 'complaints.id', '=', 'ca.complaint_id')
+    //     $stats = DB::table('complaints')
+    // ->leftJoin('complaint_actions as ca', 'complaints.id', '=', 'ca.complaint_id')
+    // ->selectRaw('
+    //     AVG(DATEDIFF(IFNULL(ca.created_at, NOW()), complaints.created_at)) as avg_processing_time,
+    //     SUM(CASE WHEN complaints.form_status = "1" AND approved_rejected_by_ro ="1" THEN 1 ELSE 0 END) as files_in_transit,
+    //     SUM(CASE WHEN ca.target_date < NOW()  THEN 1 ELSE 0 END) as overdue_files
+    // ')
+    //  ->where('in_draft','0')
+    // ->first();
+    $stats = DB::table('complaints')
     ->selectRaw('
-        AVG(DATEDIFF(IFNULL(ca.created_at, NOW()), complaints.created_at)) as avg_processing_time,
-        SUM(CASE WHEN complaints.form_status = "1" THEN 1 ELSE 0 END) as files_in_transit,
-        SUM(CASE WHEN ca.target_date < NOW()  THEN 1 ELSE 0 END) as overdue_files
+        AVG(DATEDIFF(NOW(), complaints.created_at)) as avg_processing_time,
+        SUM(CASE WHEN complaints.form_status = "1" AND approved_rejected_by_ro = "1" THEN 1 ELSE 0 END) as files_in_transit,
     ')
-     ->where('in_draft','0')
+    ->where('in_draft', '0')
     ->first();
               return response()->json([
                 'status' => true,
