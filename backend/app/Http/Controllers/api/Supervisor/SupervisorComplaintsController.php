@@ -27,7 +27,7 @@ class SupervisorComplaintsController extends Controller
         // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
         // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
         // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
-        // ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
+        ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
         ->select(
             'complaints.*',
             'dd.district_name as district_name',
@@ -103,15 +103,23 @@ class SupervisorComplaintsController extends Controller
             break;
 
         case "sec":
-           $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+        //    $query->where('form_status', 1)
+        //           ->where('approved_rejected_by_ro', 1);
                 //    ->where('forward_to_lokayukt', 1)
                 //   ->whereOr('forward_to_uplokayukt', 1);
+                 $query->where('rep.type', 2)
+                                ->where('rep.status', 'Report Requested')
+                                ->whereNotNull('rep.forward_to_sec')
+                                 ->where('rep.forward_to_sec',$user);
             break;
 
         case "cio-io":
-           $query->where('form_status', 1)
-                  ->where('approved_rejected_by_ro', 1);
+             $query->where('rep.type', 2)
+                                ->where('rep.status', 'Report Requested')
+                                ->whereNotNull('rep.forward_to_cio_io')
+                                 ->where('rep.forward_to_cio_io',$user);
+        //    $query->where('form_status', 1)
+        //           ->where('approved_rejected_by_ro', 1);
                 //    ->where('forward_to_lokayukt', 1)
                 //   ->whereOr('forward_to_uplokayukt', 1);
             break;

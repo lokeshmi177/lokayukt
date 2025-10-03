@@ -703,13 +703,13 @@ $complainDetails->details = DB::table('complaints_details as cd')
     //  ->where('ca1.type', 1)
     ->join(DB::raw("(SELECT complaint_id, MAX(id) AS max_id
             FROM complaint_actions
-            WHERE type = 1
             GROUP BY complaint_id
         ) as ca2"),
         function ($join) {
             $join->on('ca1.id', '=', 'ca2.max_id');
         }
     );
+    // ->toSql();
     // dd($latestActions);
 
 $records = DB::table('complaints')
@@ -720,6 +720,9 @@ $records = DB::table('complaints')
     ->leftJoin('users as so_us', 'ca.forward_by_so_us', '=', 'so_us.id')
     ->leftJoin('users as ds_js', 'ca.forward_by_ds_js', '=', 'ds_js.id')
     ->leftJoin('users as sec', 'ca.forward_by_sec', '=', 'sec.id')
+    ->leftJoin('users as secto', 'ca.forward_to_sec', '=', 'secto.id')
+    ->leftJoin('users as cio', 'ca.forward_by_cio_io', '=', 'cio.id')
+    ->leftJoin('users as cioto', 'ca.forward_to_cio_io', '=', 'cioto.id')
     ->leftJoin('users as d_a', 'ca.forward_by_d_a', '=', 'd_a.id')
     ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
     ->select(
@@ -731,12 +734,16 @@ $records = DB::table('complaints')
         'so_us.name as so_name',
         'ds_js.name as ds_name',
         'sec.name as sec_name',
+        'secto.name as sec_to_name',
+        'cio.name as cio_name',
+        'cioto.name as cio_to_name',
         'd_a.name as da_name',
         'srole.name as subrole_name',
         DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
     )
     ->where('in_draft', '0')
     ->orderBy('complaints.id', 'desc')
+    // ->toSql();
     ->get();
 
             //    dd($records);

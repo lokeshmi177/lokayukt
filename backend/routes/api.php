@@ -254,6 +254,7 @@ Route::middleware('auth:sanctum')->group(function(){
         // Route::post('/forward-by-ds-js/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyds']);
         // Route::post('/forward-by-da/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyda']);
         Route::post('/request-report/{complainId}',[LokAyuktReportController::class,'requestReport']);
+        Route::post('/request-list/{complainId}',[LokAyuktReportController::class,'requestReportList']);
         
         /*
          * Forward Report By Subroles

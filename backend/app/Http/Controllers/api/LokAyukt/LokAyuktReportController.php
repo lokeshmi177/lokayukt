@@ -426,6 +426,37 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
+    public function requestReportList($complainid){
+        $userId = Auth::user()->id;
+        $records = DB::table('complaint_actions as ca')
+        ->leftJoin('complaints as c', 'ca.complaint_id', '=', 'c.id')
+        ->leftJoin('users as u', 'ca.forward_by_lokayukt', '=', 'u.id')
+        ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
+        ->select(
+            'ca.*',
+            // 'ca.complaint_id',
+            // 'ca.remarks',
+            // 'ca.target_date',
+            'c.name as complain_name',
+            'c.status as complain_status',
+            // 'u.name as forward_by_name',
+            // 'srole.name as forward_by_subrole'
+        )
+        ->where('ca.complaint_id', $complainid)
+        // ->where('ca.forward_to_lokayukt', $userId)
+        // ->orWhere('ca.forward_to_sec', $userId)
+        // ->orWhere('ca.forward_to_cio_io', $userId)
+        ->where('ca.type', 1)
+        ->where('ca.status', 'Forwarded')
+        ->get();
+
+         return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' =>  $records,
+            ]);
+    }
+
     //  public function requestReportTosec(Request $request,$complainId){
     //     //    dd(Auth::user()->getUserByRoles);
  
