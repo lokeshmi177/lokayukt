@@ -729,6 +729,7 @@ $records = DB::table('complaints')
         'complaints.*',
         'complaints.name',
         'complaints.complain_no',
+        'complaints.status as current_status',
         'ca.*',
         'u.name as ro_name',
         'so_us.name as so_name',
