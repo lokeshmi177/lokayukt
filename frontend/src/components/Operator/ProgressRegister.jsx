@@ -424,6 +424,29 @@ const ProgressRegister = () => {
     });
   };
 
+  // NEW FUNCTION: Get assigned person with role label
+  const getAssignedToWithRole = (report) => {
+    // Check each field in priority order and return first non-null value with role label
+    if ( report.da_name !== null) {
+      return `DA -> ${report.da_name}`;
+    }
+    if ( report.ds_name !== null) {
+      return `DS -> ${report.ds_name}`;
+    }
+    if ( report.ro_name !== null) {
+      return `RO -> ${report.ro_name}`;
+    }
+    if ( report.sec_name !== null) {
+      return `Section Officer -> ${report.sec_name}`;
+    }
+    if ( report.so_name !== null) {
+      return `SO -> ${report.so_name}`;
+    }
+    
+    
+    return report.officer_name || 'Not Assigned';
+  };
+
   // Transform current report data
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
@@ -436,7 +459,7 @@ const ProgressRegister = () => {
         complainant: report.name || 'N/A',
         subject: report.description || report.title || 'No subject provided',
         currentStage: report.status || 'N/A',
-        assignedTo: report.officer_name || 'Not Assigned',
+        assignedTo: getAssignedToWithRole(report), // UPDATED: Using new function
         receivedDate: formatDateOnly(report.created_at),
         targetDate: report.target_date ? formatDateOnly(report.target_date) : getTargetDate(report.created_at),
         status: getStatusFromDays(daysElapsed),
@@ -737,28 +760,28 @@ const ProgressRegister = () => {
                       </h3>
                     </div>
 
-                    <div className="flow-root">
+                    <div className="flow-root border border-gray-200">
                       <div className="overflow-x-auto">
                         <div className="inline-block min-w-full align-middle">
                           <table className="min-w-full table-auto text-[11px] sm:text-xs">
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complaint No.
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complainant
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Movement
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Note
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Timestamp
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Status
                                 </th>
                               </tr>
@@ -785,19 +808,19 @@ const ProgressRegister = () => {
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
                                       {movement.complainant}
                                     </td>
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="text-gray-700 text-xs">{movement.fromRole}</span>
-                                        {/* Show arrow and destination only if there's actual movement */}
-                                        {movement.fromRole !== movement.toRole && (
-                                          <>
-                                            {movement.movementIcon}
-                                            <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
-                                          </>
-                                        )}
-                                      </div>
-                                    </td>
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-xs">
+                                   <td className="py-2 px-2 sm:py-3 sm:px-3">
+  <div className="flex items-center gap-1.5 whitespace-nowrap max-w-[120px] overflow-x-auto">
+    <span className="text-gray-700 text-xs">{movement.fromRole}</span>
+    {movement.toRole && movement.fromRole !== movement.toRole && (
+      <>
+        {movement.movementIcon}
+        <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
+      </>
+    )}
+  </div>
+</td>
+
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[250px]">
                                       {isLongNote(movement.note) ? (
                                         expandedNotes.has(movement.id) ? (
                                           <div 
@@ -885,25 +908,25 @@ const ProgressRegister = () => {
                         <table className="w-full text-[11px] sm:text-xs">
                           <thead className="bg-gray-50">
                             <tr className="border-b border-gray-200">
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                 Complaint No.
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                 Complainant
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                 Current Stage
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                 Assigned To
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                 Days Elapsed
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
                                 Target Date
                               </th>
-                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                 Status
                               </th>
                             </tr>
@@ -937,7 +960,7 @@ const ProgressRegister = () => {
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
                                     <span className="inline-block px-2 py-1 rounded-full text-xs font-medium">
-                                      {complaint.assignedTo || "NA"}
+                                      {complaint.assignedTo}
                                     </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600">
