@@ -17,6 +17,8 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+const subrole = localStorage.getItem("subrole")
+
 const Sidebar = ({
   isMobileMenuOpen,
   toggleMobileMenu,
@@ -249,8 +251,8 @@ const Sidebar = ({
               {/* Supervisor Badge */}
               {(isMobile || !isCollapsed) && (
                 <div className="mb-3 transition-all duration-300">
-                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {t.supervisor}
+                  <span className="bg-green-600 cursor-pointer hover:bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {subrole == "sec" ? "Secretary" : "Secretary"}
                   </span>
                 </div>
               )}

@@ -139,7 +139,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// Forward Modal Component
+// Forward Modal Component with 3 Tabs
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -151,6 +151,21 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [usersData, setUsersData] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [errors, setErrors] = useState({});
+  const [activeModalTab, setActiveModalTab] = useState("request"); // New state for modal tabs
+
+  // Static data for Report tab
+  const reportData = [
+    { name: "Krishna", role: "Senior Officer", remark: "Opertor", targetDate: "2025-10-15" },
+    { name: "Lokese", role: "Inspector", remark: "Sectry", targetDate: "2025-10-20" },
+    { name: "Amit Sharma", role: "Deputy Commissioner", remark: "Cio", targetDate: "2025-10-25" },
+  ];
+
+  // Static data for Investigation Report tab
+  const investigationData = [
+    { name: "Sahil", role: "Investigation Officer", remark: "Cio", targetDate: "2025-10-18" },
+    { name: "Pen", role: "Lead Investigator", remark: "ds-js", targetDate: "2025-10-22" },
+    { name: "Remote", role: "Forensic Analyst", remark: "Da", targetDate: "2025-10-28" },
+  ];
 
   const fetchUsersData = async () => {
     setIsLoadingData(true);
@@ -178,6 +193,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     if (isOpen) {
       setForward({ forward_to: "", remark: "", target_date: "" });
       setErrors({});
+      setActiveModalTab("request"); // Reset to default tab
       fetchUsersData();
     }
   }, [isOpen]);
@@ -223,21 +239,55 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
-      <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
-        <div className="px-4 py-3 border-b flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Request Report</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <FaTimes className="w-5 h-5" />
-          </button>
-        </div>
+   <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
+  <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
+    <div className="px-4 py-3 border-b flex items-center justify-between">
+      <h3 className="text-lg font-semibold">Request Details</h3>
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <FaTimes className="w-5 h-5" />
+      </button>
+    </div>
 
-        <form className="w-full max-w-5xl" onSubmit={handleSubmit}>
-          <div className="p-4 space-y-4 max-w-5xl">
+    {/* Modal Tabs - Exact Same Styling as Main Tabs */}
+    <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
+      <div className="grid grid-cols-1 sm:flex w-full gap-1">
+        <button
+          onClick={() => setActiveModalTab("request")}
+          className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
+            activeModalTab === "request" ? "bg-white text-gray-900 shadow-sm" : ""
+          }`}
+        >
+          Request Report
+        </button>
+        <button
+          onClick={() => setActiveModalTab("report")}
+          className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
+            activeModalTab === "report" ? "bg-white text-gray-900 shadow-sm" : ""
+          }`}
+        >
+          Report
+        </button>
+        <button
+          onClick={() => setActiveModalTab("investigation")}
+          className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
+            activeModalTab === "investigation" ? "bg-white text-gray-900 shadow-sm" : ""
+          }`}
+        >
+          Investigation Report
+        </button>
+      </div>
+    </div>
+
+    {/* Tab Content */}
+    <div className="p-4 max-h-[500px] overflow-y-auto">
+      {/* Request Report Tab */}
+      {activeModalTab === "request" && (
+        <form className="w-full" onSubmit={handleSubmit}>
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Request To <span className="text-red-500">*</span>
@@ -253,7 +303,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 }}
                 options={buildDropdownOptions()}
                 placeholder="Select User"
-                error={errors.forward_to && errors.forward_to[0]} 
+                error={errors.forward_to && errors.forward_to[0]}
               />
             </div>
 
@@ -277,9 +327,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 }`}
               />
               {errors.target_date && (
-                <div className="mt-1 text-sm text-red-600">
-                  {errors.target_date[0]}
-                </div>
+                <div className="mt-1 text-sm text-red-600">{errors.target_date[0]}</div>
               )}
             </div>
 
@@ -297,24 +345,22 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                   }
                 }}
                 className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
-                  errors.remark ? 'border-red-500' : 'border-gray-300'
+                  errors.remark ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter Remarks..."
                 rows={3}
               />
               {errors.remark && (
-                <div className="mt-1 text-sm text-red-600">
-                  {errors.remark[0]}
-                </div>
+                <div className="mt-1 text-sm text-red-600">{errors.remark[0]}</div>
               )}
             </div>
           </div>
 
-          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+          <div className="mt-6 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+              className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50"
               disabled={isSubmitting}
             >
               Cancel
@@ -322,10 +368,10 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
             <button
               type="submit"
               disabled={isSubmitting || !forward.forward_to || isLoadingData}
-              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !forward.forward_to || isLoadingData
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#13316C]"
+                  : "bg-[#13316C] hover:bg-[#0f2654]"
               } text-white`}
             >
               {isSubmitting ? (
@@ -342,8 +388,85 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
             </button>
           </div>
         </form>
-      </div>
+      )}
+
+      {/* Report Tab */}
+      {activeModalTab === "report" && (
+        <div>
+          <h4 className="text-md font-semibold text-gray-900 mb-4">Report Details</h4>
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Remark
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Target Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {reportData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.role}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.targetDate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Investigation Report Tab */}
+      {activeModalTab === "investigation" && (
+        <div>
+          <h4 className="text-md font-semibold text-gray-900 mb-4">Investigation Report Details</h4>
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Remark
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Target Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {investigationData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.role}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700">{item.targetDate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
+  </div>
+</div>
+
   );
 };
 
@@ -363,7 +486,6 @@ const SearchReports = () => {
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
 
-  // ✅ LOADING STATES
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [isLoadingGeneral, setIsLoadingGeneral] = useState(true);
   const [isLoadingStatistical, setIsLoadingStatistical] = useState(true);
@@ -451,7 +573,6 @@ const SearchReports = () => {
     }
   };
 
-  // ✅ UPDATED: Fetch initial data with loading states
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoadingSearch(true);
@@ -705,7 +826,6 @@ const SearchReports = () => {
             </div>
 
             <div className="overflow-hidden">
-              {/* ✅ UPDATED: Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
@@ -789,7 +909,6 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* ✅ UPDATED: Search Results with Loading State */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-gray-900">
@@ -936,7 +1055,6 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: General Reports Tab */}
               {activeTab === "general" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6 overflow-hidden">
@@ -1015,7 +1133,6 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Statistical Reports Tab */}
               {activeTab === "statistical" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   {isLoadingStatistical ? (
@@ -1091,7 +1208,6 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Compliance Reports Tab */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   {isLoadingCompliance ? (
@@ -1125,11 +1241,9 @@ const SearchReports = () => {
                               </div>
                             </>
                           ) : (
-                            <>
-                                          <div className="col-span-3 text-center py-8 flex justify-center items-center">
-                <h1 className="text-gray-500 font-semibold text-md">No Data Found</h1>
-              </div>
-                            </>
+                            <div className="col-span-3 text-center py-8 flex justify-center items-center">
+                              <h1 className="text-gray-500 font-semibold text-md">No Data Found</h1>
+                            </div>
                           )}
                         </div>
                       </div>

@@ -775,7 +775,7 @@ const AllComplaints = () => {
 
 
         {/* JUSTIFY-BETWEEN TABS COMPONENT */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
+        {/* <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
           <div className="">
             <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
               <button
@@ -810,7 +810,7 @@ const AllComplaints = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
 
 
         {/* Loading State */}
@@ -916,7 +916,7 @@ const AllComplaints = () => {
                 View Details
               </button>
 
-              {isForwarded(complaint) ? (
+              {/* {isForwarded(complaint) ? (
                 <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                   ✓ Forwarded
                 </span>
@@ -927,7 +927,7 @@ const AllComplaints = () => {
                 >
                   Forward
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         </div>

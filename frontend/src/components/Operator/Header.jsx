@@ -119,6 +119,7 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
   };
 
   // ✅ Safe role parsing from localStorage
+  const subrole = localStorage.getItem("subrole")
   const getUserRole = () => {
     try {
       const role = localStorage.getItem('role');
@@ -201,8 +202,8 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
                   <span className="text-sm font-medium text-gray-900">
                     {user?.name}
                   </span>
-                  <span className="ml-2 px-2 py-0.5 border text-black text-xs rounded font-medium">
-                    {typeof user?.role === "object" ? user.role.name : userRole}
+                  <span className="ml-2 px-2 py-0.5 border text-black text-xs rounded-full font-medium">
+                    {subrole == "review-operator" ? "RO" : "EO"}
                   </span>
                 </div>
 

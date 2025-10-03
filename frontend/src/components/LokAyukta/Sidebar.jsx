@@ -34,7 +34,7 @@ const Sidebar = ({
       title: "LokAyukta",
       subtitle: "CRMS",
       description: "Complaint Management",
-      lokayukt: "lokayukt",
+      LokAyukta: "LokAyukta",
       dashboard: "Dashboard",
       allComplaints: "Complaints",
       progressRegister: "Progress Register",
@@ -47,7 +47,7 @@ const Sidebar = ({
       title: "लोकायुक्त",
       subtitle: "CRMS",
       description: "शिकायत प्रबंधन",
-      lokayukt: "व्यवस्थापक",
+      LokAyukta: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
       allComplaints: "शिकायतें", // ✅ Fixed: was "Complaints"
       progressRegister: "प्रगति रजिस्टर",
@@ -250,7 +250,7 @@ const Sidebar = ({
               {(isMobile || !isCollapsed) && (
                 <div className="mb-3 transition-all duration-300">
                   <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {t.lokayukt}
+                    {t.LokAyukta}
                   </span>
                 </div>
               )}

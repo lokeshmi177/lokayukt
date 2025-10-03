@@ -10,6 +10,9 @@ import {
   FaDownload,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { FaRegFileAlt } from "react-icons/fa";
+import { IoTimeOutline } from "react-icons/io5";
+
 import Pagination from "../Pagination";
 import * as XLSX from "xlsx-js-style"; 
 import { saveAs } from "file-saver"; 
@@ -424,28 +427,38 @@ const ProgressRegister = () => {
     });
   };
 
-  // NEW FUNCTION: Get assigned person with role label
-  const getAssignedToWithRole = (report) => {
-    // Check each field in priority order and return first non-null value with role label
-    if ( report.da_name !== null) {
-      return `DA -> ${report.da_name}`;
-    }
-    if ( report.ds_name !== null) {
-      return `DS -> ${report.ds_name}`;
-    }
-    if ( report.ro_name !== null) {
-      return `RO -> ${report.ro_name}`;
-    }
-    if ( report.sec_name !== null) {
-      return `Section Officer -> ${report.sec_name}`;
-    }
-    if ( report.so_name !== null) {
-      return `SO -> ${report.so_name}`;
-    }
-    
-    
-    return report.officer_name || 'Not Assigned';
-  };
+  
+  const capitalizeFirstLetter = (str) => {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+const getAssignedToWithRole = (report) => {
+  if (report.da_name !== null) {
+    return `DA - ${capitalizeFirstLetter(report.da_name)}`;
+  }
+  if (report.ds_name !== null) {
+    return `DS - ${capitalizeFirstLetter(report.ds_name)}`;
+  }
+  if (report.ro_name !== null) {
+    return `RO - ${capitalizeFirstLetter(report.ro_name)}`;
+  }
+  if (report.sec_name !== null) {
+    return `Secretary - ${capitalizeFirstLetter(report.sec_name)}`;
+  }
+  if (report.so_name !== null) {
+    return `Section Officer - ${capitalizeFirstLetter(report.so_name)}`;
+  }
+  if (report.cio_name !== null) {
+    return `CIO - ${capitalizeFirstLetter(report.cio_name)}`;
+  }
+  if (report.lokayukt_name !== null) {
+    return `LokAyukta Office`;
+  }
+
+  return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
+};
+
 
   // Transform current report data
   const transformCurrentReportToStatus = (data) => {
@@ -754,13 +767,13 @@ const ProgressRegister = () => {
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                      <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                      <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
+                      <FaRegFileAlt  className="w-4 h-4 sm:w-5 sm:h-5 " />
+                      <h3 className="text-sm sm:text-lg font-semibold text-gray-600">
                         Recent File Movements 
                       </h3>
                     </div>
 
-                    <div className="flow-root border border-gray-200">
+                    <div className="flow-root border border-gray-200 rounded-md">
                       <div className="overflow-x-auto">
                         <div className="inline-block min-w-full align-middle">
                           <table className="min-w-full table-auto text-[11px] sm:text-xs">
@@ -802,7 +815,7 @@ const ProgressRegister = () => {
                                     key={movement.id}
                                     className="hover:bg-gray-50"
                                   >
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                       {movement.complaintNo}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
@@ -897,13 +910,13 @@ const ProgressRegister = () => {
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2 mb-4">
-                      <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <IoTimeOutline className="w-4 h-4 sm:w-5 sm:h-5" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                         Current Complaint Status 
                       </h3>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto border border-gray-200 rounded-md">
                       <div className="min-w-full">
                         <table className="w-full text-[11px] sm:text-xs">
                           <thead className="bg-gray-50">

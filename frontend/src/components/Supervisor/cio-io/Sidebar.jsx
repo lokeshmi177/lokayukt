@@ -17,6 +17,8 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 
+const subrole = localStorage.getItem("subrole");
+
 const Sidebar = ({
   isMobileMenuOpen,
   toggleMobileMenu,
@@ -41,7 +43,6 @@ const Sidebar = ({
       searchReports: "Search & Reports",
       userManagement: "User Management",
       masterData: "Master Data",
-  
     },
     hindi: {
       title: "लोकायुक्त",
@@ -54,7 +55,6 @@ const Sidebar = ({
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
       masterData: "मुख्य डेटा",
-     
     },
   };
 
@@ -90,7 +90,7 @@ const Sidebar = ({
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      
+
       // ✅ Auto-close mobile menu on desktop resize
       if (!mobile && isMobileMenuOpen) {
         toggleMobileMenu();
@@ -181,7 +181,9 @@ const Sidebar = ({
         ref={sidebarRef}
         className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col ${
           isMobile
-            ? `w-72 z-50 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`
+            ? `w-72 z-50 ${
+                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+              }`
             : `${isCollapsed ? "w-16" : "w-72"} z-30`
         }`}
       >
@@ -250,7 +252,7 @@ const Sidebar = ({
               {(isMobile || !isCollapsed) && (
                 <div className="mb-3 transition-all duration-300">
                   <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {t.supervisor}
+                    {subrole == "cio-io" ? "CIO" : "CIO"}
                   </span>
                 </div>
               )}
@@ -331,9 +333,11 @@ const Sidebar = ({
                 to="/supervisor/all-complaints"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
-                  ["/all-complaints", "/pending-complaints", "/approved-complaints"].some(path =>
-                    isActive(path)
-                  )
+                  [
+                    "/all-complaints",
+                    "/pending-complaints",
+                    "/approved-complaints",
+                  ].some((path) => isActive(path))
                     ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
