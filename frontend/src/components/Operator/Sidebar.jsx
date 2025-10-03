@@ -216,8 +216,8 @@ const Sidebar = ({
             <div>
               {(isMobile || !isCollapsed) && (
                 <div className="mb-3 transition-all duration-300">
-                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium capitalize">
-                    {subrole}
+                  <span className="hover:bg-[#133973] cursor-pointer bg-[#e69a0c] text-white px-3 py-1 rounded-full text-xs font-medium capitalize">
+                    {subrole == "review-operator" ? "RO" : "EO"}
                   </span>
                 </div>
               )}

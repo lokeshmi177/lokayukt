@@ -31,6 +31,7 @@ const api = axios.create({
 const ProgressRegister = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("movements");
+  const [complaintsData, setComplaintsData] = useState([]);
   const [currentReportData, setCurrentReportData] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
@@ -64,7 +65,7 @@ const ProgressRegister = () => {
   // Export functionality - File Movements
   const handleExportMovements = () => {
     try {
-      const fileMovements = transformToFileMovements(currentReportData);
+      const fileMovements = transformToFileMovements(complaintsData);
       const filteredMovements = fileMovements.filter(
         (movement) =>
           movement.complaintNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -285,10 +286,32 @@ const ProgressRegister = () => {
     }
   };
 
-  // Fetch current report data - This will be used for BOTH movements and status tabs
+  // Fetch complaints data from API for movements tab
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      setLoadingMovements(true);
+      try {
+        const response = await api.get("/operator/progress-register");
+        if (response.data.status && response.data.data) {
+          setComplaintsData(response.data.data);
+          console.log(response.data.data)
+        } else {
+          setComplaintsData([]);
+        }
+      } catch (err) {
+        console.error("API Error:", err);
+        setComplaintsData([]);
+      } finally {
+        setLoadingMovements(false);
+      }
+    };
+
+    fetchComplaints();
+  }, []);
+
+  // Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
-      setLoadingMovements(true);
       setLoadingStatus(true);
       try {
         const response = await api.get("/operator/current-report");
@@ -304,7 +327,6 @@ const ProgressRegister = () => {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
       } finally {
-        setLoadingMovements(false);
         setLoadingStatus(false);
       }
     };
@@ -378,13 +400,13 @@ const ProgressRegister = () => {
     // Default: Just show "RO" (no movement)
     return {
       from: "RO",
-      to: "",
+      to: "RO",
       status: "pending",
       icon: null // No arrow icon for same level
     };
   };
 
-  // Transform API data to file movements format (using current-report data)
+  // Transform API data to file movements format
   const transformToFileMovements = (data) => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
@@ -540,7 +562,7 @@ const ProgressRegister = () => {
   };
 
   // Get transformed data
-  const fileMovements = transformToFileMovements(currentReportData);
+  const fileMovements = transformToFileMovements(complaintsData);
   const complaintStatus = transformCurrentReportToStatus(currentReportData);
 
   // Filter data based on search term
@@ -767,7 +789,7 @@ const ProgressRegister = () => {
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-gray-700 text-xs">{movement.fromRole}</span>
                                         {/* Show arrow and destination only if there's actual movement */}
-                                        {movement.toRole && movement.fromRole !== movement.toRole && (
+                                        {movement.fromRole !== movement.toRole && (
                                           <>
                                             {movement.movementIcon}
                                             <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
