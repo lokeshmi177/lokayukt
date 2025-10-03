@@ -762,9 +762,37 @@ $records = DB::table('complaints')
     ->selectRaw('
         AVG(DATEDIFF(NOW(), complaints.created_at)) as avg_processing_time,
         SUM(CASE WHEN complaints.form_status = "1" AND approved_rejected_by_ro = "1" THEN 1 ELSE 0 END) as files_in_transit,
+        SUM(CASE WHEN DATEDIFF(NOW(), complaints.created_at) > 20 THEN 1 ELSE 0 END) as overdue_files
     ')
     ->where('in_draft', '0')
     ->first();
+    // $stats = DB::table('complaints as c')
+    // // Join: when status became "in progress"
+    // ->join(DB::raw('(
+    //     SELECT complaint_id, MIN(created_at) as in_progress_at
+    //     FROM complaint_actions
+    //     WHERE status = "in progress"
+    //     GROUP BY complaint_id
+    // ) as in_progress'), 'c.id', '=', 'in_progress.complaint_id')
+
+    // // Join: when status became "disposed Approval"
+    // ->join(DB::raw('(
+    //     SELECT complaint_id, MAX(created_at) as disposed_at
+    //     FROM complaint_actions
+    //     WHERE status = "disposed Approval"
+    //     GROUP BY complaint_id
+    // ) as disposed'), 'c.id', '=', 'disposed.complaint_id')
+
+    // // Select overall stats
+    // ->selectRaw('
+    //     AVG(DATEDIFF(NOW(), c.created_at)) as avg_processing_time,
+    //     SUM(CASE WHEN c.form_status = "1" AND approved_rejected_by_ro = "1" THEN 1 ELSE 0 END) as files_in_transit,
+    //     SUM(CASE WHEN DATEDIFF(NOW(), c.created_at) > 20 THEN 1 ELSE 0 END) as overdue_files,
+    //     AVG(DATEDIFF(disposed.disposed_at, in_progress.in_progress_at)) as status_processing_time
+    // ')
+    // ->where('c.in_draft', '0')
+    // ->first();
+
               return response()->json([
                 'status' => true,
                 'message' => 'Records Fetch successfully',
