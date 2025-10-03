@@ -36,6 +36,11 @@ const ProgressRegister = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
 
+  // Loading states for each tab
+  const [loadingMovements, setLoadingMovements] = useState(true);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -105,7 +110,7 @@ const ProgressRegister = () => {
       });
 
       saveAs(data, `File_Movements_${new Date().toISOString().slice(0,10)}.xlsx`);
-      // toast.success("Export successful!");
+      toast.success("Export successful!");
 
     } catch (e) {
       console.error("Export failed:", e);
@@ -181,7 +186,7 @@ const ProgressRegister = () => {
       });
 
       saveAs(data, `Current_Status_${new Date().toISOString().slice(0,10)}.xlsx`);
-      // toast.success("Export successful!");
+      toast.success("Export successful!");
 
     } catch (e) {
       console.error("Export failed:", e);
@@ -267,17 +272,20 @@ const ProgressRegister = () => {
   // Fetch complaints data from API for movements tab
   useEffect(() => {
     const fetchComplaints = async () => {
+      setLoadingMovements(true);
       try {
         const response = await api.get("/supervisor/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
           console.log(response.data.data)
         } else {
-          setError("Failed to fetch data");
+          setComplaintsData([]);
         }
       } catch (err) {
         console.error("API Error:", err);
-        setError("Failed to fetch complaints data");
+        setComplaintsData([]);
+      } finally {
+        setLoadingMovements(false);
       }
     };
 
@@ -287,6 +295,7 @@ const ProgressRegister = () => {
   // Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
+      setLoadingStatus(true);
       try {
         const response = await api.get("/supervisor/current-report");
         console.log("Current Report API Response:", response.data);
@@ -300,6 +309,8 @@ const ProgressRegister = () => {
       } catch (err) {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
+      } finally {
+        setLoadingStatus(false);
       }
     };
 
@@ -309,6 +320,7 @@ const ProgressRegister = () => {
   // Fetch analytics data for analytics tab
   useEffect(() => {
     const fetchAnalytics = async () => {
+      setLoadingAnalytics(true);
       try {
         const response = await api.get("/supervisor/analytic-report");
         console.log("Analytics API Response:", response.data);
@@ -322,6 +334,8 @@ const ProgressRegister = () => {
       } catch (err) {
         console.error("Analytics API Error:", err);
         setAnalyticsData(null);
+      } finally {
+        setLoadingAnalytics(false);
       }
     };
 
@@ -418,40 +432,24 @@ const ProgressRegister = () => {
     }
   };
 
-  // Get status color for file movements
-  // const getFileMovementStatusColor = (status) => {
-  //   switch (status) {
-  //     case "In Progress":
-  //       return "bg-orange-400 text-white";
-  //     case "Rejected":
-  //       return "bg-red-400 text-white";
-  //     case "Disposed - Accepted":
-  //       return "bg-green-400 text-white ";
-  //     default:
-  //       return "bg-gray-100 text-gray-800 border-gray-200";
-  //   }
-  // };
-
-
   const getDisplayStatus = (status) => {
-  if (status === "Verified") return "Pending";
-  if (status === "Forwarded") return "Completed";
-  return status;
-};
+    if (status === "Verified") return "Pending";
+    if (status === "Forwarded") return "Completed";
+    return status;
+  };
 
-const getFileMovementStatusColor = (status) => {
-  const displayStatus = getDisplayStatus(status);
+  const getFileMovementStatusColor = (status) => {
+    const displayStatus = getDisplayStatus(status);
 
-  switch (displayStatus) {
-    case "Pending":
-      return " bg-orange-400 text-white ";
-    case "Completed":
-      return "bg-green-500 text-white";
-    // default:
-    //   return "border-gray-400 text-gray-600 bg-gray-100";
-  }
-};
-
+    switch (displayStatus) {
+      case "Pending":
+        return " bg-orange-400 text-white ";
+      case "Completed":
+        return "bg-green-500 text-white";
+      default:
+        return "border-gray-400 text-gray-600 bg-gray-100";
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -723,7 +721,16 @@ const getFileMovementStatusColor = (status) => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
-                              {paginatedData.length > 0 ? (
+                              {loadingMovements ? (
+                                <tr>
+                                  <td
+                                    colSpan="6"
+                                    className="py-8 font-semibold text-center text-md text-gray-500"
+                                  >
+                                    Loading...
+                                  </td>
+                                </tr>
+                              ) : paginatedData.length > 0 ? (
                                 paginatedData.map((movement) => (
                                   <tr
                                     key={movement.id}
@@ -762,7 +769,6 @@ const getFileMovementStatusColor = (status) => {
     {getDisplayStatus(movement.status)}
   </span>
 </td>
-
                                   </tr>
                                 ))
                               ) : (
@@ -771,7 +777,7 @@ const getFileMovementStatusColor = (status) => {
                                     colSpan="6"
                                     className="py-8 font-semibold text-center text-md text-gray-500"
                                   >
-                                    Loading...
+                                    No Data Found
                                   </td>
                                 </tr>
                               )}
@@ -838,7 +844,16 @@ const getFileMovementStatusColor = (status) => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-100">
-                            {paginatedData.length > 0 ? (
+                            {loadingStatus ? (
+                              <tr>
+                                <td
+                                  colSpan="7"
+                                  className="py-8 font-semibold text-center text-md text-gray-500"
+                                >
+                                  Loading...
+                                </td>
+                              </tr>
+                            ) : paginatedData.length > 0 ? (
                               paginatedData.map((complaint, index) => (
                                 <tr
                                   key={`${complaint.complaintNo}-${index}`}
@@ -883,12 +898,9 @@ const getFileMovementStatusColor = (status) => {
                               <tr>
                                 <td
                                   colSpan="7"
-                                  className="py-8 text-center text-gray-500"
+                                  className="py-8 font-semibold text-center text-md text-gray-500"
                                 >
-                                  {currentReportData.length === 0 
-                                    ? "Loading..." 
-                                    : "No complaint status found matching search criteria."
-                                  }
+                                  No Data Found
                                 </td>
                               </tr>
                             )}
@@ -918,7 +930,13 @@ const getFileMovementStatusColor = (status) => {
               {activeTab === "analytics" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
-                    {analyticsData ? (
+                    {loadingAnalytics ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 font-semibold text-md">
+                          Loading...
+                        </div>
+                      </div>
+                    ) : analyticsData ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
                         {/* from-blue-50 to-blue-100 */}
@@ -970,8 +988,8 @@ const getFileMovementStatusColor = (status) => {
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <div className="text-gray-500">
-                          Loading...
+                        <div className="text-gray-500 font-semibold text-md">
+                          No Data Found
                         </div>
                       </div>
                     )}
