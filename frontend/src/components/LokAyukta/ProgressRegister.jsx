@@ -35,11 +35,11 @@ const ProgressRegister = () => {
   const [currentReportData, setCurrentReportData] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
-  
-  // Loading states
-  const [isLoadingMovements, setIsLoadingMovements] = useState(true);
-  const [isLoadingStatus, setIsLoadingStatus] = useState(true);
-  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(true);
+
+  // Loading states for each tab
+  const [loadingMovements, setLoadingMovements] = useState(true);
+  const [loadingStatus, setLoadingStatus] = useState(true);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -272,20 +272,20 @@ const ProgressRegister = () => {
   // Fetch complaints data from API for movements tab
   useEffect(() => {
     const fetchComplaints = async () => {
-      setIsLoadingMovements(true);
+      setLoadingMovements(true);
       try {
         const response = await api.get("/lokayukt/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
+          console.log(response.data.data)
         } else {
           setComplaintsData([]);
         }
       } catch (err) {
         console.error("API Error:", err);
         setComplaintsData([]);
-        setError("Failed to fetch complaints data");
       } finally {
-        setIsLoadingMovements(false);
+        setLoadingMovements(false);
       }
     };
 
@@ -295,7 +295,7 @@ const ProgressRegister = () => {
   // Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
-      setIsLoadingStatus(true);
+      setLoadingStatus(true);
       try {
         const response = await api.get("/lokayukt/current-report");
         console.log("Current Report API Response:", response.data);
@@ -310,7 +310,7 @@ const ProgressRegister = () => {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
       } finally {
-        setIsLoadingStatus(false);
+        setLoadingStatus(false);
       }
     };
 
@@ -320,7 +320,7 @@ const ProgressRegister = () => {
   // Fetch analytics data for analytics tab
   useEffect(() => {
     const fetchAnalytics = async () => {
-      setIsLoadingAnalytics(true);
+      setLoadingAnalytics(true);
       try {
         const response = await api.get("/lokayukt/analytic-report");
         console.log("Analytics API Response:", response.data);
@@ -335,88 +335,35 @@ const ProgressRegister = () => {
         console.error("Analytics API Error:", err);
         setAnalyticsData(null);
       } finally {
-        setIsLoadingAnalytics(false);
+        setLoadingAnalytics(false);
       }
     };
 
     fetchAnalytics();
   }, []);
 
-  // Function to determine movement flow based on API data
+  // Function to determine movement flow - only one condition
   const getMovementFlow = (complaint) => {
-    // Section Officer to DS/JS
-    if (complaint.approved_rejected_by_ro  == 1) {
-      if(complaint.forward_to_d_a){
-        return {
-          from: "Section Officer",
-          to: "DA",
-          status: "pending", 
-          icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-        };
-      }
-    }
-    // Section Officer to DS/JS
-    if (complaint.approved_rejected_by_so_us == 1) {
-      if(complaint.forward_to_d_a){
-        return {
-          from: "Section Officer",
-          to: "DA",
-          status: "pending", 
-          icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-        };
-      }
-    }
-
-    // DS/JS to Secretary
-    if (complaint.approved_rejected_by_ds_js == 1 && complaint.status_sec == 0) {
+    // Only check if approved_rejected_by_ro === 1
+    if (complaint.approved_rejected_by_ro == 1) {
       return {
-        from: "DS/JS",
-        to: "Secretary",
+        from: "RO",
+        to: "Section Officer", 
         status: "pending",
-        icon: <FaArrowRight className="w-3 h-3 text-yellow-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
       };
     }
-
-    // Forwarded to Lokayukt
-    if (complaint.forward_to_lokayukt == 1 && complaint.status_lokayukt == 1) {
-      return {
-        from: "System",
-        to: "Lokayukt",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-purple-600" />
-      };
-    }
-
-    // Forwarded to Up-Lokayukt  
-    if (complaint.forward_to_uplokayukt == 1 && complaint.status_uplokayukt == 1) {
-      return {
-        from: "System", 
-        to: "Up-Lokayukt",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-indigo-600" />
-      };
-    }
-
-    // Case Rejected
-    if (complaint.status === "Rejected") {
-      return {
-        from: "Officer",
-        to: "Rejected",
-        status: "overdue", 
-        icon: <FaArrowRight className="w-3 h-3 text-red-600" />
-      };
-    }
-
-    // Default case
+    
+    // Default: Just show "RO" (no movement)
     return {
-      from: "Initial",
-      to: "Processing",
+      from: "RO",
+      to: "RO",
       status: "pending",
-      icon: <FaArrowRight className="w-3 h-3 text-gray-600" />
+      icon: null // No arrow icon for same level
     };
   };
 
-  // Transform API data to file movements format - show API status directly
+  // Transform API data to file movements format
   const transformToFileMovements = (data) => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
@@ -427,19 +374,18 @@ const ProgressRegister = () => {
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-        note: complaint.remark || complaint.description || 'N/A',
+        note: complaint.remarks || complaint.description || 'N/A',
         timestamp: formatDate(complaint.created_at),
         status: complaint.status || 'N/A',
       };
     });
   };
 
-  // Transform current report data - show API status directly in currentStage
+  // Transform current report data
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
     
     return data.map((report) => {
-      // Calculate days - use API days field or calculate from created_at
       const daysElapsed = report.days || getDaysElapsed(report.created_at);
       
       return {
@@ -457,7 +403,7 @@ const ProgressRegister = () => {
     });
   };
 
-  // Get status based on days (15+ days = critical, otherwise on-track)
+  // Get status based on days
   const getStatusFromDays = (days) => {
     if (days > 15) {
       return "critical";
@@ -486,31 +432,22 @@ const ProgressRegister = () => {
     }
   };
 
-  // Get stage color based on API status
-  const getStageColor = (status) => {
-    switch (status) {
-      case "In Progress":
-        return "bg-blue-50 text-blue-800 border border-blue-200";
-      case "Rejected":
-        return "bg-red-50 text-red-800 border border-red-200";
-      case "Disposed - Accepted":
-        return "bg-green-50 text-green-800 border border-green-200";
-      default:
-        return "bg-gray-50 text-gray-800 border border-gray-200";
-    }
+  const getDisplayStatus = (status) => {
+    if (status === "Verified") return "Pending";
+    if (status === "Forwarded") return "Completed";
+    return status;
   };
 
-  // Get status color for file movements (API status based)
   const getFileMovementStatusColor = (status) => {
-    switch (status) {
-      case "In Progress":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Rejected":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "Disposed - Accepted":
-        return "bg-green-100 text-green-800 border-green-200";
+    const displayStatus = getDisplayStatus(status);
+
+    switch (displayStatus) {
+      case "Pending":
+        return " bg-orange-400 text-white ";
+      case "Completed":
+        return "bg-green-500 text-white";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "border-gray-400 text-gray-600 bg-gray-100";
     }
   };
 
@@ -552,7 +489,7 @@ const ProgressRegister = () => {
     }
   };
 
-  // Calculate days elapsed with better error handling
+  // Calculate days elapsed
   const getDaysElapsed = (createdDate) => {
     if (!createdDate) return 0;
     try {
@@ -569,13 +506,13 @@ const ProgressRegister = () => {
     switch (status) {
       case "completed":
       case "on-track":
-        return "bg-green-400 text-white hover:bg-blue-400";
+        return "bg-green-400 text-white";
       case "pending":
       case "delayed":
-        return "bg-orange-400 text-white hover:bg-blue-400";
+        return "bg-orange-400 text-white ";
       case "overdue":
       case "critical":
-        return "bg-red-400 text-white hover:bg-blue-400";
+        return "bg-red-400 text-white";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
@@ -650,31 +587,33 @@ const ProgressRegister = () => {
       
       <div className="px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl pt-1 font-bold text-gray-900 truncate">
-              Progress Register / प्रगति रजिस्टर
-            </h1>
-          </div>
-          
-          {/* Filter and Export buttons on the right */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Filter Button */}
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
-              <FaFilter className="w-4 h-4" />
-              Filter
-            </button>
-            
-            {/* Export Button with functionality */}
-            <button 
-              onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
-            >
-              <FaDownload className="w-4 h-4" />
-              Export
-            </button>
-          </div>
-        </div>
+       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div className="min-w-0 flex-1">
+    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-1 text-gray-900 truncate">
+      Progress Register / प्रगति रजिस्टर
+    </h1>
+  </div>
+  
+  {/* Filter and Export buttons on the right */}
+  <div className="flex items-center gap-3 flex-shrink-0">
+    {/* Filter Button */}
+    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z" />
+      </svg>
+      Filter
+    </button>
+    
+    {/* Export Button with functionality */}
+    <button 
+      onClick={handleExport}
+      className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
+    >
+      <FaDownload className="w-4 h-4" />
+      Export
+    </button>
+  </div>
+</div>
 
         {/* Search Card */}
         <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -696,7 +635,7 @@ const ProgressRegister = () => {
                   placeholder="Complaint No. or Complainant"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none"
+                  className="w-full sm:w-48 lg:w-64 px-3 py-2 pl-8 sm:pl-10 text-xs sm:text-sm border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none"
                 />
                 <FaSearch className="absolute left-2.5 sm:left-3 top-2.5 w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
               </div>
@@ -751,7 +690,7 @@ const ProgressRegister = () => {
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
                       <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Recent File Movements
+                        Recent File Movements 
                       </h3>
                     </div>
 
@@ -782,11 +721,11 @@ const ProgressRegister = () => {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
-                              {isLoadingMovements ? (
+                              {loadingMovements ? (
                                 <tr>
                                   <td
                                     colSpan="6"
-                                    className="py-8 text-center text-gray-500"
+                                    className="py-8 font-semibold text-center text-md text-gray-500"
                                   >
                                     Loading...
                                   </td>
@@ -797,7 +736,7 @@ const ProgressRegister = () => {
                                     key={movement.id}
                                     className="hover:bg-gray-50"
                                   >
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                       {movement.complaintNo}
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
@@ -806,34 +745,39 @@ const ProgressRegister = () => {
                                     <td className="py-2 px-2 sm:py-3 sm:px-3">
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-gray-700 text-xs">{movement.fromRole}</span>
-                                        {movement.movementIcon}
-                                        <span className="text-gray-700 text-xs">{movement.toRole}</span>
+                                        {/* Show arrow and destination only if there's actual movement */}
+                                        {movement.fromRole !== movement.toRole && (
+                                          <>
+                                            {movement.movementIcon}
+                                            <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
+                                          </>
+                                        )}
                                       </div>
                                     </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[14rem] truncate hidden lg:table-cell">
                                       {movement.note}
                                     </td>
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600 whitespace-nowrap">
+                                    <td className="py-2 px-2 sm:py-4 sm:px-3 text-gray-600 whitespace-nowrap">
                                       {movement.timestamp}
                                     </td>
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
-                                      <span
-                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
-                                          movement.status
-                                        )}`}
-                                      >
-                                        {movement.status}
-                                      </span>
-                                    </td>
+                                   <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
+  <span
+    className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
+      movement.status
+    )}`}
+  >
+    {getDisplayStatus(movement.status)}
+  </span>
+</td>
                                   </tr>
                                 ))
                               ) : (
                                 <tr>
                                   <td
                                     colSpan="6"
-                                    className="py-8 text-center text-gray-500"
+                                    className="py-8 font-semibold text-center text-md text-gray-500"
                                   >
-                                    No data
+                                    No Data Found
                                   </td>
                                 </tr>
                               )}
@@ -886,6 +830,9 @@ const ProgressRegister = () => {
                                 Current Stage
                               </th>
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                               Assigned To
+                              </th>
+                              <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                 Days Elapsed
                               </th>
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">
@@ -897,11 +844,11 @@ const ProgressRegister = () => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-100">
-                            {isLoadingStatus ? (
+                            {loadingStatus ? (
                               <tr>
                                 <td
-                                  colSpan="6"
-                                  className="py-8 text-center text-gray-500"
+                                  colSpan="7"
+                                  className="py-8 font-semibold text-center text-md text-gray-500"
                                 >
                                   Loading...
                                 </td>
@@ -919,12 +866,17 @@ const ProgressRegister = () => {
                                     {complaint.complainant}
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
-                                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStageColor(complaint.currentStage)}`}>
+                                    <span className="inline-block px-2 py-1 rounded-full text-xs font-medium">
                                       {complaint.currentStage}
                                     </span>
                                   </td>
+                                  <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
+                                    <span className="inline-block px-2 py-1 rounded-full text-xs font-medium">
+                                      {complaint.assignedTo || "NA"}
+                                    </span>
+                                  </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600">
-                                    <span className={`font-semibold ${complaint.daysElapsed > 15 ? 'text-red-600' : 'text-green-600'}`}>
+                                    <span className={`font-semibold ${complaint.daysElapsed > 15 ? 'text-black' : 'text-black'}`}>
                                       {complaint.daysElapsed} days
                                     </span>
                                   </td>
@@ -933,7 +885,7 @@ const ProgressRegister = () => {
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3">
                                     <span
-                                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border ${getStatusColor(
+                                      className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium border ${getStatusColor(
                                         complaint.status
                                       )}`}
                                     >
@@ -945,10 +897,10 @@ const ProgressRegister = () => {
                             ) : (
                               <tr>
                                 <td
-                                  colSpan="6"
-                                  className="py-8 text-center text-gray-500"
+                                  colSpan="7"
+                                  className="py-8 font-semibold text-center text-md text-gray-500"
                                 >
-                                  No data
+                                  No Data Found
                                 </td>
                               </tr>
                             )}
@@ -978,16 +930,18 @@ const ProgressRegister = () => {
               {activeTab === "analytics" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
-                    {isLoadingAnalytics ? (
+                    {loadingAnalytics ? (
                       <div className="text-center py-8">
-                        <div className="text-gray-500">
+                        <div className="text-gray-500 font-semibold text-md">
                           Loading...
                         </div>
                       </div>
                     ) : analyticsData ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
+                        {/* from-blue-50 to-blue-100 */}
                           <div className="flex items-center gap-2 mb-2">
+                            {/* <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Average Processing Time
                             </h3>
@@ -996,42 +950,46 @@ const ProgressRegister = () => {
                             {parseFloat(analyticsData.avg_processing_time || 0).toFixed(1)} days
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600">
-                            From entry to current stage
+                            From entry to disposal
                           </p>
                         </div>
 
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
+                        {/* from-yellow-50 to-yellow-100 */}
                           <div className="flex items-center gap-2 mb-2">
+                            {/* <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                              Files in Progress
+                              Files in Transit
                             </h3>
                           </div>
                           <div className="text-2xl sm:text-3xl font-bold text-yellow-700 mb-1">
                             {analyticsData.files_in_transit || 0}
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600">
-                            Currently under investigation
+                            Currently moving between roles
                           </p>
                         </div>
 
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200 sm:col-span-2 lg:col-span-1">
+                        {/* from-red-50 to-red-100 */}
                           <div className="flex items-center gap-2 mb-2">
+                            {/* <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                              Overdue Cases
+                              Overdue Files
                             </h3>
                           </div>
                           <div className="text-2xl sm:text-3xl font-bold text-red-700 mb-1">
                             {analyticsData.overdue_files || 0}
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600">
-                            Past deadline
+                            Past target date
                           </p>
                         </div>
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <div className="text-gray-500">
-                          No data
+                        <div className="text-gray-500 font-semibold text-md">
+                          No Data Found
                         </div>
                       </div>
                     )}

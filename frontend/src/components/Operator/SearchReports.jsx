@@ -25,7 +25,6 @@ import { useNavigate } from "react-router-dom";
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
 
-// Create axios instance with token if it exists
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -44,9 +43,7 @@ const CustomSearchableDropdown = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
- 
 
-  // Flatten options for searching
   const flattenOptions = (options) => {
     const flattened = [];
     options.forEach(group => {
@@ -61,7 +58,6 @@ const CustomSearchableDropdown = ({
     return flattened;
   };
 
-  // Filter options based on search
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
     
@@ -71,7 +67,6 @@ const CustomSearchableDropdown = ({
       option.groupLabel.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Group filtered options back
     const groupedFiltered = {};
     filtered.forEach(option => {
       if (!groupedFiltered[option.groupLabel]) {
@@ -98,7 +93,6 @@ const CustomSearchableDropdown = ({
 
   return (
     <div className="relative">
-      {/* Dropdown Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -121,10 +115,8 @@ const CustomSearchableDropdown = ({
         <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
-          {/* Search Input */}
           <div className="p-2 border-b">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -139,18 +131,15 @@ const CustomSearchableDropdown = ({
             </div>
           </div>
 
-          {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions().length > 0 ? (
               filteredOptions().map((group) => (
                 <div key={group.label}>
-                  {/* Group Header */}
                   <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
                     {group.icon}
                     <span className="ml-2">{group.label}</span>
                   </div>
                   
-                  {/* Group Items */}
                   {group.items.map((item) => (
                     <button
                       key={item.value}
@@ -179,7 +168,7 @@ const CustomSearchableDropdown = ({
   );
 };
 
-// Updated Forward Modal Component with Custom Dropdown
+// Forward Modal Component
 const ForwardModal = ({ 
   isOpen, 
   onClose, 
@@ -192,7 +181,6 @@ const ForwardModal = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Dropdown Options with Search Support
   const dropdownOptions = [
     {
       label: 'Senior Officers',
@@ -258,7 +246,6 @@ const ForwardModal = ({
     setIsSubmitting(true);
     
     try {
-      // Your forward API call here
       toast.success('Complaint forwarded successfully!');
       onSubmit();
       onClose();
@@ -269,7 +256,6 @@ const ForwardModal = ({
     }
   };
 
-  // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -300,7 +286,6 @@ const ForwardModal = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Forward To / भेजें
               </label>
-              {/* Custom Searchable Dropdown */}
               <CustomSearchableDropdown
                 value={formData.forwardTo}
                 onChange={(value) => setFormData(prev => ({ ...prev, forwardTo: value }))}
@@ -379,23 +364,25 @@ const SearchReports = () => {
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
   
+  // ✅ LOADING STATES
+  const [isLoadingSearch, setIsLoadingSearch] = useState(true);
+  const [isLoadingGeneral, setIsLoadingGeneral] = useState(true);
+  const [isLoadingStatistical, setIsLoadingStatistical] = useState(true);
+  const [isLoadingCompliance, setIsLoadingCompliance] = useState(true);
+  
   const [isSearching, setIsSearching] = useState(false);
   
-  // Add pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Forward Modal States
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
-   const[totel, setTotel] = useState(0)
 
-  // Helper function to ensure array
   const ensureArray = (data) => Array.isArray(data) ? data : [];
 
   const navigate = useNavigate();
 
-  // ✅ NEW: Header Export Function
+  // Header Export Function
   const handleHeaderExport = () => {
     try {
       if (filteredResults.length === 0) {
@@ -422,7 +409,6 @@ const SearchReports = () => {
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-      // Header styling
       const headerStyle = {
         font: { bold: true, color: { rgb: "000000" } },
         alignment: { horizontal: "center" },
@@ -467,35 +453,34 @@ const SearchReports = () => {
   };
 
   const handleForwardSubmit = () => {
-    // Refresh data or update state as needed
     console.log('Complaint forwarded');
   };
 
-  // Fetch initial data when component mounts
-
+  // ✅ UPDATED: Fetch initial data with loading states
   useEffect(() => {
     const fetchInitialData = async () => {
+      setIsLoadingSearch(true);
+      setIsLoadingGeneral(true);
+      setIsLoadingStatistical(true);
+      setIsLoadingCompliance(true);
+
       try {
-        // Existing API calls
+        // Fetch districts and search results
         const districtsResponse = await api.get("/operator/all-district");
         
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
-          console.log(districtsArray)
-          console.log(districtsResponse.data)
         }
 
         const reportsResponse = await api.get("/operator/complain-report");
         
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
-          const totalCount = reportsResponse.data.data.length;
-          setTotel(totalCount)
           setSearchResults(dataArray);
         }
+        setIsLoadingSearch(false);
 
-        // EXISTING API CALLS
         // Fetch overall stats
         try {
           const overallResponse = await api.get("/operator/all-complains");
@@ -525,8 +510,8 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching department-wise stats:", error);
         }
+        setIsLoadingGeneral(false);
 
-        // NEW API CALLS
         // Fetch monthly trends
         try {
           const monthlyTrendsResponse = await api.get("/operator/montly-trends");
@@ -537,6 +522,17 @@ const SearchReports = () => {
           console.error("Error fetching monthly trends:", error);
         }
 
+        // Fetch average processing time
+        try {
+          const avgProcessingResponse = await api.get("/operator/detail-by-complaintype");
+          if (avgProcessingResponse.data.status === true) {
+            setAvgProcessingTimes(avgProcessingResponse.data.data);
+          }
+        } catch (error) {
+          console.error("Error fetching average processing times:", error);
+        }
+        setIsLoadingStatistical(false);
+
         // Fetch compliance report
         try {
           const complianceReportResponse = await api.get("/operator/compliance-report");
@@ -546,21 +542,16 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching compliance report:", error);
         }
-
-        // NEW: Fetch average processing time by complaint type
-        try {
-          const avgProcessingResponse = await api.get("/operator/detail-by-complaintype");
-          if (avgProcessingResponse.data.status === true) {
-            setAvgProcessingTimes(avgProcessingResponse.data.data);
-          }
-        } catch (error) {
-          console.error("Error fetching average processing times:", error);
-        }
+        setIsLoadingCompliance(false);
 
       } catch (error) {
         setSearchResults([]);
         setDistricts([]);
         toast.error("Error loading data");
+        setIsLoadingSearch(false);
+        setIsLoadingGeneral(false);
+        setIsLoadingStatistical(false);
+        setIsLoadingCompliance(false);
       }
     };
 
@@ -575,7 +566,6 @@ const SearchReports = () => {
       
       if (response.data.status === true) {
         const dataArray = ensureArray(response.data.data);
-        console.log(response.data.data)
         setSearchResults(dataArray);
         setCurrentPage(1);
       } else {
@@ -592,23 +582,15 @@ const SearchReports = () => {
 
   const getStatusColor = (status) => {
     if (status === "Disposed - Accepted" || status === "Resolved")
-      return "bg-green-400 text-white";
-    if (status === "Rejected") 
-      return "bg-red-400 text-white";
-    if (status === "In Progress")
-      return "bg-orange-400 text-white ";
-    if (status === "Under Investigation")
+      return "bg-green-100 text-green-800 border-green-200";
+    if (status === "Rejected") return "bg-red-100 text-red-800 border-red-200";
+    if (status === "In Progress" || status === "Under Investigation")
       return "bg-orange-400 text-white ";
     if (status === "Pending")
-      return "bg-green-400 text-white" ;
-    if (status === "Disposed - Accepted")
-      return "bg-green-400 text-white" ;
-    // return "bg-gray-100 text-gray-800 border-gray-200";
+      return "bg-green-400 text-white";
   };
 
-  // CORRECTED FILTERING LOGIC - Fixed district matching
   const filteredResults = ensureArray(searchResults).filter((result) => {
-    // Search filter
     const matchesSearch = 
       searchTerm === "" ||
       (result.complain_no && 
@@ -624,7 +606,6 @@ const SearchReports = () => {
       (result.district_name && 
         result.district_name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    // FIXED: District filtering - Properly scoped variable
     let matchesDistrict = true;
     if (selectedDistrict !== "all") {
       const selectedDistrictObj = districts.find(d => d.id.toString() === selectedDistrict);
@@ -635,23 +616,19 @@ const SearchReports = () => {
       }
     }
 
-    // Status filter
     const matchesStatus = selectedStatus === "all" || result.status === selectedStatus;
 
     return matchesSearch && matchesDistrict && matchesStatus;
   });
 
-  // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedDistrict, selectedStatus]);
 
-  // Calculate pagination
   const totalPages = Math.ceil(filteredResults.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedResults = filteredResults.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // UPDATED Report stats calculation using new API data
   const reportStats = {
     total: overallStats?.total_complaints || ensureArray(searchResults).length,
     disposed: ensureArray(searchResults).filter(
@@ -666,7 +643,6 @@ const SearchReports = () => {
     ).length,
   };
 
-  // Calculate overall average from avgProcessingTimes data
   const calculateOverallAverage = () => {
     if (!avgProcessingTimes || !Array.isArray(avgProcessingTimes)) return "N/A";
     
@@ -679,7 +655,7 @@ const SearchReports = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen overflow-hidden">
+    <div className="bg-gray-50 min-h-screen overflow-hidden ">
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -695,7 +671,6 @@ const SearchReports = () => {
       />
 
       <div className="max-w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        {/* ✅ UPDATED: Header with Export Button */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-2 text-gray-900 truncate">
@@ -703,7 +678,6 @@ const SearchReports = () => {
             </h1>
           </div>
           
-          {/* ✅ Export button with functionality */}
           <div className="flex items-center flex-shrink-0">
             <button 
               onClick={handleHeaderExport}
@@ -715,9 +689,7 @@ const SearchReports = () => {
           </div>
         </div>
 
-        {/* Tabs Component */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden sm:px-0 md:px-2 lg:px-2 px-2  sm:py-0 md:py-0 lg:py-0 py-2">
-          {/* Tab Navigation */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden sm:px-0 lg:px-0 md:px-0 px-2 sm:py-0 lg:py-0 md:py-0 py-2 ">
           <div className="space-y-6">
             <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
               <div className="grid grid-cols-1 sm:flex w-full gap-1">
@@ -764,149 +736,141 @@ const SearchReports = () => {
               </div>
             </div>
 
-            {/* Tab Content */}
             <div className="overflow-hidden">
               {/* ✅ UPDATED: Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
-                    {/* Search Criteria */}
-                   <div className="bg-white  sm:p-4 shadow-sm">
- <div className="flex items-center gap-2 mb-3">
-  <FaSearch className="w-5 h-5 text-gray-700 relative sm:bottom-3 md:bottom-3 lg:bottom-3" /> {/* Icon thoda bada */}
-  <h3 className="text-2xl sm:text-xl md:text-2xl relative  sm:bottom-3 md:bottom-3 lg:bottom-3 font-semibold text-gray-900">
-    Search Criteria
-  </h3>
-</div>
-
-
-  {/* ✅ UPDATED: 4 Grid Layout with Equal Sizes */}
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-    {/* Search Term */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">Search Term</label>
-      <input
-        id="search-term"
-        type="text"
-        placeholder="Complaint No., Name, etc."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none"
-      />
-    </div>
-
-    {/* District Dropdown */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-      <select
-        id="district"
-        value={selectedDistrict}
-        onChange={(e) => setSelectedDistrict(e.target.value)}
-        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
-      >
-        <option value="all">All Districts</option>
-        <option value="bhopal">Bhopal</option>
-        <option value="indore">Indore</option>
-        <option value="gwalior">Gwalior</option>
-        <option value="ujjain">Ujjain</option>
-        {ensureArray(districts).map((district) => (
-          <option key={district.id} value={district.id.toString()}>
-            {district.district_name} - {district.dist_name_hi}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    {/* Status Dropdown */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-      <select
-        id="status"
-        value={selectedStatus}
-        onChange={(e) => setSelectedStatus(e.target.value)}
-        className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
-      >
-        <option value="all">All Status</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Disposed - Accepted">Disposed - Accepted</option>
-        <option value="Resolved">Resolved</option>
-        <option value="Rejected">Rejected</option>
-        <option value="Under Investigation">Under Investigation</option>
-        <option value="Pending">Pending</option>
-      </select>
-    </div>
-
-    {/* Search Button */}
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1 opacity-0">Search</label>
-      <button
-        onClick={handleSearch}
-        disabled={isSearching}
-        style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
-        className="w-full flex items-center justify-center gap-2 px-6 py-2 rounded-md transition-colors text-sm font-medium h-[38px]"
-      >
-        {isSearching ? (
-          <>
-            <FaSpinner className="w-4 h-4 text-white animate-spin" />
-            <span className="text-white">Search...</span>
-          </>
-        ) : (
-          <>
-            <FaSearch className="w-4 h-4 text-white" />
-            <span className="text-white">Search</span>
-          </>
-        )}
-      </button>
-    </div>
-  </div>
-</div>
-
-
-                    {/* Search Results */}
-                    <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-base font-semibold text-gray-900">
-                          Search Results ({totel} Found )
+                    <div className="bg-white  sm:p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FaSearch className="w-5 h-5 text-gray-700 relative  sm:bottom-3 md:bottom-3 lg:bottom-3 " />
+                        <h3 className="text-2xl sm:text-xl md:text-2xl relative sm:bottom-3 md:bottom-3 lg:bottom-3  font-semibold text-gray-900">
+                          Search Criteria
                         </h3>
                       </div>
 
-                      {/* Table wrapper */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Search Term</label>
+                          <input
+                            id="search-term"
+                            type="text"
+                            placeholder="Complaint No., Name, etc."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                          <select
+                            id="district"
+                            value={selectedDistrict}
+                            onChange={(e) => setSelectedDistrict(e.target.value)}
+                            className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
+                          >
+                            <option value="all">All Districts</option>
+                            {ensureArray(districts).map((district) => (
+                              <option key={district.id} value={district.id.toString()}>
+                                {district.district_name} - {district.dist_name_hi}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                          <select
+                            id="status"
+                            value={selectedStatus}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                            className="w-full px-3 py-2 text-sm cursor-pointer border border-gray-300 rounded-md focus:ring-1  focus:ring-[#123463] focus:border-[#123463] outline-none bg-white"
+                          >
+                            <option value="all">All Status</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Disposed - Accepted">Disposed - Accepted</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Under Investigation">Under Investigation</option>
+                            <option value="Pending">Pending</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1 opacity-0">Search</label>
+                          <button
+                            onClick={handleSearch}
+                            disabled={isSearching}
+                            style={{ backgroundColor: 'hsl(220, 70%, 25%)' }}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-2 rounded-md transition-colors text-sm font-medium h-[38px]"
+                          >
+                            {isSearching ? (
+                              <>
+                                <FaSpinner className="w-4 h-4 text-white animate-spin" />
+                                <span className="text-white">Search...</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaSearch className="w-4 h-4 text-white" />
+                                <span className="text-white">Search</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ✅ UPDATED: Search Results with Loading State */}
+                    <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-semibold text-gray-900">
+                          Search Results 
+                        </h3>
+                      </div>
+
                       <div className="w-full overflow-hidden rounded-md border border-gray-200">
                         <div className="overflow-x-auto">
                           <table className="min-w-full text-[11px] sm:text-xs">
                             <thead className="bg-gray-50">
                               <tr className="border-b border-gray-200">
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complaint No.
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complainant
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
                                   Respondent
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
                                   Department
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   District
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Nature
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Status
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Entry Date
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Actions
                                 </th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
-                              {paginatedResults.length > 0 ? (
+                              {isLoadingSearch ? (
+                                <tr>
+                                  <td colSpan="9" className="py-8 text-center font-semibold text-md text-gray-500">
+                                    Loading...
+                                  </td>
+                                </tr>
+                              ) : paginatedResults.length > 0 ? (
                                 paginatedResults.map((result, index) => (
                                   <tr key={result.id} className="hover:bg-gray-50">
                                     <td className="py-2 px-2 sm:px-3 font-medium text-gray-700 hover:text-blue-800 hover:underline cursor-pointer" 
@@ -916,10 +880,10 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.name || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700">
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
                                       {result.designation_name || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700">
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
                                       {result.department_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
@@ -962,7 +926,7 @@ const SearchReports = () => {
                                           className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
                                         >
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
-                                          <span className=" text-green-600 font-semibold ">View</span>
+                                          <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
                                       </div>
                                     </td>
@@ -970,10 +934,8 @@ const SearchReports = () => {
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="9" className="py-8 text-center text-gray-500">
-                                    {searchTerm || selectedDistrict !== "all" || selectedStatus !== "all"
-                                      ? "No results match your filter criteria. Try adjusting your filters."
-                                      : "Loading..."}
+                                  <td colSpan="9" className="py-8 text-center font-semibold text-md text-gray-500">
+                                    No Data Found
                                   </td>
                                 </tr>
                               )}
@@ -982,7 +944,6 @@ const SearchReports = () => {
                         </div>
                       </div>
 
-                      {/* Pagination */}
                       {totalPages > 1 && (
                         <div className="mt-4">
                           <Pagination
@@ -1000,238 +961,236 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* General Reports Tab */}
+              {/* ✅ UPDATED: General Reports Tab */}
               {activeTab === "general" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6 overflow-hidden">
-                    {/* KPI cards - Using new API data */}
-                    <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                      <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Total Complaints
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-gray-900">
-                          {overallStats?.total_complaints || reportStats.total}
-                        </div>
+                    {isLoadingGeneral ? (
+                      <div className="text-center py-8">
+                        <div className="text-gray-500 font-semibold text-md">Loading...</div>
                       </div>
-                      <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Disposed
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-green-600">
-                          {overallStats?.total_approved || 0}
-                        </div>
-                      </div>
-                      <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          Rejected
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-red-600">
-                          {overallStats?.total_rejected || reportStats.rejected}
-                        </div>
-                      </div>
-                      <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
-                          In Progress
-                        </h3>
-                        <div className="text-lg sm:text-2xl font-bold text-yellow-600">
-                          {overallStats?.total_pending || reportStats.inProgress}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* NEW REPORTS USING NEW API DATA */}
-                    <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                      {/* District-wise Report using new API */}
-                      <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                           District-wise Report 
-                        </h3>
-                        <div className="space-y-3 max-h-80 overflow-y-auto">
-                          {districtWiseStats ? (
-                            Object.entries(districtWiseStats).map(([districtName, count]) => (
-                              <div key={districtName} className="flex justify-between items-center">
-                                <span className="truncate text-sm sm:text-base text-gray-700">
-                                  {districtName}
-                                </span>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
-                                  {count}
-                                </span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-center text-gray-500 py-4">
-                              Loading district-wise data...
+                    ) : (
+                      <>
+                        <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                          <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                            <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                              Total Complaints
+                            </h3>
+                            <div className="text-lg sm:text-2xl font-bold text-gray-900">
+                              {overallStats?.total_complaints || reportStats.total}
                             </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Department-wise Report using new API */}
-                      <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                           Department-wise Report 
-                        </h3>
-                        <div className="space-y-3 max-h-80 overflow-y-auto">
-                          {departmentWiseStats ? (
-                            Object.entries(departmentWiseStats).map(([departmentName, count]) => (
-                              <div key={departmentName} className="flex justify-between items-center">
-                                <span className="truncate text-sm sm:text-base text-gray-700">
-                                  {departmentName}
-                                </span>
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                  {count}
-                                </span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-center text-gray-500 py-4">
-                              Loading department-wise data...
+                          </div>
+                          <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                            <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                              Disposed
+                            </h3>
+                            <div className="text-lg sm:text-2xl font-bold text-green-600">
+                              {overallStats?.total_approved || 0}
                             </div>
-                          )}
+                          </div>
+                          <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                            <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                              Rejected
+                            </h3>
+                            <div className="text-lg sm:text-2xl font-bold text-red-600">
+                              {overallStats?.total_rejected || reportStats.rejected}
+                            </div>
+                          </div>
+                          <div className="min-w-0 bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
+                            <h3 className="text-xs sm:text-sm font-medium text-gray-500 mb-1 sm:mb-2">
+                              In Progress
+                            </h3>
+                            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
+                              {overallStats?.total_pending || reportStats.inProgress}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+
+                        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                          <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                              District-wise Report 
+                            </h3>
+                            <div className="space-y-3 max-h-80 overflow-y-auto">
+                              {districtWiseStats && Object.keys(districtWiseStats).length > 0 ? (
+                                Object.entries(districtWiseStats).map(([districtName, count]) => (
+                                  <div key={districtName} className="flex justify-between items-center">
+                                    <span className="truncate text-sm sm:text-base text-gray-700">
+                                      {districtName}
+                                    </span>
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                                      {count}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-center text-gray-500 font-semibold py-4">
+                                  No Data Found
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="min-w-0 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                              Department-wise Report 
+                            </h3>
+                            <div className="space-y-3 max-h-80 overflow-y-auto">
+                              {departmentWiseStats && Object.keys(departmentWiseStats).length > 0 ? (
+                                Object.entries(departmentWiseStats).map(([departmentName, count]) => (
+                                  <div key={departmentName} className="flex justify-between items-center">
+                                    <span className="truncate text-sm sm:text-base text-gray-700">
+                                      {departmentName}
+                                    </span>
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                      {count}
+                                    </span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="text-center text-gray-500 font-semibold py-4">
+                                  No Data Found
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* UPDATED Statistical Reports Tab with Monthly Trends API */}
+              {/* ✅ UPDATED: Statistical Reports Tab */}
               {activeTab === "statistical" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 overflow-hidden">
-                    <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                      <div className="flex items-center gap-2 mb-4">
-                        <FaChartBar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                          Monthly Trends
-                        </h3>
-                      </div>
-                      <div className="space-y-4">
-                        {monthlyTrends && monthlyTrends.length > 0 ? (
-                          monthlyTrends.map((trend, index) => (
-                            <div key={index}>
-                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
-                                <span className="text-sm sm:text-base text-gray-700 font-medium">
-                                  {trend.month} {trend.year}
-                                </span>
-                              </div>
-                              <div className="space-y-2">
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                  <span className="text-sm text-gray-600">{trend.month} {trend.year}</span>
-                                  <div className="flex gap-2 flex-wrap">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                      {trend.pending} Received
-                                    </span>
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                      {trend.approved} Disposed
-                                    </span>
+                  {isLoadingStatistical ? (
+                    <div className="text-center py-8">
+                      <div className="text-gray-500 font-semibold text-md">Loading...</div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 overflow-hidden">
+                      <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                        <div className="flex items-center gap-2 mb-4">
+                          <FaChartBar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                            Monthly Trends
+                          </h3>
+                        </div>
+                        <div className="space-y-4">
+                          {monthlyTrends && monthlyTrends.length > 0 ? (
+                            monthlyTrends.map((trend, index) => (
+                              <div key={index}>
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-2">
+                                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                                    {trend.month} {trend.year}
+                                  </span>
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                                    <span className="text-sm text-gray-600">{trend.month} {trend.year}</span>
+                                    <div className="flex gap-2 flex-wrap">
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {trend.pending} Received
+                                      </span>
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        {trend.approved} Disposed
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
+                            ))
+                          ) : (
+                            <div className="text-center text-gray-500 font-semibold py-4">
+                              No Data Found
                             </div>
-                          ))
-                        ) : (
-                          <div className="text-center text-gray-500 py-4">
-                            Loading monthly trends...
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* UPDATED Average Processing Time Section with Dynamic API Data */}
-                    <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                        Average Processing Time
-                      </h3>
-                      <div className="space-y-4">
-                        {avgProcessingTimes && avgProcessingTimes.length > 0 ? (
-                          <>
-                            {avgProcessingTimes.map((item, idx) => (
-                              <div key={idx} className="flex justify-between">
-                                <span className="text-sm sm:text-base text-gray-700">
-                                  {item.name}
-                                </span>
-                                <span className="font-medium text-gray-900">
-                                  {item.avg_days !== null ? `${item.avg_days} days` : 'N/A'}
+                      <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                          Average Processing Time
+                        </h3>
+                        <div className="space-y-4">
+                          {avgProcessingTimes && avgProcessingTimes.length > 0 ? (
+                            <>
+                              {avgProcessingTimes.map((item, idx) => (
+                                <div key={idx} className="flex justify-between">
+                                  <span className="text-sm sm:text-base text-gray-700">
+                                    {item.name}s
+                                  </span>
+                                  <span className="font-medium text-gray-900">
+                                    {item.avg_days !== null ? `${item.avg_days} days` : 'N/A'}
+                                  </span>
+                                </div>
+                              ))}
+                              <div className="flex justify-between border-t pt-2">
+                                <span className="font-medium text-gray-900">Overall Average</span>
+                                <span className="font-bold text-gray-900">
+                                  {calculateOverallAverage()} days
                                 </span>
                               </div>
-                            ))}
-                            <div className="flex justify-between border-t pt-2">
-                              <span className="font-medium text-gray-900">Overall Average</span>
-                              <span className="font-bold text-gray-900">
-                                {calculateOverallAverage()} days
-                              </span>
+                            </>
+                          ) : (
+                            <div className="text-center text-gray-500 font-semibold py-4">
+                              No Data Found
                             </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-center text-gray-500 py-4">
-                            Loading Average Processing Time...
-                          </div>
-                          </>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
-              {/* UPDATED Compliance Reports Tab with Compliance Report API */}
+              {/* ✅ UPDATED: Compliance Reports Tab */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                  <div className="space-y-4 sm:space-y-6 overflow-hidden">
-                    <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
-                        📈 Compliance Report 
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {complianceReport ? (
-                          <>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                                {parseFloat(complianceReport.approved_percentage).toFixed(1)}%
+                  {isLoadingCompliance ? (
+                    <div className="text-center py-8">
+                      <div className="text-gray-500 font-semibold text-md">Loading...</div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 sm:space-y-6 overflow-hidden">
+                      <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                          📈 Compliance Report 
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {complianceReport ? (
+                            <>
+                              <div className="text-center p-4 border rounded-lg">
+                                <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
+                                  {parseFloat(complianceReport.approved_percentage).toFixed(1)}%
+                                </div>
+                                <div className="text-xs sm:text-sm text-gray-500">Within Target</div>
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Within Target</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                                {parseFloat(complianceReport.pending_percentage).toFixed(1)}%
+                              <div className="text-center p-4 border rounded-lg">
+                                <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
+                                  {parseFloat(complianceReport.pending_percentage).toFixed(1)}%
+                                </div>
+                                <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                                {parseFloat(complianceReport.rejected_percentage).toFixed(1)}%
+                              <div className="text-center p-4 border rounded-lg">
+                                <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
+                                  {parseFloat(complianceReport.rejected_percentage).toFixed(1)}%
+                                </div>
+                                <div className="text-xs sm:text-sm text-gray-500">Critical Delay</div>
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Critical Delay</div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                                {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_approved || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                                {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_pending || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                                {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_rejected || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
-                            </div>
-                          </>
-                        )}
+                            </>
+                          ) : (
+                            <>
+                             <div className="col-span-3 text-center py-8 flex justify-center items-center">
+                <h1 className="text-gray-500 font-semibold text-md">No Data Found</h1>
+              </div>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1239,7 +1198,6 @@ const SearchReports = () => {
         </div>
       </div>
 
-      {/* Updated Forward Modal with Custom Searchable Dropdown */}
       <ForwardModal
         isOpen={isForwardModalOpen}
         onClose={() => setIsForwardModalOpen(false)}

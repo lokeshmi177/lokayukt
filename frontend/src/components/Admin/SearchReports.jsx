@@ -1222,19 +1222,19 @@ const SearchReports = () => {
                               <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
                                 {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_approved || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Within Target</div>
                             </div>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
                                 {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_pending || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
                             </div>
                             <div className="text-center p-4 border rounded-lg">
                               <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
                                 {overallStats?.total_complaints > 0 ? Math.round((Number(overallStats?.total_rejected || 0) / Number(overallStats?.total_complaints)) * 100) : 0}%
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
+                              <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
                             </div>
                           </>
                         )}
