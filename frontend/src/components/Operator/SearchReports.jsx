@@ -840,10 +840,10 @@ const SearchReports = () => {
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
                                   Complainant
                                 </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap ">
                                   Respondent
                                 </th>
-                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap hidden lg:table-cell">
+                                <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap ">
                                   Department
                                 </th>
                                 <th className="text-left py-2 px-2 sm:px-3 font-medium text-gray-700 whitespace-nowrap">
@@ -880,10 +880,10 @@ const SearchReports = () => {
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       {result.name || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 ">
                                       {result.designation_name || "N/A"}
                                     </td>
-                                    <td className="py-2 px-2 sm:px-3 text-gray-700 hidden lg:table-cell">
+                                    <td className="py-2 px-2 sm:px-3 text-gray-700 ">
                                       {result.department_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">

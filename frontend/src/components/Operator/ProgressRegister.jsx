@@ -31,6 +31,8 @@ const api = axios.create({
 const ProgressRegister = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("movements");
+  const [complaintsData, setComplaintsData] = useState([]);
+  const [progressRegisterData, setProgressRegisterData] = useState([]);
   const [currentReportData, setCurrentReportData] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
@@ -64,7 +66,7 @@ const ProgressRegister = () => {
   // Export functionality - File Movements
   const handleExportMovements = () => {
     try {
-      const fileMovements = transformToFileMovements(currentReportData);
+      const fileMovements = transformProgressRegisterToFileMovements(progressRegisterData);
       const filteredMovements = fileMovements.filter(
         (movement) =>
           movement.complaintNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -285,10 +287,32 @@ const ProgressRegister = () => {
     }
   };
 
-  // Fetch current report data - This will be used for BOTH movements and status tabs
+  // Fetch progress register data from API for movements tab
+  useEffect(() => {
+    const fetchProgressRegister = async () => {
+      setLoadingMovements(true);
+      try {
+        const response = await api.get("/operator/progress-register");
+        if (response.data.status && response.data.data) {
+          setProgressRegisterData(response.data.data);
+          console.log("Progress Register Data:", response.data.data);
+        } else {
+          setProgressRegisterData([]);
+        }
+      } catch (err) {
+        console.error("Progress Register API Error:", err);
+        setProgressRegisterData([]);
+      } finally {
+        setLoadingMovements(false);
+      }
+    };
+
+    fetchProgressRegister();
+  }, []);
+
+  // Fetch current report data for status tab
   useEffect(() => {
     const fetchCurrentReport = async () => {
-      setLoadingMovements(true);
       setLoadingStatus(true);
       try {
         const response = await api.get("/operator/current-report");
@@ -304,7 +328,6 @@ const ProgressRegister = () => {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
       } finally {
-        setLoadingMovements(false);
         setLoadingStatus(false);
       }
     };
@@ -337,67 +360,21 @@ const ProgressRegister = () => {
     fetchAnalytics();
   }, []);
 
-  // Updated function to determine movement flow based on conditions
-  const getMovementFlow = (complaint) => {
-    const {
-      approved_rejected_by_ro,
-      approved_rejected_by_so_us,
-      approved_rejected_by_ds_js
-    } = complaint;
-
-    // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0) {
-      return {
-        from: "RO",
-        to: "Section Officer",
-        status: "pending",
-        icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
-      };
-    }
+  // Transform Progress Register data to File Movements format
+  const transformProgressRegisterToFileMovements = (data) => {
+    if (!data || data.length === 0) return [];
     
-    // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1) {
+    return data.map((item) => {
       return {
-        from: "Section Officer",
-        to: "DA",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-      };
-    }
-    
-    // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_ds_js == 1) {
-      return {
-        from: "DS",
-        to: "DA",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-      };
-    }
-    
-    // Default: Just show "RO" (no movement)
-    return {
-      from: "RO",
-      to: "",
-      status: "pending",
-      icon: null // No arrow icon for same level
-    };
-  };
-
-  // Transform API data to file movements format (using current-report data)
-  const transformToFileMovements = (data) => {
-    return data.map((complaint, index) => {
-      const movement = getMovementFlow(complaint);
-      return {
-        id: complaint.id,
-        complaintNo: complaint.complain_no,
-        complainant: complaint.name,
-        fromRole: movement.from,
-        toRole: movement.to,
-        movementIcon: movement.icon,
-        note: complaint.remarks || complaint.description || 'N/A',
-        timestamp: formatDate(complaint.created_at),
-        status: complaint.status || 'N/A',
+        id: item.id,
+        complaintNo: item.complain_no || 'N/A',
+        complainant: item.complainant_name || 'N/A',
+        fromRole: item.from_role || 'N/A',
+        toRole: item.to_role || 'N/A',
+        movementIcon: item.from_role !== item.to_role ? <FaArrowRight className="w-3 h-3 text-blue-600" /> : null,
+        note: item.remarks || item.note || 'N/A',
+        timestamp: formatDate(item.created_at || item.movement_date),
+        status: item.status || 'N/A',
       };
     });
   };
@@ -540,7 +517,7 @@ const ProgressRegister = () => {
   };
 
   // Get transformed data
-  const fileMovements = transformToFileMovements(currentReportData);
+  const fileMovements = transformProgressRegisterToFileMovements(progressRegisterData);
   const complaintStatus = transformCurrentReportToStatus(currentReportData);
 
   // Filter data based on search term
@@ -767,7 +744,7 @@ const ProgressRegister = () => {
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-gray-700 text-xs">{movement.fromRole}</span>
                                         {/* Show arrow and destination only if there's actual movement */}
-                                        {movement.toRole && movement.fromRole !== movement.toRole && (
+                                        {movement.fromRole !== movement.toRole && (
                                           <>
                                             {movement.movementIcon}
                                             <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
