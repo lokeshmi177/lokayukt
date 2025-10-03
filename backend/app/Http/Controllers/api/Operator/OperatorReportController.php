@@ -640,6 +640,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             )
             // ->groupBy('complaints.id','u.id','srole.name')
              ->where('in_draft','0')
+             ->where('ca.type', 1)
             ->orderBy('complaints.id','desc')
             ->get();
               return response()->json([
@@ -654,46 +655,87 @@ $complainDetails->details = DB::table('complaints_details as cd')
      public function current_report(){
         // $userSubroleRole = Auth::user()->subrole->name;
         
-         $records = DB::table('complaints')
-        //  ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
-            // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-            // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-            // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-            // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-            ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
-            ->leftJoin('users as u', DB::raw("ca.forward_by_ro"), '=', DB::raw("u.id"))
-            ->leftJoin('users as so_us', DB::raw("ca.forward_by_so_us"), '=', DB::raw("so_us.id"))
-            ->leftJoin('users as ds_js', DB::raw("ca.forward_by_ds_js"), '=', DB::raw("ds_js.id"))
-            ->leftJoin('users as sec', DB::raw("ca.forward_by_sec"), '=', DB::raw("sec.id"))
-            ->leftJoin('users as d_a', DB::raw("ca.forward_by_d_a"), '=', DB::raw("d_a.id"))
-            ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+        //  $records = DB::table('complaints')
+        // //  ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+        //     // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+        //     // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
+        //     // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
+        //     // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
+        //     // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+        //     ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+        //     ->leftJoin('users as u', DB::raw("ca.forward_by_ro"), '=', DB::raw("u.id"))
+        //     ->leftJoin('users as so_us', DB::raw("ca.forward_by_so_us"), '=', DB::raw("so_us.id"))
+        //     ->leftJoin('users as ds_js', DB::raw("ca.forward_by_ds_js"), '=', DB::raw("ds_js.id"))
+        //     ->leftJoin('users as sec', DB::raw("ca.forward_by_sec"), '=', DB::raw("sec.id"))
+        //     ->leftJoin('users as d_a', DB::raw("ca.forward_by_d_a"), '=', DB::raw("d_a.id"))
+        //     ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
             
-            ->select(
-                'complaints.*',
-                'complaints.name',
-                'complaints.complain_no',
-                'ca.*',
-                // 'u.id as user_id',
-                'u.name as ro_name',
-                'so_us.name as so_name',
-                'ds_js.name as ds_name',
-                'sec.name as sec_name',
-                'd_a.name as da_name',
-                'srole.name as subrole_name',
-                // 'ca.*',
-                // 'cd.*',
-                DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
-                // 'dd.district_name as district_name',
-                // 'dp.name as department_name',
-                // 'ds.name as designation_name',
-                // 'ct.name as complaintype_name',
-                // 'sub.name as subject_name',
-            )
-             ->where('in_draft','0')
-            ->orderBy('complaints.id','desc')
-            // ->groupBy('complaints.id','u.id','srole.name')
-            ->get();
+        //     ->select(
+        //         'complaints.*',
+        //         'complaints.name',
+        //         'complaints.complain_no',
+        //         'ca.*',
+        //         // 'u.id as user_id',
+        //         'u.name as ro_name',
+        //         'so_us.name as so_name',
+        //         'ds_js.name as ds_name',
+        //         'sec.name as sec_name',
+        //         'd_a.name as da_name',
+        //         'srole.name as subrole_name',
+        //         // 'ca.*',
+        //         // 'cd.*',
+        //         DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
+        //         // 'dd.district_name as district_name',
+        //         // 'dp.name as department_name',
+        //         // 'ds.name as designation_name',
+        //         // 'ct.name as complaintype_name',
+        //         // 'sub.name as subject_name',
+        //     )
+        //      ->where('in_draft','0')
+        //     ->orderBy('complaints.id','desc')
+        //     // ->groupBy('complaints.id','u.id','srole.name')
+        //     ->get();
+        $latestActions = DB::table('complaint_actions as ca1')
+    ->select('ca1.*')
+    //  ->where('ca1.type', 1)
+    ->join(DB::raw("(SELECT complaint_id, MAX(id) AS max_id
+            FROM complaint_actions
+            WHERE type = 1
+            GROUP BY complaint_id
+        ) as ca2"),
+        function ($join) {
+            $join->on('ca1.id', '=', 'ca2.max_id');
+        }
+    );
+    // dd($latestActions);
+
+$records = DB::table('complaints')
+    ->joinSub($latestActions, 'ca', function ($join) {
+        $join->on('complaints.id', '=', 'ca.complaint_id');
+    })
+    ->leftJoin('users as u', 'ca.forward_by_ro', '=', 'u.id')
+    ->leftJoin('users as so_us', 'ca.forward_by_so_us', '=', 'so_us.id')
+    ->leftJoin('users as ds_js', 'ca.forward_by_ds_js', '=', 'ds_js.id')
+    ->leftJoin('users as sec', 'ca.forward_by_sec', '=', 'sec.id')
+    ->leftJoin('users as d_a', 'ca.forward_by_d_a', '=', 'd_a.id')
+    ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
+    ->select(
+        'complaints.*',
+        'complaints.name',
+        'complaints.complain_no',
+        'ca.*',
+        'u.name as ro_name',
+        'so_us.name as so_name',
+        'ds_js.name as ds_name',
+        'sec.name as sec_name',
+        'd_a.name as da_name',
+        'srole.name as subrole_name',
+        DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
+    )
+    ->where('in_draft', '0')
+    ->orderBy('complaints.id', 'desc')
+    ->get();
+
             //    dd($records);
               return response()->json([
                 'status' => true,
