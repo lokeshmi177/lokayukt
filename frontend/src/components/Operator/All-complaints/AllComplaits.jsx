@@ -471,19 +471,19 @@ const AllComplaints = () => {
             View Details
           </button>
 
-          {subRole !== "entry-operator" &&
-            (isApprovedByRO(complaint) ? (
-              <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
-                ✓ Verified
-              </span>
-            ) : (
-              <button
-                onClick={(e) => handleApproveClick(e, complaint)}
-                className="w-full sm:w-auto text-blue-700 border border-blue-700  hover:bg-blue-700 hover:text-white t px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-              >
-                Verify
-              </button>
-            ))}
+        {isApprovedByRO(complaint) ? (
+  <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+    ✓ Verified
+  </span>
+) : (
+  <button
+    onClick={(e) => handleApproveClick(e, complaint)}
+    className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+  >
+    Verify
+  </button>
+)}
+
         </div>
       </div>
     </div>

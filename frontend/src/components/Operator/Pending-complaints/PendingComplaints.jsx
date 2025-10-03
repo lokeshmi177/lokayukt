@@ -465,8 +465,7 @@ const PendingComplaints = () => {
             View Details
           </button>
 
-          {subRole !== "entry-operator" &&
-            (isApprovedByRO(complaint) ? (
+          {isApprovedByRO(complaint) ? (
               <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                 ✓ Verified
               </span>
@@ -477,7 +476,10 @@ const PendingComplaints = () => {
               >
                 Verify
               </button>
-            ))}
+            )}
+
+       
+
         </div>
       </div>
     </div>

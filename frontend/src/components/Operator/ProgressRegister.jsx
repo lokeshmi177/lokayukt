@@ -452,11 +452,17 @@ const getAssignedToWithRole = (report) => {
   if (report.cio_name !== null) {
     return `CIO - ${capitalizeFirstLetter(report.cio_name)}`;
   }
-  if (report.lokayukt_name !== null) {
-    return `LokAyukta Office`;
+  if (report.cio_to_name !== null) {
+    return `CIO - ${capitalizeFirstLetter(report.cio_to_name)}`;
   }
+   if (report.sec_to_name !== null) {
+    return `Secretary - ${capitalizeFirstLetter(report.sec_to_name)}`;
+  }
+  // if (report.lokayukt_name !== null) {
+  //   return `LokAyukta Office`;
+  // }
 
-  return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
+  // return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
 };
 
 
