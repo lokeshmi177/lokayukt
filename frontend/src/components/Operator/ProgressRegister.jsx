@@ -477,7 +477,7 @@ const getAssignedToWithRole = (report) => {
         complaintNo: report.complain_no || 'N/A',
         complainant: report.name || 'N/A',
         subject: report.description || report.title || 'No subject provided',
-        currentStage: report.status || 'N/A',
+        currentStage: report.current_status || 'N/A',
         assignedTo: getAssignedToWithRole(report), // UPDATED: Using new function
         receivedDate: formatDateOnly(report.created_at),
         targetDate: report.target_date ? formatDateOnly(report.target_date) : getTargetDate(report.created_at),
