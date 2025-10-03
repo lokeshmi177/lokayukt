@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
+const subrole = localStorage.getItem("subrole")
 
 const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
   const navigate = useNavigate();
@@ -201,15 +202,15 @@ const Header = ({ toggleMobileMenu, toggleSidebar, isCollapsed }) => {
                   <span className="text-sm font-medium text-gray-900">
                     {user?.name}
                   </span>
-                  <span className="ml-2 px-2 py-0.5 border text-black text-xs rounded font-medium">
-                    {typeof user?.role === "object" ? user.role.name : userRole}
+                  <span className="ml-2 px-2 py-0.5 border text-black text-xs rounded-full font-medium">
+                    {subrole == "ds-js" ? "DS" : "DS"}
                   </span>
                 </div>
 
                 {/* User Email */}
                 <div>
                   <span className="text-xs text-gray-500">
-                    {user?.email || "sahil@gmail.com"}
+                    {user?.email}
                   </span>
                 </div>
               </div>
