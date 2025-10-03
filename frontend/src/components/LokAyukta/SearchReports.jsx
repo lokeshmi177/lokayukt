@@ -241,7 +241,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   return (
    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
   <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
-    <div className="px-4 py-3 border-b flex items-center justify-between">
+    <div className=" py-3 border-b flex items-center justify-between">
       <h3 className="text-lg font-semibold">Request Details</h3>
       <button
         type="button"
