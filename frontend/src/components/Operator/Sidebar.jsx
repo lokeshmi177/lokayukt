@@ -15,11 +15,9 @@ import {
   FaTimes,
   FaClock,
   FaCheckCircle,
-  FaListUl,          //
+  FaListUl,
 } from "react-icons/fa";
 import { FaSave } from "react-icons/fa";
-
-
 
 const Sidebar = ({
   isMobileMenuOpen,
@@ -30,6 +28,9 @@ const Sidebar = ({
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isHindi, setIsHindi] = useState(false);
+  
+  // ✅ Get subrole from localStorage
+  const subrole = localStorage.getItem("subrole") || "Operator";
 
   // Simple translation object with updated route names
   const translations = {
@@ -37,7 +38,6 @@ const Sidebar = ({
       title: "LokAyukta",
       subtitle: "CRMS",
       description: "Complaint Management",
-      operator: "Operator",
       dashboard: "Dashboard",
       complaints: "New Complaints",
       allComplaints: "Complaints",
@@ -55,9 +55,8 @@ const Sidebar = ({
       title: "लोकायुक्त",
       subtitle: "CRMS",
       description: "शिकायत प्रबंधन",
-      operator: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
-      complaints: "शिकायतें",
+      complaints: "नई शिकायतें",
       allComplaints: "सभी शिकायतें",
       draft: "ड्राफ्ट",
       // pendingComplaints: "लंबित शिकायतें",
@@ -212,13 +211,13 @@ const Sidebar = ({
             )}
           </div>
 
-          {/* ✅ operator Badge (Fixed) */}
+          {/* ✅ Subrole Badge - Showing localStorage value */}
           <div className="flex justify-between">
             <div>
               {(isMobile || !isCollapsed) && (
                 <div className="mb-3 transition-all duration-300">
-                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium">
-                    {t.operator}
+                  <span className="bg-[#133973] text-white px-3 py-1 rounded-full text-xs font-medium capitalize">
+                    {subrole}
                   </span>
                 </div>
               )}
@@ -275,7 +274,7 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/dashboard")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
@@ -300,7 +299,7 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/complaints")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
@@ -327,9 +326,8 @@ const Sidebar = ({
                   ["/all-complaints", "/pending-complaints", "/approved-complaints"].some(path =>
                     isActive(path)
                   )
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
-                  
                 } ${
                   !isMobile && isCollapsed
                     ? "justify-center px-2 py-3 mx-2 rounded-lg"
@@ -346,14 +344,14 @@ const Sidebar = ({
               </Link>
             </li>
 
-{/* Draft */}
-             <li>
+            {/* Draft */}
+            <li>
               <Link
                 to="/operator/draft"
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/draft")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
@@ -378,7 +376,7 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/pending")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
@@ -403,7 +401,7 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/approved")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
@@ -428,7 +426,7 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/progress-register")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed
@@ -453,7 +451,7 @@ const Sidebar = ({
                 onClick={handleLinkClick}
                 className={`flex items-center text-sm font-medium transition-all duration-200 ${
                   isActive("/search-reports")
-                   ?  "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
+                    ? "bg-[#133973] text-white shadow-lg hover:bg-[#F9A00D]"
                     : "text-slate-300 hover:text-white hover:bg-gray-700"
                 } ${
                   !isMobile && isCollapsed

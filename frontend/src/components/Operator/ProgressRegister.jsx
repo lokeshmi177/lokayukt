@@ -31,10 +31,10 @@ const api = axios.create({
 const ProgressRegister = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("movements");
-  const [complaintsData, setComplaintsData] = useState([]);
   const [currentReportData, setCurrentReportData] = useState([]);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [error, setError] = useState(null);
+  const [expandedNotes, setExpandedNotes] = useState(new Set());
 
   // Loading states for each tab
   const [loadingMovements, setLoadingMovements] = useState(true);
@@ -45,10 +45,26 @@ const ProgressRegister = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
+  // Toggle note expansion
+  const toggleNoteExpansion = (id) => {
+    const newExpandedNotes = new Set(expandedNotes);
+    if (newExpandedNotes.has(id)) {
+      newExpandedNotes.delete(id);
+    } else {
+      newExpandedNotes.add(id);
+    }
+    setExpandedNotes(newExpandedNotes);
+  };
+
+  // Check if note text is long (more than 50 characters)
+  const isLongNote = (note) => {
+    return note && note.length > 50;
+  };
+
   // Export functionality - File Movements
   const handleExportMovements = () => {
     try {
-      const fileMovements = transformToFileMovements(complaintsData);
+      const fileMovements = transformToFileMovements(currentReportData);
       const filteredMovements = fileMovements.filter(
         (movement) =>
           movement.complaintNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -110,7 +126,7 @@ const ProgressRegister = () => {
       });
 
       saveAs(data, `File_Movements_${new Date().toISOString().slice(0,10)}.xlsx`);
-      // toast.success("Export successful!");
+      toast.success("Export successful!");
 
     } catch (e) {
       console.error("Export failed:", e);
@@ -269,32 +285,10 @@ const ProgressRegister = () => {
     }
   };
 
-  // Fetch complaints data from API for movements tab
-  useEffect(() => {
-    const fetchComplaints = async () => {
-      setLoadingMovements(true);
-      try {
-        const response = await api.get("/operator/progress-register");
-        if (response.data.status && response.data.data) {
-          setComplaintsData(response.data.data);
-          console.log(response.data.data)
-        } else {
-          setComplaintsData([]);
-        }
-      } catch (err) {
-        console.error("API Error:", err);
-        setComplaintsData([]);
-      } finally {
-        setLoadingMovements(false);
-      }
-    };
-
-    fetchComplaints();
-  }, []);
-
-  // Fetch current report data for status tab
+  // Fetch current report data - This will be used for BOTH movements and status tabs
   useEffect(() => {
     const fetchCurrentReport = async () => {
+      setLoadingMovements(true);
       setLoadingStatus(true);
       try {
         const response = await api.get("/operator/current-report");
@@ -310,6 +304,7 @@ const ProgressRegister = () => {
         console.error("Current Report API Error:", err);
         setCurrentReportData([]);
       } finally {
+        setLoadingMovements(false);
         setLoadingStatus(false);
       }
     };
@@ -342,28 +337,54 @@ const ProgressRegister = () => {
     fetchAnalytics();
   }, []);
 
-  // Function to determine movement flow - only one condition
+  // Updated function to determine movement flow based on conditions
   const getMovementFlow = (complaint) => {
-    // Only check if approved_rejected_by_ro === 1
-    if (complaint.approved_rejected_by_ro == 1) {
+    const {
+      approved_rejected_by_ro,
+      approved_rejected_by_so_us,
+      approved_rejected_by_ds_js
+    } = complaint;
+
+    // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
+    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0) {
       return {
         from: "RO",
-        to: "Section Officer", 
+        to: "Section Officer",
         status: "pending",
         icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
+      };
+    }
+    
+    // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
+    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1) {
+      return {
+        from: "Section Officer",
+        to: "DA",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+    
+    // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
+    if (approved_rejected_by_ro == 1 && approved_rejected_by_ds_js == 1) {
+      return {
+        from: "DS",
+        to: "DA",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
     
     // Default: Just show "RO" (no movement)
     return {
       from: "RO",
-      to: "RO",
+      to: "",
       status: "pending",
       icon: null // No arrow icon for same level
     };
   };
 
-  // Transform API data to file movements format
+  // Transform API data to file movements format (using current-report data)
   const transformToFileMovements = (data) => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
@@ -519,7 +540,7 @@ const ProgressRegister = () => {
   };
 
   // Get transformed data
-  const fileMovements = transformToFileMovements(complaintsData);
+  const fileMovements = transformToFileMovements(currentReportData);
   const complaintStatus = transformCurrentReportToStatus(currentReportData);
 
   // Filter data based on search term
@@ -587,33 +608,33 @@ const ProgressRegister = () => {
       
       <div className="px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         {/* Header */}
-       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-  <div className="min-w-0 flex-1">
-    <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-1 text-gray-900 truncate">
-      Progress Register / प्रगति रजिस्टर
-    </h1>
-  </div>
-  
-  {/* Filter and Export buttons on the right */}
-  <div className="flex items-center gap-3 flex-shrink-0">
-    {/* Filter Button */}
-    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z" />
-      </svg>
-      Filter
-    </button>
-    
-    {/* Export Button with functionality */}
-    <button 
-      onClick={handleExport}
-      className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
-    >
-      <FaDownload className="w-4 h-4" />
-      Export
-    </button>
-  </div>
-</div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold pt-1 text-gray-900 truncate">
+              Progress Register / प्रगति रजिस्टर
+            </h1>
+          </div>
+          
+          {/* Filter and Export buttons on the right */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Filter Button */}
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z" />
+              </svg>
+              Filter
+            </button>
+            
+            {/* Export Button with functionality */}
+            <button 
+              onClick={handleExport}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
+            >
+              <FaDownload className="w-4 h-4" />
+              Export
+            </button>
+          </div>
+        </div>
 
         {/* Search Card */}
         <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
@@ -709,7 +730,7 @@ const ProgressRegister = () => {
                                 <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Movement
                                 </th>
-                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap hidden lg:table-cell">
+                                <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                   Note
                                 </th>
                                 <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
@@ -746,7 +767,7 @@ const ProgressRegister = () => {
                                       <div className="flex items-center gap-1.5">
                                         <span className="text-gray-700 text-xs">{movement.fromRole}</span>
                                         {/* Show arrow and destination only if there's actual movement */}
-                                        {movement.fromRole !== movement.toRole && (
+                                        {movement.toRole && movement.fromRole !== movement.toRole && (
                                           <>
                                             {movement.movementIcon}
                                             <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
@@ -754,21 +775,43 @@ const ProgressRegister = () => {
                                         )}
                                       </div>
                                     </td>
-                                    <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[14rem] truncate hidden lg:table-cell">
-                                      {movement.note}
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-xs">
+                                      {isLongNote(movement.note) ? (
+                                        expandedNotes.has(movement.id) ? (
+                                          <div 
+                                            className="text-xs leading-relaxed break-words whitespace-normal cursor-pointer"
+                                            onClick={() => toggleNoteExpansion(movement.id)}
+                                            dangerouslySetInnerHTML={{
+                                              __html: movement.note?.replace(/\n/g, '<br>') || 'N/A'
+                                            }} 
+                                          />
+                                        ) : (
+                                          <div 
+                                            className="text-xs truncate cursor-pointer hover:text-blue-600"
+                                            onClick={() => toggleNoteExpansion(movement.id)}
+                                            title="Click to expand"
+                                          >
+                                            {movement.note}...
+                                          </div>
+                                        )
+                                      ) : (
+                                        <div className="text-xs">
+                                          {movement.note}
+                                        </div>
+                                      )}
                                     </td>
                                     <td className="py-2 px-2 sm:py-4 sm:px-3 text-gray-600 whitespace-nowrap">
                                       {movement.timestamp}
                                     </td>
-                                   <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
-  <span
-    className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
-      movement.status
-    )}`}
-  >
-    {getDisplayStatus(movement.status)}
-  </span>
-</td>
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
+                                      <span
+                                        className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
+                                          movement.status
+                                        )}`}
+                                      >
+                                        {getDisplayStatus(movement.status)}
+                                      </span>
+                                    </td>
                                   </tr>
                                 ))
                               ) : (
@@ -830,7 +873,7 @@ const ProgressRegister = () => {
                                 Current Stage
                               </th>
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
-                               Assigned To
+                                Assigned To
                               </th>
                               <th className="text-left py-2 px-2 sm:py-3 sm:px-3 font-medium text-gray-900 whitespace-nowrap">
                                 Days Elapsed
@@ -939,9 +982,7 @@ const ProgressRegister = () => {
                     ) : analyticsData ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
-                        {/* from-blue-50 to-blue-100 */}
                           <div className="flex items-center gap-2 mb-2">
-                            {/* <FaCalendarAlt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Average Processing Time
                             </h3>
@@ -955,9 +996,7 @@ const ProgressRegister = () => {
                         </div>
 
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200">
-                        {/* from-yellow-50 to-yellow-100 */}
                           <div className="flex items-center gap-2 mb-2">
-                            {/* <FaFileAlt className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Files in Transit
                             </h3>
@@ -971,9 +1010,7 @@ const ProgressRegister = () => {
                         </div>
 
                         <div className="bg-gradient-to-br  p-4 sm:p-6 rounded-lg border border-gray-200 sm:col-span-2 lg:col-span-1">
-                        {/* from-red-50 to-red-100 */}
                           <div className="flex items-center gap-2 mb-2">
-                            {/* <FaClock className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" /> */}
                             <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
                               Overdue Files
                             </h3>
