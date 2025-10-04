@@ -382,6 +382,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
     
             if($cmp){
                 $cmp->approved_rejected_by_lokayukt = 1;
+                // $cmp->status = "Investigation Report";
                 // $cmp->report_status = "Report Requested";
                     if($cmp->save()){
                         $apcAction = new ComplaintAction();
@@ -395,6 +396,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                                 $apcAction->forward_to_sec = $request->forward_to;
                                 
                         }elseif($subroleFwd ==="cio-io"){
+                               
                                 $apcAction->forward_to_cio_io = $request->forward_to;
                                 
                         }  
@@ -405,6 +407,12 @@ $complainDetails->details = DB::table('complaints_details as cd')
                         $apcAction->type = '2';
                         $apcAction->remarks = $request->remark;
                         $apcAction->save();
+
+                        if($subroleFwd ==="cio-io"){
+                            DB::table('complaints')
+                            ->where('id', $complainId)
+                            ->update(['status' => 'Under Investigation']);       
+                        }
                     }
                 
                return response()->json([

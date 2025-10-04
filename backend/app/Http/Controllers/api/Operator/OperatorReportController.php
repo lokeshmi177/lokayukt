@@ -740,10 +740,11 @@ $records = DB::table('complaints')
         'cioto.name as cio_to_name',
         'd_a.name as da_name',
         'srole.name as subrole_name',
-        DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
+        DB::raw('DATEDIFF(NOW(), complaints.created_at) as days')
     )
     ->where('in_draft', '0')
     ->orderBy('complaints.id', 'desc')
+    ->whereNotNull('target_date')
     // ->toSql();
     ->get();
 
