@@ -915,9 +915,9 @@ const SearchReports = () => {
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
-                                      <span className="text-xs text-gray-600">
-                                        {result.created_at || "N/A"}
-                                      </span>
+                                    <span className="text-xs text-gray-600">
+                                        {result.created_at ? result.created_at.split(' ')[0] : "N/A"}
+                                    </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
                                       <div className="flex gap-1">
