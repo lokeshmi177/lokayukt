@@ -439,6 +439,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $records = DB::table('complaint_actions as ca')
         ->leftJoin('complaints as c', 'ca.complaint_id', '=', 'c.id')
         ->leftJoin('users as u', 'ca.forward_by_lokayukt', '=', 'u.id')
+        ->leftJoin('users as p', 'ca.forward_by_ds_js', '=', 'p.id')
+        ->leftJoin('users as r', 'ca.forward_by_sec', '=', 'r.id')
+        ->leftJoin('users as s', 'ca.forward_by_cio_io', '=', 's.id')
         ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
         ->select(
             'ca.*',
@@ -447,6 +450,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
             // 'ca.target_date',
             'c.name as complain_name',
             'c.status as complain_status',
+            'r.name as sec_name',
+            'p.name as ds_js_name',
+            's.name as cio_name',
             // 'u.name as forward_by_name',
             // 'srole.name as forward_by_subrole'
         )
@@ -454,7 +460,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // ->where('ca.forward_to_lokayukt', $userId)
         // ->orWhere('ca.forward_to_sec', $userId)
         // ->orWhere('ca.forward_to_cio_io', $userId)
-        ->where('ca.type', 1)
+        ->where('ca.type', 2)
         ->where('ca.status', 'Forwarded')
         ->get();
 
@@ -464,6 +470,44 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 'data' =>  $records,
             ]);
     }
+
+     public function requestinvestigationReport($complainid){
+        $userId = Auth::user()->id;
+        $records = DB::table('complaint_actions as ca')
+        ->leftJoin('complaints as c', 'ca.complaint_id', '=', 'c.id')
+        ->leftJoin('users as u', 'ca.forward_by_lokayukt', '=', 'u.id')
+        ->leftJoin('users as p', 'ca.forward_by_ds_js', '=', 'p.id')
+        ->leftJoin('users as r', 'ca.forward_by_sec', '=', 'r.id')
+        ->leftJoin('users as s', 'ca.forward_by_cio_io', '=', 's.id')
+        ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
+        ->select(
+            'ca.*',
+            // 'ca.complaint_id',
+            // 'ca.remarks',
+            // 'ca.target_date',
+            'c.name as complain_name',
+            'c.status as complain_status',
+            'r.name as sec_name',
+            'p.name as ds_js_name',
+            's.name as cio_name',
+            // 'u.name as forward_by_name',
+            // 'srole.name as forward_by_subrole'
+        )
+        ->where('ca.complaint_id', $complainid)
+        // ->where('ca.forward_to_lokayukt', $userId)
+        // ->orWhere('ca.forward_to_sec', $userId)
+        // ->orWhere('ca.forward_to_cio_io', $userId)
+        ->where('ca.type', 2)
+        ->where('ca.status', 'Forwarded')
+        ->get();
+
+         return response()->json([
+                'status' => true,
+                'message' => 'Records Fetch successfully',
+                'data' =>  $records,
+            ]);
+    }
+
 
     //  public function requestReportTosec(Request $request,$complainId){
     //     //    dd(Auth::user()->getUserByRoles);

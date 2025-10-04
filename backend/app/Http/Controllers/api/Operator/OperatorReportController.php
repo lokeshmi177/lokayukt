@@ -526,43 +526,66 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
 
     public function complianceReport(){
-         $complainDetails = DB::table('complaints as cm')
+    //      $complainDetails = DB::table('complaints as cm')
+    // ->select(
+    //     DB::raw('COUNT(cm.id) as total_complaints'),
+
+    //     // Counts
+    //     // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
+    //     // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending"),
+    //     // DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected"),
+
+    //     // Percentages
+    //     // DB::raw("ROUND(
+    //     //     (SUM(CASE WHEN cm.approved_rejected_by_ro = '1' THEN 1 ELSE 0 END) / 
+    //     //      COUNT(cm.id)) * 100, 2
+    //     // ) as approved_percentage"),
+
+    //     // DB::raw("ROUND(
+    //     //     (SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) / 
+    //     //      COUNT(cm.id)) * 100, 2
+    //     // ) as pending_percentage"),
+
+    //     // DB::raw("ROUND(
+    //     //     (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
+    //     //      COUNT(cm.id)) * 100, 2
+    //     // ) as rejected_percentage")
+    //       DB::raw("
+    //         ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 1 AND 10 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as approved_percentage
+    //     "),
+    //        DB::raw("
+    //         ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 10 AND 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as pending_percentage
+    //     "),
+    //     DB::raw("
+    //         ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) > 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as rejected_percentage
+    //     ")
+    // )
+    //  ->where('approved_rejected_by_ro','1')
+    //  ->where('in_draft','0')
+    // ->first();
+    $complainDetails = DB::table('complaints as cm')
     ->select(
         DB::raw('COUNT(cm.id) as total_complaints'),
 
-        // Counts
-        // DB::raw("SUM(CASE WHEN cm.status = 'Disposed - Accepted' THEN 1 ELSE 0 END) as total_approved"),
-        // DB::raw("SUM(CASE WHEN cm.status = 'In Progress' THEN 1 ELSE 0 END) as total_pending"),
-        // DB::raw("SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) as total_rejected"),
-
-        // Percentages
-        // DB::raw("ROUND(
-        //     (SUM(CASE WHEN cm.approved_rejected_by_ro = '1' THEN 1 ELSE 0 END) / 
-        //      COUNT(cm.id)) * 100, 2
-        // ) as approved_percentage"),
-
-        // DB::raw("ROUND(
-        //     (SUM(CASE WHEN cm.approved_rejected_by_ro = '0' THEN 1 ELSE 0 END) / 
-        //      COUNT(cm.id)) * 100, 2
-        // ) as pending_percentage"),
-
-        // DB::raw("ROUND(
-        //     (SUM(CASE WHEN cm.status = 'Rejected' THEN 1 ELSE 0 END) / 
-        //      COUNT(cm.id)) * 100, 2
-        // ) as rejected_percentage")
-          DB::raw("
-            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 1 AND 10 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as approved_percentage
+        // Within Target: Complaints created within the last 10 days
+        DB::raw("
+            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 0 AND 10 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as approved_percentage
         "),
-           DB::raw("
-            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 10 AND 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as pending_percentage
+
+        // Delayed: Complaints between 11 to 20 days old
+        DB::raw("
+            ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) BETWEEN 11 AND 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as pending_percentage
         "),
+
+        // Critical Delay: Complaints older than 20 days
         DB::raw("
             ROUND((SUM(CASE WHEN DATEDIFF(NOW(), cm.created_at) > 20 THEN 1 ELSE 0 END) / COUNT(cm.id)) * 100, 2) as rejected_percentage
         ")
     )
-     ->where('approved_rejected_by_ro','1')
-     ->where('in_draft','0')
+    ->where('approved_rejected_by_ro', '1')
+    ->where('in_draft', '0')
     ->first();
+
     return response()->json([
         'status' => true,
         'message' => 'Records Fetch successfully',
