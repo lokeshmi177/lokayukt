@@ -391,19 +391,19 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
                           if($subroleFwd === "ds-js"){
                                 $apcAction->forward_to_ds_js = $request->forward_to;
-                              
+                               $apcAction->status = 'Verified';
                           }elseif($subroleFwd ==="sec"){
                                 $apcAction->forward_to_sec = $request->forward_to;
-                                
+                                 $apcAction->status = 'Verified';
                         }elseif($subroleFwd ==="cio-io"){
-                               
+                                $apcAction->status = 'Investigation Report';
                                 $apcAction->forward_to_cio_io = $request->forward_to;
                                 
                         }  
 
                         // $apcAction->forward_to_ds_js = $request->forward_to;
                         $apcAction->target_date = $request->target_date;
-                        $apcAction->status = 'Report Requested';
+                       
                         $apcAction->type = '2';
                         $apcAction->remarks = $request->remark;
                         $apcAction->save();
