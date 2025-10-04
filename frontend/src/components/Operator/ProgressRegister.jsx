@@ -471,12 +471,12 @@ const ProgressRegister = () => {
     }
     
     // Default: Just show "RO" (no movement)
-    // return {
-    //   from: "RO",
-    //   to: "RO",
-    //   status: "pending",
-    //   icon: null // No arrow icon for same level
-    // };
+    return {
+      from: "NA",
+      to: "NA",
+      status: "pending",
+      icon: null // No arrow icon for same level
+    };
   };
 
   // Transform API data to file movements format
