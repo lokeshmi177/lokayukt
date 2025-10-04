@@ -407,14 +407,14 @@ const ProgressRegister = () => {
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
-    if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
-      return {
-        from: "DA",
-        to: "Lokayukt",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-      };
-    }
+    // if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
+    //   return {
+    //     from: "DA",
+    //     to: "Lokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
     
     if (forward_by_sec != null && forward_to_lokayukt != null) {
       return {
@@ -424,14 +424,14 @@ const ProgressRegister = () => {
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
-    // if (forward_by_d_a != null && forward_to_lokayukt != null) {
-    //   return {
-    //     from: "Secretary",
-    //     to: "Lokayukt",
-    //     status: "completed",
-    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-    //   };
-    // }
+    if (forward_by_d_a != null && forward_to_lokayukt != null) {
+      return {
+        from: "DA",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
 
     if (forward_by_cio_io != null && forward_to_lokayukt != null) {
       return {
