@@ -369,7 +369,13 @@ const ProgressRegister = () => {
       approved_rejected_by_so_us,
       approved_rejected_by_ds_js,
       approved_rejected_by_d_a,
-      approved_rejected_by_lokayukt
+      approved_rejected_by_lokayukt,
+       forward_by_sec,
+    forward_to_lokayukt,
+    forward_by_cio_io,
+    forward_to_sec,
+    forward_to_cio_io,
+    forward_by_lokayukt
     } = complaint;
 
     // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
