@@ -370,16 +370,18 @@ const ProgressRegister = () => {
       approved_rejected_by_ds_js,
       approved_rejected_by_d_a,
       approved_rejected_by_lokayukt,
+      approved_rejected_by_uplokayukt,
+      forward_by_d_a,
        forward_by_sec,
     forward_to_lokayukt,
     forward_by_cio_io,
     forward_to_sec,
     forward_to_cio_io,
-    forward_by_lokayukt
+    forward_by_lokayukt,
     } = complaint;
 
     // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0) {
+    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 0 && approved_rejected_by_lokayukt == 0 && approved_rejected_by_uplokayukt == 0) {
       return {
         from: "RO",
         to: "Section Officer",
@@ -389,17 +391,17 @@ const ProgressRegister = () => {
     }
     
     // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1) {
+    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1 && approved_rejected_by_d_a == 0 ) {
       return {
-        from: "RO",
-        to: "SoUs",
+        from: "Section Officer",
+        to: "DA",
         status: "completed",
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
     
     // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_ds_js == 1) {
+    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 1 && approved_rejected_by_d_a == 0) {
       return {
         from: "DS",
         to: "DA",
@@ -407,14 +409,23 @@ const ProgressRegister = () => {
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
-    // if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
-    //   return {
-    //     from: "DA",
-    //     to: "Lokayukt",
-    //     status: "completed",
-    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-    //   };
-    // }
+    if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
+      return {
+        from: "DA",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+
+        if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 1 && approved_rejected_by_uplokayukt == 0)   {
+      return {
+        from: "Lokayukt",
+        to: "UpLokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
     
     if (forward_by_sec != null && forward_to_lokayukt != null) {
       return {
