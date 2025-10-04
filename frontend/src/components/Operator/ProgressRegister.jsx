@@ -371,8 +371,12 @@ const ProgressRegister = () => {
       approved_rejected_by_d_a,
       approved_rejected_by_lokayukt,
       approved_rejected_by_uplokayukt,
+      forward_by_ro,
+      forward_by_so_us,
+      forward_by_ds_js,
       forward_by_d_a,
        forward_by_sec,
+       forward_to_d_a ,
     forward_to_lokayukt,
     forward_by_cio_io,
     forward_to_sec,
@@ -381,17 +385,61 @@ const ProgressRegister = () => {
     } = complaint;
 
     // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 0 && approved_rejected_by_lokayukt == 0 && approved_rejected_by_uplokayukt == 0) {
+    // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 0 && approved_rejected_by_lokayukt == 0 && approved_rejected_by_uplokayukt == 0) {
+    //   return {
+    //     from: "RO",
+    //     to: "Section Officer",
+    //     status: "pending",
+    //     icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
+    //   };
+    // }
+    
+    // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
+    // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1 && approved_rejected_by_d_a == 0 ) {
+    //   return {
+    //     from: "Section Officer",
+    //     to: "DA",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
+    
+    // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
+    // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 1 && approved_rejected_by_d_a == 0) {
+    //   return {
+    //     from: "DS",
+    //     to: "DA",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
+    // if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
+    //   return {
+    //     from: "DA",
+    //     to: "Lokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
+
+    //     if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 1 && approved_rejected_by_uplokayukt == 0)   {
+    //   return {
+    //     from: "Lokayukt",
+    //     to: "UpLokayukt",
+    //     status: "completed",
+    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+    //   };
+    // }
+    
+       if (forward_by_ro != null) {
       return {
         from: "RO",
         to: "Section Officer",
-        status: "pending",
-        icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
-    
-    // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1 && approved_rejected_by_d_a == 0 ) {
+       if (forward_by_so_us != null &&  forward_to_d_a != null) {
       return {
         from: "Section Officer",
         to: "DA",
@@ -399,9 +447,8 @@ const ProgressRegister = () => {
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
-    
-    // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
-    if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 1 && approved_rejected_by_d_a == 0) {
+
+         if (forward_by_ds_js != null &&  forward_to_d_a != null) {
       return {
         from: "DS",
         to: "DA",
@@ -409,7 +456,17 @@ const ProgressRegister = () => {
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
-    if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
+
+           if (forward_by_ds_js != null && forward_to_lokayukt != null) {
+      return {
+        from: "DS",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+
+        if (forward_by_d_a != null && forward_to_lokayukt != null) {
       return {
         from: "DA",
         to: "Lokayukt",
@@ -418,15 +475,6 @@ const ProgressRegister = () => {
       };
     }
 
-        if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 1 && approved_rejected_by_uplokayukt == 0)   {
-      return {
-        from: "Lokayukt",
-        to: "UpLokayukt",
-        status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-      };
-    }
-    
     if (forward_by_sec != null && forward_to_lokayukt != null) {
       return {
         from: "Secretary",
@@ -490,7 +538,7 @@ const ProgressRegister = () => {
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-        note: complaint.remarks || complaint.description || 'N/A',
+        note: complaint.remarks ||  'N/A',
         timestamp: formatDate(complaint.created_at),
         status: complaint.status || 'N/A',
       };
@@ -921,11 +969,11 @@ const getAssignedToWithRole = (report) => {
                                           />
                                         ) : (
                                           <div 
-                                            className="text-xs truncate cursor-pointer hover:text-blue-600"
+                                            className="text-xs truncate cursor-pointer"
                                             onClick={() => toggleNoteExpansion(movement.id)}
                                             title="Click to expand"
                                           >
-                                            {movement.note}...
+                                            `{movement.note}...`
                                           </div>
                                         )
                                       ) : (
