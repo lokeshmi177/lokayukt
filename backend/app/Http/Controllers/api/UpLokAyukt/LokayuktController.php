@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\api\UpLokAyukt;
+namespace App\Http\Controllers\api\LokAyukt;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class UpLokayuktController extends Controller
+class LokayuktController extends Controller
 {
-     public function allComplains(){
+   public function allComplains(){
       $userSubrole = Auth::user()->subrole->id; 
       $records = DB::table('complaints')
             ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
