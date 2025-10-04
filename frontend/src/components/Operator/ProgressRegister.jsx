@@ -391,8 +391,8 @@ const ProgressRegister = () => {
     // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
     if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1) {
       return {
-        from: "Section Officer",
-        to: "DA",
+        from: "RO",
+        to: "SoUs",
         status: "completed",
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
