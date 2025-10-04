@@ -643,7 +643,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
             )
             // ->groupBy('complaints.id','u.id','srole.name')
              ->where('in_draft','0')
-             ->where('ca.type', 1)
+             ->where('ca.status','<>', "Report Requested")
+            //  ->where('ca.type', 1)
             ->orderBy('complaints.id','desc')
             ->get();
               return response()->json([
@@ -744,7 +745,7 @@ $records = DB::table('complaints')
     )
     ->where('in_draft', '0')
     ->orderBy('complaints.id', 'desc')
-    ->whereNotNull('target_date')
+    // ->whereNotNull('target_date')
     // ->toSql();
     ->get();
 
