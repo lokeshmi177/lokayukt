@@ -367,7 +367,9 @@ const ProgressRegister = () => {
     const {
       approved_rejected_by_ro,
       approved_rejected_by_so_us,
-      approved_rejected_by_ds_js
+      approved_rejected_by_ds_js,
+      approved_rejected_by_d_a,
+      approved_rejected_by_lokayukt
     } = complaint;
 
     // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
@@ -399,14 +401,57 @@ const ProgressRegister = () => {
         icon: <FaArrowRight className="w-3 h-3 text-green-600" />
       };
     }
+    if (approved_rejected_by_d_a == 1 && approved_rejected_by_lokayukt == 1) {
+      return {
+        from: "DA",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+    
+    if (forward_by_sec != null && forward_to_lokayukt != null) {
+      return {
+        from: "Secretary",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+
+    if (forward_by_cio_io != null && forward_to_lokayukt != null) {
+      return {
+        from: "CIO",
+        to: "Lokayukt",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+
+    if (forward_by_lokayukt != null && forward_to_sec != null) {
+      return {
+        from: "Lokayukt",
+        to: "Secretary",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
+    if (forward_by_lokayukt != null && forward_to_cio_io != null) {
+      return {
+        from: "Lokayukt",
+        to: "CIO",
+        status: "completed",
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+      };
+    }
     
     // Default: Just show "RO" (no movement)
-    return {
-      from: "RO",
-      to: "RO",
-      status: "pending",
-      icon: null // No arrow icon for same level
-    };
+    // return {
+    //   from: "RO",
+    //   to: "RO",
+    //   status: "pending",
+    //   icon: null // No arrow icon for same level
+    // };
   };
 
   // Transform API data to file movements format
