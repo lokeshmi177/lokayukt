@@ -535,7 +535,6 @@ const getAssignedToWithRole = (report) => {
   // return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
 };
 
-
   // Transform current report data
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
@@ -551,18 +550,44 @@ const getAssignedToWithRole = (report) => {
         assignedTo: getAssignedToWithRole(report), 
         receivedDate: formatDateOnly(report.created_at),
         targetDate: report.target_date ? formatDateOnly(report.target_date) : "-",
-        status: getStatusFromDays(daysElapsed),
+        status: getStatusFromTargetDate(report.target_date),
         daysElapsed: daysElapsed,
         originalStatus: report.status,
       };
     });
   };
 
-  // Get status based on days
-  const getStatusFromDays = (days) => {
-    if (days > 15) {
-      return "critical";
-    } else {
+ 
+  const getStatusFromTargetDate = (targetDate) => {
+    if (!targetDate) {
+      return "on-track"; 
+    }
+
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const target = new Date(targetDate);
+      target.setHours(0, 0, 0, 0);
+
+    
+      const diffTime = target - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      
+      if (diffDays >= 0) {
+        return "on-track";
+      }
+     
+      else if (diffDays < 0 && Math.abs(diffDays) <= 10) {
+        return "delayed";
+      }
+      
+      else {
+        return "critical";
+      }
+    } catch (error) {
+      console.error("Error calculating status from target date:", error);
       return "on-track";
     }
   };
@@ -590,6 +615,7 @@ const getAssignedToWithRole = (report) => {
   const getDisplayStatus = (status) => {
     if (status === "Verified") return "Pending";
     if (status === "Forwarded") return "Completed";
+    
     return status;
   };
 
@@ -644,7 +670,7 @@ const getAssignedToWithRole = (report) => {
     }
   };
 
-  // Calculate days elapsed
+
   const getDaysElapsed = (createdDate) => {
     if (!createdDate) return 0;
     try {
@@ -657,21 +683,25 @@ const getAssignedToWithRole = (report) => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "completed":
-      case "on-track":
-        return "bg-green-400 text-white";
-      case "pending":
-      case "delayed":
-        return "bg-orange-400 text-white ";
-      case "overdue":
-      case "critical":
-        return "bg-red-400 text-white";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
+ const getStatusColor = (status) => {
+  switch (status) {
+    case "on-track":
+      return "bg-green-500 text-white"; 
+    case "delayed":
+      return "bg-yellow-500 text-white"; 
+    case "critical":
+      return "bg-red-500 text-white"; 
+    case "completed":
+      return "bg-green-400 text-white";
+    case "pending":
+      return "bg-orange-400 text-white";
+    case "overdue":
+      return "bg-red-400 text-white";
+    default:
+      return "bg-gray-100 text-gray-800 border-gray-200";
+  }
+};
+
 
   // Get transformed data
   const fileMovements = transformToFileMovements(complaintsData);
@@ -908,7 +938,6 @@ const getAssignedToWithRole = (report) => {
     )}
   </div>
 </td>
-
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[250px]">
                                       {isLongNote(movement.note) ? (
                                         expandedNotes.has(movement.id) ? (
