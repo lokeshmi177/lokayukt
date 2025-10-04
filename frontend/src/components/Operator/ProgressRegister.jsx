@@ -101,7 +101,7 @@ const ProgressRegister = () => {
           movement.toRole || "NA",
           movement.note || "NA",
           movement.timestamp || "NA",
-          movement.status || "NA",
+          movement.displayStatus || "NA",
         ]),
       ];
 
@@ -428,53 +428,6 @@ const ProgressRegister = () => {
       forward_by_lokayukt,
     } = complaint;
 
-    // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
-    // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 0 && approved_rejected_by_lokayukt == 0 && approved_rejected_by_uplokayukt == 0) {
-    //   return {
-    //     from: "RO",
-    //     to: "Section Officer",
-    //     status: "pending",
-    //     icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
-    //   };
-    // }
-
-    // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
-    // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1 && approved_rejected_by_d_a == 0 ) {
-    //   return {
-    //     from: "Section Officer",
-    //     to: "DA",
-    //     status: "completed",
-    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-    //   };
-    // }
-
-    // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
-    // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 1 && approved_rejected_by_d_a == 0) {
-    //   return {
-    //     from: "DS",
-    //     to: "DA",
-    //     status: "completed",
-    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-    //   };
-    // }
-    // if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 0)   {
-    //   return {
-    //     from: "DA",
-    //     to: "Lokayukt",
-    //     status: "completed",
-    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-    //   };
-    // }
-
-    //     if (approved_rejected_by_d_a == 1  && approved_rejected_by_lokayukt == 1 && approved_rejected_by_uplokayukt == 0)   {
-    //   return {
-    //     from: "Lokayukt",
-    //     to: "UpLokayukt",
-    //     status: "completed",
-    //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
-    //   };
-    // }
-
     if (forward_by_ro != null) {
       return {
         from: "RO",
@@ -567,14 +520,39 @@ const ProgressRegister = () => {
       from: "NA",
       to: "NA",
       status: "pending",
-      icon: null, // No arrow icon for same level
+      icon: null,
     };
+  };
+
+  
+  const checkIfOverdue = (targetDate, timestamp) => {
+   
+    if (!targetDate || targetDate === null) {
+      return false;
+    }
+
+    try {
+      const target = new Date(targetDate);
+      const created = new Date(timestamp);
+      
+      // Calculate difference in days
+      const diffTime = created - target;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // If difference is more than 10 days, it's overdue
+      return diffDays > 10;
+    } catch (error) {
+      console.error("Error checking overdue status:", error);
+      return false;
+    }
   };
 
   // Transform API data to file movements format
   const transformToFileMovements = (data) => {
     return data.map((complaint, index) => {
       const movement = getMovementFlow(complaint);
+      const isOverdue = checkIfOverdue(complaint.target_date, complaint.created_at);
+      
       return {
         id: complaint.id,
         complaintNo: complaint.complain_no,
@@ -585,13 +563,15 @@ const ProgressRegister = () => {
         note: complaint.remarks || "N/A",
         timestamp: formatDate(complaint.created_at),
         status: complaint.status || "N/A",
+        isOverdue: isOverdue, 
+        displayStatus: isOverdue ? "Overdue" : getDisplayStatus(complaint.status), // Show Overdue if condition met
       };
     });
   };
 
   const capitalizeFirstLetter = (str) => {
     if (!str) return "";
-    return str.charAt(0).toUpperCase() + str.slice(1);
+    return str.charAt(0).toUpperCase() + str.slice(1);x
   };
 
   const getAssignedToWithRole = (report) => {
@@ -622,8 +602,6 @@ const ProgressRegister = () => {
     if (report.lokayukt_name !== null) {
       return `LokAyukta Office`;
     }
-
-    // return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
   };
 
   // Transform current report data
@@ -705,12 +683,17 @@ const ProgressRegister = () => {
     return status;
   };
 
-  const getFileMovementStatusColor = (status) => {
-    const displayStatus = getDisplayStatus(status);
+  // UPDATED: Handle overdue status with red bg and white text
+  const getFileMovementStatusColor = (displayStatus, isOverdue) => {
+    // If overdue, show red background with white text
+    if (isOverdue) {
+      return "bg-red-500 text-white";
+    }
 
+    // Otherwise, use original color logic
     switch (displayStatus) {
       case "Pending":
-        return " bg-orange-400 text-white ";
+        return "bg-orange-400 text-white";
       case "Completed":
         return "bg-green-500 text-white";
       default:
@@ -1056,13 +1039,13 @@ const ProgressRegister = () => {
                                           />
                                         ) : (
                                           <div
-                                            className="text-xs truncate cursor-pointer"
+                                            className="text-xs truncate cursor-pointer hover:text-blue-600"
                                             onClick={() =>
                                               toggleNoteExpansion(movement.id)
                                             }
                                             title="Click to expand"
                                           >
-                                            `{movement.note}...`
+                                            {movement.note}...
                                           </div>
                                         )
                                       ) : (
@@ -1077,10 +1060,11 @@ const ProgressRegister = () => {
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 whitespace-nowrap">
                                       <span
                                         className={`inline-flex items-center px-2 py-[2px] rounded-full text-[10px] sm:text-xs font-medium border ${getFileMovementStatusColor(
-                                          movement.status
+                                          movement.displayStatus,
+                                          movement.isOverdue
                                         )}`}
                                       >
-                                        {getDisplayStatus(movement.status)}
+                                        {movement.displayStatus}
                                       </span>
                                     </td>
                                   </tr>
