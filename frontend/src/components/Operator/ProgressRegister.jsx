@@ -14,8 +14,8 @@ import { FaRegFileAlt } from "react-icons/fa";
 import { IoTimeOutline } from "react-icons/io5";
 
 import Pagination from "../Pagination";
-import * as XLSX from "xlsx-js-style"; 
-import { saveAs } from "file-saver"; 
+import * as XLSX from "xlsx-js-style";
+import { saveAs } from "file-saver";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -71,7 +71,9 @@ const ProgressRegister = () => {
       const fileMovements = transformToFileMovements(complaintsData);
       const filteredMovements = fileMovements.filter(
         (movement) =>
-          movement.complaintNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          movement.complaintNo
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           movement.complainant.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
@@ -81,7 +83,16 @@ const ProgressRegister = () => {
       }
 
       const wsData = [
-        ["Sr. No", "Complaint No", "Complainant", "From Role", "To Role", "Note", "Timestamp", "Status"],
+        [
+          "Sr. No",
+          "Complaint No",
+          "Complainant",
+          "From Role",
+          "To Role",
+          "Note",
+          "Timestamp",
+          "Status",
+        ],
         ...filteredMovements.map((movement, index) => [
           index + 1,
           movement.complaintNo || "NA",
@@ -90,8 +101,8 @@ const ProgressRegister = () => {
           movement.toRole || "NA",
           movement.note || "NA",
           movement.timestamp || "NA",
-          movement.status || "NA"
-        ])
+          movement.status || "NA",
+        ]),
       ];
 
       const wb = XLSX.utils.book_new();
@@ -101,10 +112,10 @@ const ProgressRegister = () => {
       const headerStyle = {
         font: { bold: true, color: { rgb: "000000" } },
         alignment: { horizontal: "center" },
-        fill: { fgColor: { rgb: "D3D3D3" } }
+        fill: { fgColor: { rgb: "D3D3D3" } },
       };
 
-      const range = XLSX.utils.decode_range(ws['!ref']);
+      const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
         if (!ws[cellAddress]) ws[cellAddress] = {};
@@ -112,26 +123,34 @@ const ProgressRegister = () => {
       }
 
       // Column widths
-      ws['!cols'] = [
-        {wch: 8}, {wch: 15}, {wch: 20}, {wch: 15}, 
-        {wch: 15}, {wch: 30}, {wch: 20}, {wch: 15}
+      ws["!cols"] = [
+        { wch: 8 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 15 },
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, "File_Movements");
 
       const excelBuffer = XLSX.write(wb, {
-        bookType: 'xlsx',
-        type: 'array',
-        cellStyles: true
+        bookType: "xlsx",
+        type: "array",
+        cellStyles: true,
       });
 
       const data = new Blob([excelBuffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      saveAs(data, `File_Movements_${new Date().toISOString().slice(0,10)}.xlsx`);
+      saveAs(
+        data,
+        `File_Movements_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
       toast.success("Export successful!");
-
     } catch (e) {
       console.error("Export failed:", e);
       toast.error("Failed to export data.");
@@ -154,7 +173,18 @@ const ProgressRegister = () => {
       }
 
       const wsData = [
-        ["Sr. No", "Complaint No", "Complainant", "Subject", "Current Stage", "Assigned To", "Received Date", "Target Date", "Days Elapsed", "Status"],
+        [
+          "Sr. No",
+          "Complaint No",
+          "Complainant",
+          "Subject",
+          "Current Stage",
+          "Assigned To",
+          "Received Date",
+          "Target Date",
+          "Days Elapsed",
+          "Status",
+        ],
         ...filteredStatus.map((status, index) => [
           index + 1,
           status.complaintNo || "NA",
@@ -165,8 +195,8 @@ const ProgressRegister = () => {
           status.receivedDate || "NA",
           status.targetDate || "NA",
           status.daysElapsed || "NA",
-          getStatusText(status.status) || "NA"
-        ])
+          getStatusText(status.status) || "NA",
+        ]),
       ];
 
       const wb = XLSX.utils.book_new();
@@ -176,10 +206,10 @@ const ProgressRegister = () => {
       const headerStyle = {
         font: { bold: true, color: { rgb: "000000" } },
         alignment: { horizontal: "center" },
-        fill: { fgColor: { rgb: "D3D3D3" } }
+        fill: { fgColor: { rgb: "D3D3D3" } },
       };
 
-      const range = XLSX.utils.decode_range(ws['!ref']);
+      const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
         if (!ws[cellAddress]) ws[cellAddress] = {};
@@ -187,27 +217,36 @@ const ProgressRegister = () => {
       }
 
       // Column widths
-      ws['!cols'] = [
-        {wch: 8}, {wch: 15}, {wch: 20}, {wch: 30}, 
-        {wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, 
-        {wch: 12}, {wch: 15}
+      ws["!cols"] = [
+        { wch: 8 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 30 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 15 },
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, "Current_Status");
 
       const excelBuffer = XLSX.write(wb, {
-        bookType: 'xlsx',
-        type: 'array',
-        cellStyles: true
+        bookType: "xlsx",
+        type: "array",
+        cellStyles: true,
       });
 
       const data = new Blob([excelBuffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      saveAs(data, `Current_Status_${new Date().toISOString().slice(0,10)}.xlsx`);
+      saveAs(
+        data,
+        `Current_Status_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
       toast.success("Export successful!");
-
     } catch (e) {
       console.error("Export failed:", e);
       toast.error("Failed to export data.");
@@ -224,9 +263,14 @@ const ProgressRegister = () => {
 
       const wsData = [
         ["Metric", "Value"],
-        ["Average Processing Time", `${parseFloat(analyticsData.avg_processing_time || 0).toFixed(1)} days`],
+        [
+          "Average Processing Time",
+          `${parseFloat(analyticsData.avg_processing_time || 0).toFixed(
+            1
+          )} days`,
+        ],
         ["Files in Transit", analyticsData.files_in_transit || 0],
-        ["Overdue Files", analyticsData.overdue_files || 0]
+        ["Overdue Files", analyticsData.overdue_files || 0],
       ];
 
       const wb = XLSX.utils.book_new();
@@ -236,10 +280,10 @@ const ProgressRegister = () => {
       const headerStyle = {
         font: { bold: true, color: { rgb: "000000" } },
         alignment: { horizontal: "center" },
-        fill: { fgColor: { rgb: "D3D3D3" } }
+        fill: { fgColor: { rgb: "D3D3D3" } },
       };
 
-      const range = XLSX.utils.decode_range(ws['!ref']);
+      const range = XLSX.utils.decode_range(ws["!ref"]);
       for (let C = range.s.c; C <= range.e.c; ++C) {
         const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
         if (!ws[cellAddress]) ws[cellAddress] = {};
@@ -247,25 +291,25 @@ const ProgressRegister = () => {
       }
 
       // Column widths
-      ws['!cols'] = [
-        {wch: 25}, {wch: 15}
-      ];
+      ws["!cols"] = [{ wch: 25 }, { wch: 15 }];
 
       XLSX.utils.book_append_sheet(wb, ws, "Analytics");
 
       const excelBuffer = XLSX.write(wb, {
-        bookType: 'xlsx',
-        type: 'array',
-        cellStyles: true
+        bookType: "xlsx",
+        type: "array",
+        cellStyles: true,
       });
 
       const data = new Blob([excelBuffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
-      saveAs(data, `Analytics_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+      saveAs(
+        data,
+        `Analytics_Report_${new Date().toISOString().slice(0, 10)}.xlsx`
+      );
       toast.success("Export successful!");
-
     } catch (e) {
       console.error("Export failed:", e);
       toast.error("Failed to export data.");
@@ -297,7 +341,7 @@ const ProgressRegister = () => {
         const response = await api.get("/operator/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
-          console.log(response.data.data)
+          console.log(response.data.data);
         } else {
           setComplaintsData([]);
         }
@@ -319,7 +363,7 @@ const ProgressRegister = () => {
       try {
         const response = await api.get("/operator/current-report");
         console.log("Current Report API Response:", response.data);
-        
+
         if (response.data.status && response.data.data) {
           setCurrentReportData(response.data.data);
         } else {
@@ -344,7 +388,7 @@ const ProgressRegister = () => {
       try {
         const response = await api.get("/operator/analytic-report");
         console.log("Analytics API Response:", response.data);
-        
+
         if (response.data.status && response.data.data) {
           setAnalyticsData(response.data.data);
         } else {
@@ -375,13 +419,13 @@ const ProgressRegister = () => {
       forward_by_so_us,
       forward_by_ds_js,
       forward_by_d_a,
-       forward_by_sec,
-       forward_to_d_a ,
-    forward_to_lokayukt,
-    forward_by_cio_io,
-    forward_to_sec,
-    forward_to_cio_io,
-    forward_by_lokayukt,
+      forward_by_sec,
+      forward_to_d_a,
+      forward_to_lokayukt,
+      forward_by_cio_io,
+      forward_to_sec,
+      forward_to_cio_io,
+      forward_by_lokayukt,
     } = complaint;
 
     // Condition 1: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 0
@@ -393,7 +437,7 @@ const ProgressRegister = () => {
     //     icon: <FaArrowRight className="w-3 h-3 text-blue-600" />
     //   };
     // }
-    
+
     // Condition 2: approved_rejected_by_ro == 1 and approved_rejected_by_so_us == 1
     // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 1 && approved_rejected_by_d_a == 0 ) {
     //   return {
@@ -403,7 +447,7 @@ const ProgressRegister = () => {
     //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
     //   };
     // }
-    
+
     // Condition 3: approved_rejected_by_ro == 1 and approved_rejected_by_ds_js == 1
     // if (approved_rejected_by_ro == 1 && approved_rejected_by_so_us == 0 && approved_rejected_by_ds_js == 1 && approved_rejected_by_d_a == 0) {
     //   return {
@@ -430,48 +474,48 @@ const ProgressRegister = () => {
     //     icon: <FaArrowRight className="w-3 h-3 text-green-600" />
     //   };
     // }
-    
-       if (forward_by_ro != null) {
+
+    if (forward_by_ro != null) {
       return {
         from: "RO",
         to: "Section Officer",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
-       if (forward_by_so_us != null &&  forward_to_d_a != null) {
+    if (forward_by_so_us != null && forward_to_d_a != null) {
       return {
         from: "Section Officer",
         to: "DA",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
 
-         if (forward_by_ds_js != null &&  forward_to_d_a != null) {
+    if (forward_by_ds_js != null && forward_to_d_a != null) {
       return {
         from: "DS",
         to: "DA",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
 
-           if (forward_by_ds_js != null && forward_to_lokayukt != null) {
+    if (forward_by_ds_js != null && forward_to_lokayukt != null) {
       return {
         from: "DS",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
 
-        if (forward_by_d_a != null && forward_to_lokayukt != null) {
+    if (forward_by_d_a != null && forward_to_lokayukt != null) {
       return {
         from: "DA",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
 
@@ -480,7 +524,7 @@ const ProgressRegister = () => {
         from: "Secretary",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
     if (forward_by_d_a != null && forward_to_lokayukt != null) {
@@ -488,7 +532,7 @@ const ProgressRegister = () => {
         from: "DA",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
 
@@ -497,7 +541,7 @@ const ProgressRegister = () => {
         from: "CIO",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
 
@@ -506,7 +550,7 @@ const ProgressRegister = () => {
         from: "Lokayukt",
         to: "Secretary",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
     if (forward_by_lokayukt != null && forward_to_cio_io != null) {
@@ -514,16 +558,16 @@ const ProgressRegister = () => {
         from: "Lokayukt",
         to: "CIO",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />
+        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
       };
     }
-    
+
     // Default: Just show "RO" (no movement)
     return {
       from: "NA",
       to: "NA",
       status: "pending",
-      icon: null // No arrow icon for same level
+      icon: null, // No arrow icon for same level
     };
   };
 
@@ -538,66 +582,67 @@ const ProgressRegister = () => {
         fromRole: movement.from,
         toRole: movement.to,
         movementIcon: movement.icon,
-        note: complaint.remarks ||  'N/A',
+        note: complaint.remarks || "N/A",
         timestamp: formatDate(complaint.created_at),
-        status: complaint.status || 'N/A',
+        status: complaint.status || "N/A",
       };
     });
   };
 
-  
   const capitalizeFirstLetter = (str) => {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
-const getAssignedToWithRole = (report) => {
-  if (report.da_name !== null) {
-    return `DA - ${capitalizeFirstLetter(report.da_name)}`;
-  }
-  if (report.ds_name !== null) {
-    return `DS - ${capitalizeFirstLetter(report.ds_name)}`;
-  }
-  if (report.ro_name !== null) {
-    return `RO - ${capitalizeFirstLetter(report.ro_name)}`;
-  }
-  if (report.sec_name !== null) {
-    return `Secretary - ${capitalizeFirstLetter(report.sec_name)}`;
-  }
-  if (report.so_name !== null) {
-    return `Section Officer - ${capitalizeFirstLetter(report.so_name)}`;
-  }
-  if (report.cio_name !== null) {
-    return `CIO - ${capitalizeFirstLetter(report.cio_name)}`;
-  }
-  if (report.cio_to_name !== null) {
-    return `CIO - ${capitalizeFirstLetter(report.cio_to_name)}`;
-  }
-   if (report.sec_to_name !== null) {
-    return `Secretary - ${capitalizeFirstLetter(report.sec_to_name)}`;
-  }
-  // if (report.lokayukt_name !== null) {
-  //   return `LokAyukta Office`;
-  // }
+  const getAssignedToWithRole = (report) => {
+    if (report.da_name !== null) {
+      return `DA - ${capitalizeFirstLetter(report.da_name)}`;
+    }
+    if (report.ds_name !== null) {
+      return `DS - ${capitalizeFirstLetter(report.ds_name)}`;
+    }
+    if (report.ro_name !== null) {
+      return `RO - ${capitalizeFirstLetter(report.ro_name)}`;
+    }
+    if (report.sec_name !== null) {
+      return `Secretary - ${capitalizeFirstLetter(report.sec_name)}`;
+    }
+    if (report.so_name !== null) {
+      return `Section Officer - ${capitalizeFirstLetter(report.so_name)}`;
+    }
+    if (report.cio_name !== null) {
+      return `CIO - ${capitalizeFirstLetter(report.cio_name)}`;
+    }
+    if (report.cio_to_name !== null) {
+      return `CIO - ${capitalizeFirstLetter(report.cio_to_name)}`;
+    }
+    if (report.sec_to_name !== null) {
+      return `Secretary - ${capitalizeFirstLetter(report.sec_to_name)}`;
+    }
+    if (report.lokayukt_name !== null) {
+      return `LokAyukta Office`;
+    }
 
-  // return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
-};
+    // return capitalizeFirstLetter(report.officer_name) || 'Not Assigned';
+  };
 
   // Transform current report data
   const transformCurrentReportToStatus = (data) => {
     if (!data || data.length === 0) return [];
-    
+
     return data.map((report) => {
       const daysElapsed = report.days || getDaysElapsed(report.created_at);
-      
+
       return {
-        complaintNo: report.complain_no || 'N/A',
-        complainant: report.name || 'N/A',
-        subject: report.description || report.title || 'No subject provided',
-        currentStage: report.status || 'N/A',
-        assignedTo: getAssignedToWithRole(report), 
+        complaintNo: report.complain_no || "N/A",
+        complainant: report.name || "N/A",
+        subject: report.description || report.title || "No subject provided",
+        currentStage: report.status || "N/A",
+        assignedTo: getAssignedToWithRole(report),
         receivedDate: formatDateOnly(report.created_at),
-        targetDate: report.target_date ? formatDateOnly(report.target_date) : "-",
+        targetDate: report.target_date
+          ? formatDateOnly(report.target_date)
+          : "-",
         status: getStatusFromTargetDate(report.target_date),
         daysElapsed: daysElapsed,
         originalStatus: report.status,
@@ -605,33 +650,26 @@ const getAssignedToWithRole = (report) => {
     });
   };
 
- 
   const getStatusFromTargetDate = (targetDate) => {
     if (!targetDate) {
-      return "on-track"; 
+      return "on-track";
     }
 
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const target = new Date(targetDate);
       target.setHours(0, 0, 0, 0);
 
-    
       const diffTime = target - today;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      
       if (diffDays >= 0) {
         return "on-track";
-      }
-     
-      else if (diffDays < 0 && Math.abs(diffDays) <= 10) {
+      } else if (diffDays < 0 && Math.abs(diffDays) <= 10) {
         return "delayed";
-      }
-      
-      else {
+      } else {
         return "critical";
       }
     } catch (error) {
@@ -663,7 +701,7 @@ const getAssignedToWithRole = (report) => {
   const getDisplayStatus = (status) => {
     if (status === "Verified") return "Pending";
     if (status === "Forwarded") return "Completed";
-    
+
     return status;
   };
 
@@ -681,7 +719,7 @@ const getAssignedToWithRole = (report) => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
       return date.toLocaleString("en-IN", {
@@ -693,31 +731,30 @@ const getAssignedToWithRole = (report) => {
         hour12: true,
       });
     } catch (error) {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
   const formatDateOnly = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("en-CA");
     } catch (error) {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
   const getTargetDate = (createdDate) => {
-    if (!createdDate) return 'N/A';
+    if (!createdDate) return "N/A";
     try {
       const date = new Date(createdDate);
       date.setDate(date.getDate() + 30);
       return date.toLocaleDateString("en-CA");
     } catch (error) {
-      return 'N/A';
+      return "N/A";
     }
   };
-
 
   const getDaysElapsed = (createdDate) => {
     if (!createdDate) return 0;
@@ -731,25 +768,24 @@ const getAssignedToWithRole = (report) => {
     }
   };
 
- const getStatusColor = (status) => {
-  switch (status) {
-    case "on-track":
-      return "bg-green-500 text-white"; 
-    case "delayed":
-      return "bg-yellow-500 text-white"; 
-    case "critical":
-      return "bg-red-500 text-white"; 
-    case "completed":
-      return "bg-green-400 text-white";
-    case "pending":
-      return "bg-orange-400 text-white";
-    case "overdue":
-      return "bg-red-400 text-white";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
-};
-
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "on-track":
+        return "bg-green-500 text-white";
+      case "delayed":
+        return "bg-yellow-500 text-white";
+      case "critical":
+        return "bg-red-500 text-white";
+      case "completed":
+        return "bg-green-400 text-white";
+      case "pending":
+        return "bg-orange-400 text-white";
+      case "overdue":
+        return "bg-red-400 text-white";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
 
   // Get transformed data
   const fileMovements = transformToFileMovements(complaintsData);
@@ -817,7 +853,7 @@ const getAssignedToWithRole = (report) => {
         theme="light"
         style={{ zIndex: 9999 }}
       />
-      
+
       <div className="px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -826,19 +862,29 @@ const getAssignedToWithRole = (report) => {
               Progress Register / प्रगति रजिस्टर
             </h1>
           </div>
-          
+
           {/* Filter and Export buttons on the right */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {/* Filter Button */}
             <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-[#e69a0c] transition-colors text-sm font-medium text-gray-700">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.586V4z"
+                />
               </svg>
               Filter
             </button>
-            
+
             {/* Export Button with functionality */}
-            <button 
+            <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-[#e69a0c] transition-colors text-sm font-medium"
             >
@@ -921,9 +967,9 @@ const getAssignedToWithRole = (report) => {
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="overflow-hidden">
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                      <FaRegFileAlt  className="w-4 h-4 sm:w-5 sm:h-5 " />
+                      <FaRegFileAlt className="w-4 h-4 sm:w-5 sm:h-5 " />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-600">
-                        Recent File Movements 
+                        Recent File Movements
                       </h3>
                     </div>
 
@@ -975,31 +1021,45 @@ const getAssignedToWithRole = (report) => {
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 whitespace-nowrap">
                                       {movement.complainant}
                                     </td>
-                                   <td className="py-2 px-2 sm:py-3 sm:px-3">
-  <div className="flex items-center gap-1.5 whitespace-nowrap max-w-[120px] overflow-x-auto">
-    <span className="text-gray-700 text-xs">{movement.fromRole}</span>
-    {movement.toRole && movement.fromRole !== movement.toRole && (
-      <>
-        {movement.movementIcon}
-        <span className="text-gray-700 font-semibold text-xs">{movement.toRole}</span>
-      </>
-    )}
-  </div>
-</td>
+                                    <td className="py-2 px-2 sm:py-3 sm:px-3">
+                                      <div className="flex items-center gap-1.5 whitespace-nowrap max-w-[120px] overflow-x-auto">
+                                        <span className="text-gray-700 text-xs">
+                                          {movement.fromRole}
+                                        </span>
+                                        {movement.toRole &&
+                                          movement.fromRole !==
+                                            movement.toRole && (
+                                            <>
+                                              {movement.movementIcon}
+                                              <span className="text-gray-700 font-semibold text-xs">
+                                                {movement.toRole}
+                                              </span>
+                                            </>
+                                          )}
+                                      </div>
+                                    </td>
                                     <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700 max-w-[250px]">
                                       {isLongNote(movement.note) ? (
                                         expandedNotes.has(movement.id) ? (
-                                          <div 
+                                          <div
                                             className="text-xs leading-relaxed break-words whitespace-normal cursor-pointer"
-                                            onClick={() => toggleNoteExpansion(movement.id)}
+                                            onClick={() =>
+                                              toggleNoteExpansion(movement.id)
+                                            }
                                             dangerouslySetInnerHTML={{
-                                              __html: movement.note?.replace(/\n/g, '<br>') || 'N/A'
-                                            }} 
+                                              __html:
+                                                movement.note?.replace(
+                                                  /\n/g,
+                                                  "<br>"
+                                                ) || "N/A",
+                                            }}
                                           />
                                         ) : (
-                                          <div 
+                                          <div
                                             className="text-xs truncate cursor-pointer"
-                                            onClick={() => toggleNoteExpansion(movement.id)}
+                                            onClick={() =>
+                                              toggleNoteExpansion(movement.id)
+                                            }
                                             title="Click to expand"
                                           >
                                             `{movement.note}...`
@@ -1065,7 +1125,7 @@ const getAssignedToWithRole = (report) => {
                     <div className="flex items-center gap-2 mb-4">
                       <IoTimeOutline className="w-4 h-4 sm:w-5 sm:h-5" />
                       <h3 className="text-sm sm:text-lg font-semibold text-gray-900">
-                        Current Complaint Status 
+                        Current Complaint Status
                       </h3>
                     </div>
 
@@ -1121,7 +1181,12 @@ const getAssignedToWithRole = (report) => {
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
                                     <span className="inline-block px-2 py-1 rounded-full text-xs font-medium">
-                                      {complaint.currentStage}
+                                      {complaint.currentStage === "Verified"
+                                        ? "Verification"
+                                        : complaint.currentStage ===
+                                          "Investigation Report"
+                                        ? "Under Investigation"
+                                        : complaint.currentStage}
                                     </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">
@@ -1130,7 +1195,13 @@ const getAssignedToWithRole = (report) => {
                                     </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-600">
-                                    <span className={`font-semibold ${complaint.daysElapsed > 15 ? 'text-black' : 'text-black'}`}>
+                                    <span
+                                      className={`font-semibold ${
+                                        complaint.daysElapsed > 15
+                                          ? "text-black"
+                                          : "text-black"
+                                      }`}
+                                    >
                                       {complaint.daysElapsed} days
                                     </span>
                                   </td>
@@ -1199,7 +1270,10 @@ const getAssignedToWithRole = (report) => {
                             </h3>
                           </div>
                           <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
-                            {parseFloat(analyticsData.avg_processing_time || 0).toFixed(1)} days
+                            {parseFloat(
+                              analyticsData.avg_processing_time || 0
+                            ).toFixed(1)}{" "}
+                            days
                           </div>
                           <p className="text-xs sm:text-sm text-gray-600">
                             From entry to disposal
