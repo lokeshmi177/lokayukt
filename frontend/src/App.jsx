@@ -154,12 +154,19 @@ import LokayuktViewPendingComplaints from './components/LokAyukta/Pending-compla
 import LokayuktApprovedComplaints from './components/LokAyukta/Approved-complaints/ApprovedComplaints';
 import LokayuktViewApprovedComplaint from './components/LokAyukta/Approved-complaints/ViewApprovedComplaints';
 
-// //Uplokayukt
-// import UplokayuktLayout from './components/Supervisor/Layout';
-// import UplokayuktDashboard from './components/Supervisor/Dashboard';
-// import UplokayuktComplaints from './components/Supervisor/Complaints';
-// import UplokayuktProgressRegister from './components/Supervisor/ProgressRegister';
-// import UplokayuktSearchReports from './components/Supervisor/SearchReports';
+//UpLok-ayukt
+import UpLokayuktLayout from './components/UPLokAyukta/Layout';
+import UpLokayuktDashboard from './components/UPLokAyukta/Dashboard';
+import UpLokayuktComplaints from './components/UPLokAyukta/Complaints';
+import UpLokayuktProgressRegister from './components/UPLokAyukta/ProgressRegister';
+import UpLokayuktSearchReports from './components/UPLokAyukta/SearchReports';
+import UpLokayuktViewComplait from './components/UPLokAyukta/ViewComplaints';
+import UpLokayuktAllComplaits from './components/UPLokAyukta/All-complaints/AllComplaits';
+import UpLokayuktViewAllComplaint from './components/UPLokAyukta/All-complaints/ViewwAllComplaint';
+import UpLokayuktPendingComplaints from './components/UPLokAyukta/Pending-complaints/PendingComplaints';
+import UpLokayuktViewPendingComplaints from './components/UPLokAyukta/Pending-complaints/ViewPendingComplaints';
+import UpLokayuktApprovedComplaints from './components/UPLokAyukta/Approved-complaints/ApprovedComplaints';
+import UpLokayuktViewApprovedComplaint from './components/UPLokAyukta/Approved-complaints/ViewApprovedComplaints';
 
 
 import Login from './components/Login';
@@ -373,16 +380,29 @@ function App() {
         </Route>
       )}
 
-        {/* UPLok-ayukt  Routes */}
-      {/* {role === 'uplokayukt' && (
-        <Route path="/uplokayukt" element={<UplokayuktLayout />}>
-          <Route path="dashboard" element={<UplokayuktDashboard />} />
-          <Route path="complaints" element={<UplokayuktComplaints />} />
-          <Route path="progress-register" element={<UplokayuktProgressRegister />} />
-          <Route path="search-reports" element={<UplokayuktSearchReports />} />
+         {/* UPLok-ayukt  Routes */}
+      {role === 'up-lok-ayukt' && (
+        <Route path="/uplokayukt" element={<UpLokayuktLayout />}>
+           <Route path="dashboard" element={<UpLokayuktDashboard />} />
+          <Route path="complaints" element={<UpLokayuktComplaints />} />
+          <Route path="progress-register" element={<UpLokayuktProgressRegister />} />
+          <Route path="search-reports" element={<UpLokayuktSearchReports />} />
+          <Route path="search-reports/view/:id" element={<UpLokayuktViewComplait />} />
+
+          <Route path="all-complaints" element={<UpLokayuktAllComplaits />} />
+          <Route path="all-complaints/view/:id" element={<UpLokayuktViewAllComplaint />} />
+          {/* <Route path="all-complaints/edit/:id" element={<LokayuktEditComplaints />} /> */}
+
+          <Route path="pending-complaints" element={<UpLokayuktPendingComplaints />} />
+          <Route path="pending-complaints/view/:id" element={<UpLokayuktViewPendingComplaints />} />
+          {/* <Route path="pending-complaints/edit/:id" element={<LokayuktEditPendingComplaints />} /> */}
+
+          <Route path="approved-complaints" element={<UpLokayuktApprovedComplaints />} />   
+          <Route path="approved-complaints/view/:id" element={<UpLokayuktViewApprovedComplaint/>} />
+          {/* <Route path="approved-complaints/edit/:id" element={<LokayuktEditApprovedComplaint />} /> */}
          
         </Route>
-      )} */}
+      )}
 
     </Routes>
   );

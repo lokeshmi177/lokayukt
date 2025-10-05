@@ -364,7 +364,7 @@ const SearchReports = () => {
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
   
-  // ✅ LOADING STATES
+  // LOADING STATES
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [isLoadingGeneral, setIsLoadingGeneral] = useState(true);
   const [isLoadingStatistical, setIsLoadingStatistical] = useState(true);
@@ -456,7 +456,7 @@ const SearchReports = () => {
     console.log('Complaint forwarded');
   };
 
-  // ✅ UPDATED: Fetch initial data with loading states
+  // UPDATED: Fetch initial data with loading states
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoadingSearch(true);
@@ -737,7 +737,7 @@ const SearchReports = () => {
             </div>
 
             <div className="overflow-hidden">
-              {/* ✅ UPDATED: Advanced Search Tab */}
+              {/* UPDATED: Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden">
@@ -821,7 +821,7 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* ✅ UPDATED: Search Results with Loading State */}
+                    {/* UPDATED: Search Results with Loading State */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-gray-900">
@@ -961,7 +961,7 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: General Reports Tab */}
+              {/* UPDATED: General Reports Tab */}
               {activeTab === "general" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6 overflow-hidden">
@@ -1061,7 +1061,7 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Statistical Reports Tab */}
+              {/* UPDATED: Statistical Reports Tab */}
               {activeTab === "statistical" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   {isLoadingStatistical ? (
@@ -1145,7 +1145,7 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Compliance Reports Tab */}
+              {/* UPDATED: Compliance Reports Tab */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   {isLoadingCompliance ? (

@@ -16,7 +16,7 @@ const Layout = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       
-      // ✅ FIXED: Don't auto-collapse on mobile, just detect mobile state
+      //  FIXED: Don't auto-collapse on mobile, just detect mobile state
       if (mobile) {
         setIsCollapsed(false); // Keep expanded for mobile functionality
       }

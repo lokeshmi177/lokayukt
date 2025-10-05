@@ -71,7 +71,7 @@ const Login = () => {
           else if (userRole === "lok-ayukt") {
             window.open("/lokayukt/dashboard", "_self");
           }
-          else if (userRole === "uplokayukt") {
+          else if (userRole === "up-lok-ayukt") {
             window.open("/uplokayukt/dashboard", "_self");
           }
           else {

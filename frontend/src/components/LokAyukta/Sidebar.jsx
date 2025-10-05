@@ -26,7 +26,7 @@ const Sidebar = ({
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isHindi, setIsHindi] = useState(false);
-  const sidebarRef = useRef(null); // ✅ Added ref for outside click detection
+  const sidebarRef = useRef(null); //  Added ref for outside click detection
 
   // Simple translation object with updated route names
   const translations = {
@@ -49,7 +49,7 @@ const Sidebar = ({
       description: "शिकायत प्रबंधन",
       LokAyukta: "व्यवस्थापक",
       dashboard: "डैशबोर्ड",
-      allComplaints: "शिकायतें", // ✅ Fixed: was "Complaints"
+      allComplaints: "शिकायतें", 
       progressRegister: "प्रगति रजिस्टर",
       searchReports: "खोज और रिपोर्ट",
       userManagement: "उपयोगकर्ता प्रबंधन",
@@ -61,7 +61,7 @@ const Sidebar = ({
   // Get current translations
   const t = isHindi ? translations.hindi : translations.english;
 
-  // ✅ Outside click handler for mobile menu
+  //  Outside click handler for mobile menu
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (
@@ -76,7 +76,7 @@ const Sidebar = ({
 
     if (isMobile && isMobileMenuOpen) {
       document.addEventListener("mousedown", handleOutsideClick);
-      document.addEventListener("touchstart", handleOutsideClick); // ✅ Added for mobile touch
+      document.addEventListener("touchstart", handleOutsideClick); //  Added for mobile touch
     }
 
     return () => {
@@ -91,7 +91,7 @@ const Sidebar = ({
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       
-      // ✅ Auto-close mobile menu on desktop resize
+      //  Auto-close mobile menu on desktop resize
       if (!mobile && isMobileMenuOpen) {
         toggleMobileMenu();
       }
@@ -127,7 +127,7 @@ const Sidebar = ({
     }
   };
 
-  // ✅ Prevent body scroll when mobile menu is open
+  //  Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -167,7 +167,7 @@ const Sidebar = ({
       {/* Custom Scrollbar Styles */}
       <style>{scrollbarStyles}</style>
 
-      {/* ✅ Mobile Overlay with higher z-index */}
+      {/*  Mobile Overlay with higher z-index */}
       {isMobile && isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
@@ -176,7 +176,7 @@ const Sidebar = ({
         />
       )}
 
-      {/* ✅ Sidebar with proper z-index and ref */}
+      {/*  Sidebar with proper z-index and ref */}
       <div
         ref={sidebarRef}
         className={`fixed left-0 top-0 h-full min-h-screen bg-gradient-to-b from-slate-800 to-slate-900 text-white shadow-xl transition-all duration-300 flex flex-col ${

@@ -1,11 +1,10 @@
-// pages/Complaints.js
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
   FaUser, 
   FaBuilding, 
   FaFileAlt, 
-  FaSearch, 
-  FaSave, 
+  FaArrowLeft,
   FaPaperPlane,
   FaRupeeSign,
   FaSpinner,
@@ -13,6 +12,7 @@ import {
   FaCheck,
   FaTimes
 } from 'react-icons/fa';
+import { IoMdArrowBack } from "react-icons/io";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
@@ -24,86 +24,143 @@ const token = localStorage.getItem("access_token");
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
+    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
 
-const Complaints = () => {
+const AllComplaintsEdit = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
     address: '',
     district_id: '',
     email: '',
-    fee_exempted: true,                     
+    fee_exempted: true,
     amount: '',
     challan_no: '',
-    title: '',          
+    title: '',
     file: null,
     dob: '',
-    department: '',     
+    // ✅ Fixed field names to match backend expectations
+    department: '',        // Changed from department_id
     officer_name: '',
-    designation: '',
+    designation: '',       // Changed from designation_id
     category: '',
-    subject: '',        
-    nature: '',
+    subject: '',          // Changed from subject_id
+    nature: '',           // Changed from complaintype_id
     description: ''
   });
 
+  // Dropdown data states
   const [districts, setDistricts] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [designations, setDesignations] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [complaintTypes, setComplaintTypes] = useState([]);
+  
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // ✅ File upload progress states
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // File upload progress states
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [existingFile, setExistingFile] = useState(null);
 
-  // Fetch all required data on component mount
+  // Fetch complaint data and dropdown data on component mount
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchData = async () => {
+      if (!id) {
+        toast.error("No complaint ID provided");
+        navigate("/supervisor/approved-complaints");
+        return;
+      }
+
       try {
-        // Fetch districts
-        const districtsResponse = await api.get(`/lokayukt/all-district`);
+        setIsLoading(true);
+
+        // Parallel API calls for better performance
+        const [
+          complaintResponse,
+          districtsResponse,
+          departmentsResponse,
+          designationsResponse,
+          subjectsResponse,
+          complaintTypesResponse
+        ] = await Promise.all([
+          api.get(`/supervisor/edit-complaint/${id}`),
+          api.get(`/supervisor/all-district`),
+          api.get(`/supervisor/department`),
+          api.get(`/supervisor/designation`),
+          api.get(`/supervisor/subjects`),
+          api.get(`/supervisor/complainstype`)
+        ]);
+
+        // Set dropdown data
         if (districtsResponse.data.status === 'success') {
           setDistricts(districtsResponse.data.data);
         }
-
-        // Fetch departments
-        const departmentsResponse = await api.get(`/lokayukt/department`);
         if (departmentsResponse.data.status === 'success') {
           setDepartments(departmentsResponse.data.data);
         }
-
-        // Fetch designations
-        const designationsResponse = await api.get(`/lokayukt/designation`);
         if (designationsResponse.data.status === 'success') {
           setDesignations(designationsResponse.data.data);
         }
-
-        // Fetch subjects
-        const subjectsResponse = await api.get(`/lokayukt/subjects`);
         if (subjectsResponse.data.status === 'success') {
           setSubjects(subjectsResponse.data.data);
         }
-
-        // Fetch complaint types
-        const complaintTypesResponse = await api.get(`/lokayukt/complainstype`);
         if (complaintTypesResponse.data.status === 'success') {
           setComplaintTypes(complaintTypesResponse.data.data);
         }
+
+        // ✅ Pre-populate form with complaint data - Fixed mapping
+        if (complaintResponse.data.status === true) {
+          const data = complaintResponse.data.data;
+          setFormData({
+            name: data.name || '',
+            mobile: data.mobile || '',
+            address: data.address || '',
+            district_id: data.district_id || '',
+            email: data.email || '',
+            fee_exempted: data.fee_exempted === 1,
+            amount: data.amount || '',
+            challan_no: data.challan_no || '',
+            title: data.title || '',
+            file: null,
+            dob: data.dob || '',
+            // ✅ Map backend IDs to frontend field names
+            department: data.department_id || '',      // Map department_id to department
+            officer_name: data.officer_name || '',
+            designation: data.designation_id || '',    // Map designation_id to designation
+            category: data.category || '',
+            subject: data.subject_id || '',           // Map subject_id to subject
+            nature: data.complaintype_id || '',       // Map complaintype_id to nature
+            description: data.description || ''
+          });
+          
+          // Store existing file info
+          if (data.file) {
+            setExistingFile(data.file);
+          }
+        } else {
+          toast.error("Failed to load complaint data");
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
+        toast.error("Error loading complaint data");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchAllData();
-  }, []);
+    fetchData();
+  }, [id, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -121,18 +178,26 @@ const Complaints = () => {
       }));
     }
 
-    // Clear error when user starts typing
-    if (errors[name]) {
+    // ✅ Clear error when user starts typing - match backend field names
+    const errorFieldMap = {
+      'department': 'department',
+      'designation': 'designation', 
+      'subject': 'subject',
+      'nature': 'nature'
+    };
+    
+    const errorField = errorFieldMap[name] || name;
+    if (errors[errorField]) {
       setErrors(prev => ({
         ...prev,
-        [name]: ''
+        [errorField]: ''
       }));
     }
   };
 
-  // ✅ Enhanced file upload with progress
+  // ✅ FIXED FILE UPLOAD HANDLER - This was the main bug!
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; // ✅ FIXED: Added [0] to get first file from FileList
     
     if (!file) return;
 
@@ -154,7 +219,7 @@ const Complaints = () => {
     setUploadSuccess(false);
     setUploadError('');
 
-    // ✅ Alternative: Simulate upload progress (if no API endpoint yet)
+    // ✅ Simulate upload progress (exactly same as Complaints.jsx)
     const simulateUpload = () => {
       let progress = 0;
       const interval = setInterval(() => {
@@ -198,28 +263,37 @@ const Complaints = () => {
     setUploadError('');
   };
 
-  // ✅ Fixed submit handler with FormData for file upload
+  // ✅ Fixed submit handler with proper boolean conversion
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      // ✅ Create FormData for file upload
+      // Create FormData for file upload
       const submitFormData = new FormData();
       
-      // Add all form fields to FormData
+      // ✅ Add all form fields to FormData with proper conversion
       Object.keys(formData).forEach(key => {
         if (key === 'file' && formData.file) {
           submitFormData.append('file', formData.file);
+        } else if (key === 'fee_exempted') {
+          // ✅ Convert boolean to integer for database
+          submitFormData.append(key, formData[key] ? '1' : '0');
         } else if (formData[key] !== null && formData[key] !== '') {
           submitFormData.append(key, formData[key]);
         }
       });
 
-      // ✅ Use FormData with multipart/form-data headers
+      // Debug: Log what we're sending
+      console.log('FormData being sent:');
+      for (let [key, value] of submitFormData.entries()) {
+        console.log(key, ':', value, typeof value);
+      }
+
+      // Use FormData with multipart/form-data headers for update
       const response = await axios.post(
-        `${BASE_URL}/lokayukt/complaints`,
+        `${BASE_URL}/supervisor/update-complaint/${id}`,
         submitFormData,
         {
           headers: {
@@ -230,52 +304,42 @@ const Complaints = () => {
       );
 
       if (response.data.status === true) {
-        toast.success(response.data.message || 'Complaint registered successfully!');
+        toast.success(response.data.message || 'Complaint updated successfully!');
         
-        // ✅ Reset form after successful submission
-        setFormData({
-          name: '',
-          mobile: '',
-          address: '',
-          district_id: '',
-          email: '',
-          fee_exempted: true,
-          amount: '',
-          challan_no: '',
-          title: '',          
-          file: null,
-          dob: '',
-          department: '',     
-          officer_name: '',
-          designation: '',
-          category: '',
-          subject: '',        
-          nature: '',
-          description: ''
-        });
-
-        // Reset file upload states
-        setUploadProgress(0);
-        setIsUploading(false);
-        setUploadSuccess(false);
-        setUploadError('');
+        // Navigate back to view page after successful update
+        setTimeout(() => {
+          navigate(`/supervisor/approved-complaints/view/${id}`);
+        }, 1500);
       }
     } catch (error) {
       if (error.response?.data?.status === false && error.response?.data?.errors) {
-        // Handle validation errors
+        // ✅ Fixed error handling
         const backendErrors = {};
         Object.keys(error.response.data.errors).forEach(field => {
-          backendErrors[field] = error.response.data.errors[field][0]; // Take first error message
+          backendErrors[field] = error.response.data.errors[field][0]; // ✅ Take first error message
         });
         setErrors(backendErrors);
+        
+        // ✅ Show first error in toast - Fixed array access
+        const firstError = Object.values(error.response.data.errors)[0][0];
+        // toast.error(firstError);
       } else {
         toast.error('Something went wrong. Please try again.');
       }
-      console.error('Submit error:', error);
+      console.error('Update error:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Loading statea
+  if (isLoading) {
+    return (
+    <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center text-lg font-medium text-gray-700">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -297,26 +361,24 @@ const Complaints = () => {
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Complaint Entry</h1>
-            <p className="text-xs sm:text-sm text-gray-600">शिकायत प्रविष्टि फॉर्म</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Edit Complaint</h1>
+            <p className="text-xs sm:text-sm text-gray-600">शिकायत संपादन फॉर्म</p>
           </div>
-          <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
-              <FaSearch className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Check Duplicates</span>
-              <span className="xs:hidden">Check Duplicates</span>
-            </button> */}
-            {/* <button className="flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs sm:text-sm text-gray-700 hover:bg-gray-50">
-              <FaSave className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Save Draft</span>
-              <span className="xs:hidden">Save</span>
-            </button> */}
-          </div>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+  <button 
+    onClick={() => navigate(`/supervisor/approved-complaints/view/${id}`)}
+    className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+  >
+    <IoMdArrowBack className="text-lg" />
+    <span>Back</span>
+  </button>
+</div>
+
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Form Layout */}
+        {/* Form Layout - Same as Complaints.jsx */}
         <div className="space-y-4 sm:space-y-6">
           {/* Top Row: Complainant Details + Security Fee */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
@@ -342,18 +404,17 @@ const Complaints = () => {
                     value={formData.name}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // sirf letters aur spaces allow karo
                       if (/^[A-Za-z\s]*$/.test(value)) {
                         handleInputChange(e);
                       }
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter full name"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.name}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
                   )}
                 </div>
 
@@ -368,18 +429,17 @@ const Complaints = () => {
                     value={formData.mobile}
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Sirf digits allow + max 10 digits
                       if (/^[0-9]*$/.test(value) && value.length <= 10) {
                         handleInputChange(e);
                       }
                     }}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.mobile ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="10-digit mobile number"
                   />
                   {errors.mobile && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.mobile}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>
                   )}
                 </div>
 
@@ -393,13 +453,13 @@ const Complaints = () => {
                     value={formData.address}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
+                      errors.address ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter complete address"
                   />
                   {errors.address && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.address}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.address}</p>
                   )}
                 </div>
 
@@ -412,7 +472,9 @@ const Complaints = () => {
                     name="district_id"
                     value={formData.district_id}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                      errors.district_id ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Select District</option>
                     {districts.map(district => (
@@ -422,9 +484,7 @@ const Complaints = () => {
                     ))}
                   </select>
                   {errors.district_id && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.district_id}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.district_id}</p>
                   )}
                 </div>
 
@@ -438,13 +498,13 @@ const Complaints = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="example@email.com"
                   />
                   {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.email}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
                   )}
                 </div>
               </div>
@@ -562,7 +622,7 @@ const Complaints = () => {
                   </div>
                 </div>
 
-                {/* ✅ Title Field */}
+                {/* Title Field */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Title / शीर्षक *
@@ -572,7 +632,9 @@ const Complaints = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                      errors.title ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter complaint title"
                   />
                   {errors.title && (
@@ -580,18 +642,29 @@ const Complaints = () => {
                   )}
                 </div>
 
-                {/* ✅ File Upload with Progress */}
+                {/* ✅ File Upload with Progress - NOW WORKING! */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                    Choose File / फ़ाइल चुनें *
+                    Choose File / फ़ाइल चुनें
                   </label>
+                  
+                  {/* Show existing file info */}
+                  {existingFile && !formData.file && (
+                    <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                      <p className="text-xs text-blue-800">
+                        Current file: {existingFile}
+                      </p>
+                    </div>
+                  )}
                   
                   {/* File Upload Area */}
                   {!formData.file ? (
                     <div className="flex items-center space-x-2">
                       <label className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 transition-colors">
                         <FaUpload className="w-4 h-4 mr-2 text-blue-600" />
-                        <span className="text-sm text-gray-700">Choose PDF file</span>
+                        <span className="text-sm text-gray-700">
+                          {existingFile ? 'Replace PDF file' : 'Choose PDF file'}
+                        </span>
                         <input
                           type="file"
                           accept=".pdf"
@@ -683,7 +756,7 @@ const Complaints = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {/* Department */}
+              {/*  Department - Fixed field name */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Department / विभाग *
@@ -692,7 +765,9 @@ const Complaints = () => {
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 cursor-pointer text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className={`w-full px-3 py-2 cursor-pointer text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                    errors.department ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Department</option>
                   {departments.map(department => (
@@ -702,9 +777,7 @@ const Complaints = () => {
                   ))}
                 </select>
                 {errors.department && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.department}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.department}</p>
                 )}
               </div>
 
@@ -718,17 +791,17 @@ const Complaints = () => {
                   name="officer_name"
                   value={formData.officer_name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
+                    errors.officer_name ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Enter officer name"
                 />
                 {errors.officer_name && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.officer_name}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.officer_name}</p>
                 )}
               </div>
 
-              {/* Designation */}
+              {/* ✅ Designation - Fixed field name */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Designation / पदनाम *
@@ -737,7 +810,9 @@ const Complaints = () => {
                   name="designation"
                   value={formData.designation}
                   onChange={handleInputChange}
-                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                    errors.designation ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Designation</option>
                   {designations.map(designation => (
@@ -747,9 +822,7 @@ const Complaints = () => {
                   ))}
                 </select>
                 {errors.designation && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.designation}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.designation}</p>
                 )}
               </div>
 
@@ -762,16 +835,16 @@ const Complaints = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                  className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                    errors.category ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                   <option value="">Select Category</option>
                   <option value="class_1">Class 1</option>
                   <option value="class_2">Class 2</option>
                 </select>
                 {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.category}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
                 )}
               </div>
             </div>
@@ -788,7 +861,7 @@ const Complaints = () => {
             </div>
             <div className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                {/* Subject Dropdown */}
+                {/*  Subject - Fixed field name */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Subject / विषय *
@@ -797,7 +870,9 @@ const Complaints = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                      errors.subject ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Select Subject</option>
                     {subjects.map(subject => (
@@ -807,13 +882,11 @@ const Complaints = () => {
                     ))}
                   </select>
                   {errors.subject && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.subject}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.subject}</p>
                   )}
                 </div>
 
-                {/* Nature */}
+                {/* ✅ Nature - Fixed field name */}
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Nature / प्रकृति *
@@ -822,7 +895,9 @@ const Complaints = () => {
                     name="nature"
                     value={formData.nature}
                     onChange={handleInputChange}
-                    className="w-full cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                    className={`w-full cursor-pointer px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
+                      errors.nature ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Select Nature</option>
                     {complaintTypes.map(complaintType => (
@@ -832,9 +907,7 @@ const Complaints = () => {
                     ))}
                   </select>
                   {errors.nature && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.nature}
-                    </p>
+                    <p className="mt-1 text-sm text-red-600">{errors.nature}</p>
                   )}
                 </div>
               </div>
@@ -849,13 +922,13 @@ const Complaints = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={6}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none ${
+                    errors.description ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Enter detailed complaint description..."
                 />
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.description}
-                  </p>
+                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
                 )}
               </div>
             </div>
@@ -863,7 +936,8 @@ const Complaints = () => {
 
           {/* Submit Button */}
           <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-3">
+             
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -876,12 +950,12 @@ const Complaints = () => {
                 {isSubmitting ? (
                   <>
                     <FaSpinner className="w-4 h-4 animate-spin" />
-                    Submitting...
+                    Updating...
                   </>
                 ) : (
                   <>
                     <FaPaperPlane className="w-4 h-4" />
-                    Submit Complaint
+                    Update Complaint
                   </>
                 )}
               </button>
@@ -893,4 +967,4 @@ const Complaints = () => {
   );
 };
 
-export default Complaints;
+export default AllComplaintsEdit;
