@@ -27,7 +27,7 @@ class SupervisorComplaintsController extends Controller
         // ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
         // ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
         // ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
-        ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
+        // ->leftJoin('complaint_actions as rep', 'complaints.id', '=', 'rep.complaint_id')
         ->select(
             'complaints.*',
             'dd.district_name as district_name',

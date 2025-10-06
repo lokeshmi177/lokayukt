@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api\LokAyukt;
+namespace App\Http\Controllers\api\UpLokAyukt;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

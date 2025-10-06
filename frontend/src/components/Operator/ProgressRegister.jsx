@@ -584,14 +584,26 @@ const ProgressRegister = () => {
     if (report.ro_name !== null) {
       return `RO - ${capitalizeFirstLetter(report.ro_name)}`;
     }
-    if (report.sec_name !== null) {
-      return `Secretary - ${capitalizeFirstLetter(report.sec_name)}`;
-    }
     if (report.so_name !== null) {
       return `Section Officer - ${capitalizeFirstLetter(report.so_name)}`;
     }
+    // if (report.sec_name !== null) {
+    //   return `Secretary - ${capitalizeFirstLetter(report.sec_name)}`;
+    // }
+    /**
+     * IF Secretary is forwarded report to Lokayukt, Show LokAyukta Office
+     */
+    if (report.sec_name !== null) {
+      return `LokAyukta Office`;
+    }
+    // if (report.cio_name !== null) {
+    //   return `CIO - ${capitalizeFirstLetter(report.cio_name)}`;
+    // }
+    /**
+     * IF CIO is forwarded report to Lokayukt, Show LokAyukta Office
+     */
     if (report.cio_name !== null) {
-      return `CIO - ${capitalizeFirstLetter(report.cio_name)}`;
+      return `LokAyukta Office`;
     }
     if (report.cio_to_name !== null) {
       return `CIO - ${capitalizeFirstLetter(report.cio_to_name)}`;
@@ -1170,7 +1182,11 @@ const ProgressRegister = () => {
                                         : complaint.currentStage ===
                                           "Investigation Report"
                                         ? "Under Investigation"
-                                        : complaint.currentStage}
+                                        : complaint.currentStage
+                                        ? complaint.currentStage == "Forwarded"
+                                          ? "Awaiting Enquiry Assignment"
+                                          : complaint.currentStage
+                                        : "N/A"}
                                     </span>
                                   </td>
                                   <td className="py-2 px-2 sm:py-3 sm:px-3 text-gray-700">

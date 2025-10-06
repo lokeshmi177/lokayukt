@@ -100,7 +100,7 @@ class SupervisorReportController extends Controller
                         // ->where('form_status', 1)
                         //         ->where('approved_rejected_by_ro', 1)
                                 ->where('ca.type', 2)
-                                ->where('ca.status', 'Report Requested')
+                                ->where('ca.status', 'Verified')
                                 ->whereNotNull('ca.forward_to_ds_js')
                                 ->where('ca.forward_to_ds_js',$user_id);
                                 // ->whereOr('approved_rejected_by_so', 1);
@@ -110,7 +110,7 @@ class SupervisorReportController extends Controller
 
                         case "sec":
                         $records->where('ca.type', 2)
-                                ->where('ca.status', 'Report Requested')
+                                ->where('ca.status', 'Verified')
                                 ->whereNotNull('ca.forward_to_sec')
                                  ->where('ca.forward_to_sec',$user_id);
                                 // ->where('form_status', 1)
