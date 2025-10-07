@@ -335,8 +335,8 @@ const AddUserManagement = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                    errors.name ? '' : 'border-gray-300'
                   }`}
                   placeholder="Enter full name (only alphabets and spaces)"
                 />
@@ -358,8 +358,8 @@ const AddUserManagement = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                    errors.email ? '' : 'border-gray-300'
                   }`}
                   placeholder="Enter email address"
                 />
@@ -390,8 +390,8 @@ const AddUserManagement = () => {
                       setErrors(prev => ({ ...prev, number: '' }));
                     }
                   }}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.number ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                    errors.number ? '' : 'border-gray-300'
                   }`}
                   maxLength="10"
                   pattern="[0-9]*"
@@ -413,8 +413,8 @@ const AddUserManagement = () => {
                   name="role_id"
                   value={formData.role_id}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.role_id ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
+                    errors.role_id ? '' : 'border-gray-300'
                   }`}
                 >
                   <option value="">Select Role</option>
@@ -440,8 +440,8 @@ const AddUserManagement = () => {
                   value={formData.sub_role_id}
                   onChange={handleInputChange}
                   disabled={!formData.role_id || isLoadingSubRoles}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.sub_role_id ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
+                    errors.sub_role_id ? '' : 'border-gray-300'
                   } ${(!formData.role_id || isLoadingSubRoles) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <option value="">
@@ -482,8 +482,8 @@ const AddUserManagement = () => {
                   name="district_id"
                   value={formData.district_id}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.district_id ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
+                    errors.district_id ? '' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDistricts}
                 >
@@ -511,8 +511,8 @@ const AddUserManagement = () => {
                   name="designation"
                   value={formData.designation}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.designation ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
+                    errors.designation ? '' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDesignations}
                 >
@@ -540,8 +540,8 @@ const AddUserManagement = () => {
                   name="department_id" 
                   value={formData.department_id}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white ${
-                    errors.department_id ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none bg-white ${
+                    errors.department_id ? '' : 'border-gray-300'
                   }`}
                   disabled={isLoadingDepartments}
                 >
@@ -583,8 +583,8 @@ const AddUserManagement = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                    errors.password ? '' : 'border-gray-300'
                   }`}
                   placeholder="Enter password"
                 />
@@ -606,8 +606,8 @@ const AddUserManagement = () => {
                   name="password_confirmation"
                   value={formData.password_confirmation}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none ${
-                    errors.password_confirmation ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none ${
+                    errors.password_confirmation ? '' : 'border-gray-300'
                   }`}
                   placeholder="Confirm password"
                 />
@@ -629,7 +629,7 @@ const AddUserManagement = () => {
                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
                   isSubmitting
                     ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-[#123463] hover:bg-[#123463] text-white'
                 }`}
               >
                 {isSubmitting ? (

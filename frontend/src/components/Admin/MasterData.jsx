@@ -67,7 +67,7 @@ const DeleteModal = ({
             type="button"
             onClick={onClose}
             disabled={isDeleting}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -75,7 +75,7 @@ const DeleteModal = ({
             type="button"
             onClick={onConfirm}
             disabled={isDeleting}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center gap-2 ${
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 flex items-center gap-2 ${
               isDeleting 
                 ? 'bg-red-400 cursor-not-allowed' 
                 : 'bg-red-600 hover:bg-red-700'
@@ -280,7 +280,7 @@ const EditModal = ({
                 type="text"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="Enter name"
                 autoComplete="off"
               />
@@ -298,7 +298,7 @@ const EditModal = ({
                 type="text"
                 value={formData.nameHi}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="हिंदी में नाम दर्ज करें"
                 autoComplete="off"
               />
@@ -317,7 +317,7 @@ const EditModal = ({
                   type="text"
                   value={formData.code}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                   placeholder="Enter district code"
                   autoComplete="off"
                 />
@@ -336,7 +336,7 @@ const EditModal = ({
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                   placeholder="Enter description"
                   rows="3"
                   autoComplete="off"
@@ -362,7 +362,7 @@ const EditModal = ({
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting 
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-[#123463] hover:bg-[#123463] text-white'
               }`}
             >
               {isSubmitting ? (
@@ -560,7 +560,7 @@ const AddModal = ({
                 type="text"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="Enter name"
                 autoComplete="off"
               />
@@ -577,7 +577,7 @@ const AddModal = ({
                 type="text"
                 value={formData.nameHi}
                 onChange={handleInputChange}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="हिंदी में नाम दर्ज करें"
                 autoComplete="off"
               />
@@ -595,7 +595,7 @@ const AddModal = ({
                   type="text"
                   value={formData.code}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                   placeholder="Enter district code"
                   autoComplete="off"
                 />
@@ -613,7 +613,7 @@ const AddModal = ({
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                   placeholder="Enter description"
                   rows="3"
                   autoComplete="off"
@@ -639,7 +639,7 @@ const AddModal = ({
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting 
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-[#123463] hover:bg-[#123463] text-white'
               }`}
             >
               {isSubmitting ? (
