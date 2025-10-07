@@ -85,12 +85,13 @@ const Sidebar = ({ isMobileMenuOpen, toggleMobileMenu, isCollapsed, toggleSideba
     return location.pathname.startsWith(fullPath);
   };
 
-  // Close mobile menu when clicking link
-  const handleLinkClick = () => {
-    if (isMobile) {
-      toggleMobileMenu();
-    }
-  };
+const handleLinkClick = () => {
+  if (isMobile && isMobileMenuOpen) {
+    toggleMobileMenu();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   
   // Custom Scrollbar CSS
   const scrollbarStyles = `

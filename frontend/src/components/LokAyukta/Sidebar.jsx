@@ -110,6 +110,11 @@ const Sidebar = ({
     setIsHindi(!isHindi);
   };
 
+  const scroleTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Add any other logic here
+};
+
   // Simple isActive function for lokayukt routes
   const isActive = (href) => {
     const fullPath = `/lokayukt${href}`;
@@ -121,11 +126,14 @@ const Sidebar = ({
   };
 
   // Close mobile menu when clicking link
-  const handleLinkClick = () => {
-    if (isMobile && isMobileMenuOpen) {
-      toggleMobileMenu();
-    }
-  };
+const handleLinkClick = () => {
+  if (isMobile && isMobileMenuOpen) {
+    toggleMobileMenu();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 
   //  Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -379,6 +387,7 @@ const Sidebar = ({
 
             {/* Search & Reports */}
             <li>
+              
               <Link
                 to="/lokayukt/search-reports"
                 onClick={handleLinkClick}

@@ -121,12 +121,13 @@ const Sidebar = ({
   };
 
   // Close mobile menu when clicking link
-  const handleLinkClick = () => {
-    if (isMobile && isMobileMenuOpen) {
-      toggleMobileMenu();
-    }
-  };
+ const handleLinkClick = () => {
+  if (isMobile && isMobileMenuOpen) {
+    toggleMobileMenu();
+  }
 
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   // ✅ Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobile && isMobileMenuOpen) {

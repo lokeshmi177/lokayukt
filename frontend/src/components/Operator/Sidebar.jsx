@@ -104,12 +104,15 @@ const Sidebar = ({
   };
 
   // Close mobile menu when clicking link
-  const handleLinkClick = () => {
-    if (isMobile) {
-      toggleMobileMenu();
-    }
-  };
 
+
+  const handleLinkClick = () => {
+  if (isMobile && isMobileMenuOpen) {
+    toggleMobileMenu();
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   // Custom Scrollbar CSS
   const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {

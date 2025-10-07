@@ -531,7 +531,7 @@ const ApprovedComplaints = () => {
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
     navigate(`/lokayukt/approved-complaints/view/${complaintId}`);
-    window.scrollTo({ top: 2, behavior: 'smooth' }); // Scroll to top smoothly
+    window.scrollTo({ top: 2, behavior: 'smooth' }); 
   };
 
   // Handle modal view

@@ -33,6 +33,7 @@ const api = axios.create({
   },
 });
 
+
 // Custom Searchable Dropdown Component
 const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select Option...", required = false, error = null }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -140,6 +141,9 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
 };
 
 // Forward Modal Component with 3 Tabs
+
+
+// Forward Modal Component with 3 Tabs
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -157,13 +161,67 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [reportData, setReportData] = useState([]);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
-  // Static data for Investigation Report tab
-  const investigationData = [
-    { name: "Sahil", role: "Investigation Officer", remark: "Cio", targetDate: "2025-10-18" },
-    { name: "Pen", role: "Lead Investigator", remark: "ds-js", targetDate: "2025-10-22" },
-    { name: "Remote", role: "Forensic Analyst", remark: "Da", targetDate: "2025-10-28" },
-  ];
+  // State for Investigation Report tab API data - ADD THIS
+  const [investigationData, setInvestigationData] = useState([]);
+  const [isLoadingInvestigation, setIsLoadingInvestigation] = useState(false);
 
+  // Fetch Investigation Report data from API - ADD THIS FUNCTION
+  const fetchInvestigationData = async () => {
+    if (!complaintId) return;
+    
+    setIsLoadingInvestigation(true);
+    try {
+      const response = await api.get(`/lokayukt/request-list-cio/${complaintId}`);
+      if (response.data.status === true && Array.isArray(response.data.data)) {
+        // Process the data to match your table structure
+        const processedData = response.data.data.map((item) => {
+          let officerName = "N/A";
+          let role = "N/A";
+
+          // Determine officer name from available fields
+          if (item.cio_name) {
+            officerName = item.cio_name;
+            role = "CIO/IO";
+          } else if (item.ds_js_name) {
+            officerName = item.ds_js_name;
+            role = "DS/JS";
+          } else if (item.sec_name) {
+            officerName = item.sec_name;
+            role = "Secretary";
+          }
+
+          return {
+            name: officerName,
+            role: role,
+            remark: item.remarks || "N/A",
+            targetDate: item.target_date || "N/A",
+            // status: item.status || "N/A"
+          };
+        });
+
+        setInvestigationData(processedData);
+      } else {
+        setInvestigationData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching investigation data:", error);
+      toast.error("Error loading investigation data");
+      setInvestigationData([]);
+    } finally {
+      setIsLoadingInvestigation(false);
+    }
+  };
+
+  // ... rest of your existing ForwardModal functions ...
+
+  // Add this useEffect for investigation data - ADD THIS
+  useEffect(() => {
+    if (isOpen && activeModalTab === "investigation") {
+      fetchInvestigationData();
+    }
+  }, [isOpen, activeModalTab, complaintId]);
+
+  // ... rest of your ForwardModal component ...
   const fetchUsersData = async () => {
     setIsLoadingData(true);
     try {
@@ -289,10 +347,10 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
-      <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg max-h-[90vh] overflow-hidden flex flex-col">
+    <div style={{ marginTop: 0 }}  className=" fixed  inset-0 z-50 flex items-center  justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
+      <div className="w-full max-w-3xl bg-white  rounded-lg shadow-lg h-[80vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
+        <div className="px-6 py-4 border-b flex items-center  justify-between flex-shrink-0">
           <h3 className="text-lg font-semibold">Request Details</h3>
           <button
             type="button"
@@ -301,7 +359,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           >
             <FaTimes className="w-5 h-5" />
           </button>
-        </div>
+        </div>    
 
         {/* Modal Tabs */}
         <div className="px-6 pt-4 flex-shrink-0">
@@ -458,13 +516,13 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                           Forward By
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                           Remark
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
                           Entry Date
                         </th>
                       </tr>
@@ -491,41 +549,54 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           )}
 
           {/* Investigation Report Tab */}
-          {activeModalTab === "investigation" && (
-            <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-4">Investigation Report Details</h4>
-              <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Remark
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Target Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {investigationData.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{item.role}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{item.targetDate}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+        {/* Investigation Report Tab - API Integrated */}
+{activeModalTab === "investigation" && (
+  <div>
+    <h4 className="text-md font-semibold text-gray-900 mb-4">Investigation Report Details</h4>
+    
+    {isLoadingInvestigation ? (
+      <div className="text-center py-8">
+        {/* <FaSpinner className="w-6 h-6 animate-spin mx-auto text-gray-400" /> */}
+        <p className="mt-2 text-sm text-gray-500">Loading...</p>
+      </div>
+    ) : investigationData.length > 0 ? (
+      <div className="overflow-x-auto border border-gray-200 rounded-lg">
+       <table className="min-w-full divide-y divide-gray-200">
+  <thead className="bg-gray-50">
+    <tr>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+        Forward By
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+        Remark
+      </th>
+      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+        Entry Date
+      </th>
+    </tr>
+  </thead>
+  <tbody className="bg-white divide-y divide-gray-200">
+    {investigationData.map((item, index) => (
+      <tr key={index} className="hover:bg-gray-50">
+        <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+          {item.name} ({item.role})
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
+        <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{item.targetDate}</td>
+       
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+      </div>
+    ) : (
+      <div className="text-center py-8 border border-gray-200 rounded-lg">
+        <p className="text-gray-500 font-medium">No investigation data available</p>
+      </div>
+    )}
+  </div>
+)}
         </div>
       </div>
     </div>

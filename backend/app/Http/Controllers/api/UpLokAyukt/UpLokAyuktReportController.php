@@ -498,7 +498,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // ->orWhere('ca.forward_to_sec', $userId)
         // ->orWhere('ca.forward_to_cio_io', $userId)
         ->where('ca.type', 2)
-        ->where('ca.status', 'Forwarded')
+        ->whereNotNull('ca.forward_to_cio_io')
+        ->where('ca.status', 'Investigation Report')
         ->get();
 
          return response()->json([

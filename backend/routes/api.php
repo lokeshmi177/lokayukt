@@ -259,7 +259,7 @@ Route::middleware('auth:sanctum')->group(function(){
         // Route::post('/forward-by-da/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyda']);
         Route::post('/request-report/{complainId}',[LokAyuktReportController::class,'requestReport']);
         Route::get('/request-list/{complainId}',[LokAyuktReportController::class,'requestReportList']);
-        
+                Route::get('/request-list-cio/{complainId}',[LokAyuktReportController::class,'requestinvestigationReport']);
         /*
          * Forward Report By Subroles
          */
@@ -301,7 +301,8 @@ Route::middleware('auth:sanctum')->group(function(){
         // Route::post('/forward-by-ds-js/{complainId}',[UpLokAyuktComplaintsController::class,'forwardComplaintbyds']);
         // Route::post('/forward-by-da/{complainId}',[UpLokAyuktComplaintsController::class,'forwardComplaintbyda']);
         Route::post('/request-report/{complainId}',[UpLokAyuktReportController::class,'requestReport']);
-        Route::post('/request-list/{complainId}',[UpLokAyuktReportController::class,'requestReportList']);
+        Route::get('/request-list/{complainId}',[UpLokAyuktReportController::class,'requestReportList']);
+        Route::get('/request-list-cio/{complainId}',[UpLokAyuktReportController::class,'requestinvestigationReport']);
         
         /*
          * Forward Report By Subroles

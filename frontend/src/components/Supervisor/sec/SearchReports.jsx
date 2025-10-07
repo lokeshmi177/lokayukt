@@ -191,6 +191,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [errors, setErrors] = useState({});
 
+
   // Fetch LokAyukta and UpLokAyukta data
   const fetchForwardingData = async () => {
     setIsLoadingData(true);
@@ -339,6 +340,9 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 error={errors.forward_to && errors.forward_to[0]} 
               />
             </div>
+            <input type="hidden" name="target_date"
+            value={targetDate}
+            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -438,6 +442,7 @@ const SearchReports = () => {
   // ✅ Forward Modal States
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
+    const [targetDate, setTargetDate] = useState("");
 
   // Helper function to ensure array
   const ensureArray = (data) => (Array.isArray(data) ? data : []);
@@ -532,6 +537,8 @@ const SearchReports = () => {
         const reportsResponse = await api.get("/supervisor/complain-report");
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
+              const complaintData = complaintResponse.data.data;
+    setTargetDate(complaintData.target_date);
           setSearchResults(dataArray);
         }
         setIsLoadingSearchResults(false);
