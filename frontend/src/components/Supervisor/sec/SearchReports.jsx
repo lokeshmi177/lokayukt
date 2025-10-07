@@ -345,7 +345,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
             <input 
               type="hidden" 
               name="target_date"
-              value={targetDate || ""}
+              value={targetDate}
             />
           </div>
 
@@ -499,15 +499,15 @@ const SearchReports = () => {
       setIsLoadingGeneral(true);
       setIsLoadingStatistical(true);
       setIsLoadingCompliance(true);
-
+  
       try {
         const districtsResponse = await api.get("/supervisor/all-district");
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
         }
-
-        // ✅ FETCH TARGET DATE FROM API
+  
+        // ✅ FETCH TARGET DATE FROM API - FIXED
         const reportsResponse = await api.get("/supervisor/complain-report");
         if (reportsResponse.data.status === true) {
           const complaintData = reportsResponse.data.data;
@@ -515,8 +515,11 @@ const SearchReports = () => {
           
           const dataArray = ensureArray(complaintData);
           
-          // Set target date if exists
-          if (complaintData && complaintData.target_date) {
+          // ✅ FIX: Check if array and get first item's target_date
+          if (Array.isArray(dataArray) && dataArray.length > 0 && dataArray[0].target_date) {
+            setTargetDate(dataArray[0].target_date);
+            console.log("Target Date Set:", dataArray[0].target_date);
+          } else if (complaintData && !Array.isArray(complaintData) && complaintData.target_date) {
             setTargetDate(complaintData.target_date);
             console.log("Target Date Set:", complaintData.target_date);
           }
@@ -524,7 +527,8 @@ const SearchReports = () => {
           setSearchResults(dataArray);
         }
         setIsLoadingSearch(false);
-
+  
+        // REST OF THE CODE REMAINS SAME...
         try {
           const overallResponse = await api.get("/supervisor/all-complains");
           if (overallResponse.data.status === true) {
@@ -533,7 +537,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching overall stats:", error);
         }
-
+  
         try {
           const districtWiseResponse = await api.get("/supervisor/district-wise-complaint");
           if (districtWiseResponse.data.status === true) {
@@ -542,7 +546,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching district-wise stats:", error);
         }
-
+  
         try {
           const departmentWiseResponse = await api.get("/supervisor/department-wise-complaint");
           if (departmentWiseResponse.data.status === true) {
@@ -552,7 +556,7 @@ const SearchReports = () => {
           console.error("Error fetching department-wise stats:", error);
         }
         setIsLoadingGeneral(false);
-
+  
         try {
           const monthlyTrendsResponse = await api.get("/supervisor/montly-trends");
           if (monthlyTrendsResponse.data.status === true) {
@@ -561,7 +565,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching monthly trends:", error);
         }
-
+  
         try {
           const avgProcessingResponse = await api.get("/supervisor/detail-by-complaintype");
           if (avgProcessingResponse.data.status === true) {
@@ -571,7 +575,7 @@ const SearchReports = () => {
           console.error("Error fetching average processing times:", error);
         }
         setIsLoadingStatistical(false);
-
+  
         try {
           const complianceReportResponse = await api.get("/supervisor/compliance-report");
           if (complianceReportResponse.data.status === true) {
@@ -581,7 +585,7 @@ const SearchReports = () => {
           console.error("Error fetching compliance report:", error);
         }
         setIsLoadingCompliance(false);
-
+  
       } catch (error) {
         console.error("Error in fetchInitialData:", error);
         setSearchResults([]);
@@ -593,9 +597,10 @@ const SearchReports = () => {
         setIsLoadingCompliance(false);
       }
     };
-
+  
     fetchInitialData();
   }, []);
+  
 
   const handleSearch = async () => {
     setIsSearching(true);
