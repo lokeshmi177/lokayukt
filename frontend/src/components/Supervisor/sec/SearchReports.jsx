@@ -1207,55 +1207,37 @@ const SearchReports = () => {
                     <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
                       <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Compliance Report</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {complianceReport ? (
-                          <>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                                {parseFloat(complianceReport.approvedpercentage).toFixed(1)}%
+                      {complianceReport ? (
+                            <>
+                              <div className="text-center p-4 border rounded-lg">
+                                <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
+                                  {parseFloat(complianceReport.approved_percentage).toFixed(1)}%
+                                </div>
+                                <div className="text-xs sm:text-sm text-gray-500">Within Target</div>
+
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                                {parseFloat(complianceReport.pendingpercentage).toFixed(1)}%
+                              <div className="text-center p-4 border rounded-lg">
+                                <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
+                                  {parseFloat(complianceReport.pending_percentage).toFixed(1)}%
+                                </div>
+                                                                <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
+
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                                {parseFloat(complianceReport.rejectedpercentage).toFixed(1)}%
+                              <div className="text-center p-4 border rounded-lg">
+                                <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
+                                  {parseFloat(complianceReport.rejected_percentage).toFixed(1)}%
+                                </div>
+                                                               <div className="text-xs sm:text-sm text-gray-500">Critical Delay</div>
+
                               </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                                {overallStats?.totalcomplaints > 0
-                                  ? Math.round((Number(overallStats?.totalapproved || 0) / Number(overallStats?.totalcomplaints)) * 100)
-                                  : 0}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Approved Cases</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
-                                {overallStats?.totalcomplaints > 0
-                                  ? Math.round((Number(overallStats?.totalpending || 0) / Number(overallStats?.totalcomplaints)) * 100)
-                                  : 0}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Pending Cases</div>
-                            </div>
-                            <div className="text-center p-4 border rounded-lg">
-                              <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
-                                {overallStats?.totalcomplaints > 0
-                                  ? Math.round((Number(overallStats?.totalrejected || 0) / Number(overallStats?.totalcomplaints)) * 100)
-                                  : 0}%
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">Rejected Cases</div>
-                            </div>
-                          </>
-                        )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="col-span-3 text-center py-8 flex justify-center items-center">
+                <h1 className="text-gray-500 font-semibold text-md">No Data Found</h1>
+              </div>
+                            </>
+                          )}
                       </div>
                     </div>
                   </div>
