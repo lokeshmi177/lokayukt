@@ -57,6 +57,7 @@ class SupervisorReportController extends Controller
                     'dd.district_name as district_name',
                     'dd.district_code as district_id',
                     'ds.name as designation_name',
+                    'ca.target_date as target_date',
 
                     // Concatenate multiple related fields
                     DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
@@ -109,6 +110,7 @@ class SupervisorReportController extends Controller
                             break;
 
                         case "sec":
+                        $records->groupBy('target_date');    
                         $records->where('ca.type', 2)
                                 ->where('ca.status', 'Verified')
                                 ->whereNotNull('ca.forward_to_sec')
