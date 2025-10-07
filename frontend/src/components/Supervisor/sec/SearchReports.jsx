@@ -532,16 +532,20 @@ const SearchReports = () => {
           setDistricts(districtsArray);
         }
 
+
         // ✅ Search Results with loading state
         setIsLoadingSearchResults(true);
         const reportsResponse = await api.get("/supervisor/complain-report");
         if (reportsResponse.data.status === true) {
           const dataArray = ensureArray(reportsResponse.data.data);
-              const complaintData = complaintResponse.data.data;
-    setTargetDate(complaintData.target_date);
+          const complaintData = reportsResponse.data.data;
+          console.log("Complaint Report Data:", complaintData);
+          console.log(`Complaint Report Data: ${complaintData}`)
+          setTargetDate(complaintData.target_date);
           setSearchResults(dataArray);
         }
         setIsLoadingSearchResults(false);
+
 
         // EXISTING API CALLS
         // Fetch overall stats
@@ -553,6 +557,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching overall stats:", error);
         }
+
 
         // ✅ Fetch district-wise stats with loading state
         setIsLoadingDistrictWise(true);
@@ -567,6 +572,7 @@ const SearchReports = () => {
           setIsLoadingDistrictWise(false);
         }
 
+
         // ✅ Fetch department-wise stats with loading state
         setIsLoadingDepartmentWise(true);
         try {
@@ -579,6 +585,7 @@ const SearchReports = () => {
         } finally {
           setIsLoadingDepartmentWise(false);
         }
+
 
         // ✅ Fetch monthly trends with loading state
         setIsLoadingMonthlyTrends(true);
@@ -593,6 +600,7 @@ const SearchReports = () => {
           setIsLoadingMonthlyTrends(false);
         }
 
+
         // Fetch compliance report
         try {
           const complianceReportResponse = await api.get("/supervisor/compliance-report");
@@ -602,6 +610,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching compliance report:", error);
         }
+
 
         // NEW: Fetch average processing time by complaint type
         try {
@@ -622,6 +631,7 @@ const SearchReports = () => {
         toast.error("Error loading data");
       }
     };
+
 
     fetchInitialData();
   }, []);
