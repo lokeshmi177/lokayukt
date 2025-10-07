@@ -433,7 +433,7 @@ const ProgressRegister = () => {
         from: "RO",
         to: "Section Officer",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
     if (forward_by_so_us != null && forward_to_d_a != null) {
@@ -441,7 +441,7 @@ const ProgressRegister = () => {
         from: "Section Officer",
         to: "DA",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -450,7 +450,7 @@ const ProgressRegister = () => {
         from: "DS",
         to: "DA",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -459,7 +459,7 @@ const ProgressRegister = () => {
         from: "DS",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -468,7 +468,7 @@ const ProgressRegister = () => {
         from: "DA",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -477,7 +477,7 @@ const ProgressRegister = () => {
         from: "Secretary",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
     if (forward_by_d_a != null && forward_to_lokayukt != null) {
@@ -485,7 +485,7 @@ const ProgressRegister = () => {
         from: "DA",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -494,7 +494,7 @@ const ProgressRegister = () => {
         from: "CIO",
         to: "Lokayukt",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -503,7 +503,7 @@ const ProgressRegister = () => {
         from: "Lokayukt",
         to: "Secretary",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
     if (forward_by_lokayukt != null && forward_to_cio_io != null) {
@@ -511,7 +511,7 @@ const ProgressRegister = () => {
         from: "Lokayukt",
         to: "CIO",
         status: "completed",
-        icon: <FaArrowRight className="w-3 h-3 text-green-600" />,
+        icon: <FaArrowRight className=" text-gray-500" />,
       };
     }
 
@@ -1099,17 +1099,19 @@ const ProgressRegister = () => {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                      <div className="mt-4">
-                        <Pagination
-                          currentPage={currentPage}
-                          totalPages={totalPages}
-                          onPageChange={setCurrentPage}
-                          totalItems={currentData.length}
-                          itemsPerPage={ITEMS_PER_PAGE}
-                          showInfo={true}
-                        />
-                      </div>
-                    )}
+  <div className="mt-4 flex items-center justify-center sm:justify-end">
+    {/* ✅ Mobile: center, Desktop (sm+): right */}
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPageChange={setCurrentPage}
+      showInfo={false}
+    />
+  </div>
+)}
+
+
+                  
                   </div>
                 </div>
               )}
