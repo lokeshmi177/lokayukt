@@ -167,8 +167,8 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// Forward Modal Component
-const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
+// ✅ UPDATED: Forward Modal Component with targetDate
+const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
     remark: ""
@@ -240,8 +240,14 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     setErrors({});
 
     try {
-      const response = await api.post(`/supervisor/forward-report-by-ds/${complaintId}`, forward);
+      // ✅ Include target_date in the payload
+      const payload = {
+        ...forward,
+        target_date: targetDate
+      };
 
+      const response = await api.post(`/supervisor/forward-report-by-ds/${complaintId}`, payload);
+      
       if (response.data.status !== false) {
         toast.success("Complaint forwarded successfully!");
         onSubmit && onSubmit();
@@ -334,6 +340,13 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 </div>
               )}
             </div>
+
+            
+            <input 
+              type="hidden" 
+              name="target_date"
+              value={targetDate}
+            />
           </div>
 
           <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
@@ -380,7 +393,10 @@ const SearchReports = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
-
+  
+  // ✅ ADD TARGET DATE STATE
+  const [targetDate, setTargetDate] = useState("");
+  
   const [overallStats, setOverallStats] = useState(null);
   const [districtWiseStats, setDistrictWiseStats] = useState(null);
   const [departmentWiseStats, setDepartmentWiseStats] = useState(null);
@@ -389,7 +405,6 @@ const SearchReports = () => {
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
 
-  // ✅ LOADING STATES
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [isLoadingGeneral, setIsLoadingGeneral] = useState(true);
   const [isLoadingStatistical, setIsLoadingStatistical] = useState(true);
@@ -477,28 +492,43 @@ const SearchReports = () => {
     }
   };
 
-  // ✅ UPDATED: Fetch initial data with loading states
+  // ✅ UPDATED: useEffect with target_date functionality
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoadingSearch(true);
       setIsLoadingGeneral(true);
       setIsLoadingStatistical(true);
       setIsLoadingCompliance(true);
-
+  
       try {
         const districtsResponse = await api.get("/supervisor/all-district");
         if (districtsResponse.data.status === "success") {
           const districtsArray = ensureArray(districtsResponse.data.data);
           setDistricts(districtsArray);
         }
-
+  
+        // ✅ FETCH TARGET DATE FROM API - FIXED
         const reportsResponse = await api.get("/supervisor/complain-report");
         if (reportsResponse.data.status === true) {
-          const dataArray = ensureArray(reportsResponse.data.data);
+          const complaintData = reportsResponse.data.data;
+          console.log("Complaint Report Data:", complaintData);
+          
+          const dataArray = ensureArray(complaintData);
+          
+          // ✅ FIX: Check if array and get first item's target_date
+          if (Array.isArray(dataArray) && dataArray.length > 0 && dataArray[0].target_date) {
+            setTargetDate(dataArray[0].target_date);
+            console.log("Target Date Set:", dataArray[0].target_date);
+          } else if (complaintData && !Array.isArray(complaintData) && complaintData.target_date) {
+            setTargetDate(complaintData.target_date);
+            console.log("Target Date Set:", complaintData.target_date);
+          }
+          
           setSearchResults(dataArray);
         }
         setIsLoadingSearch(false);
-
+  
+        // REST OF THE CODE REMAINS SAME...
         try {
           const overallResponse = await api.get("/supervisor/all-complains");
           if (overallResponse.data.status === true) {
@@ -507,7 +537,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching overall stats:", error);
         }
-
+  
         try {
           const districtWiseResponse = await api.get("/supervisor/district-wise-complaint");
           if (districtWiseResponse.data.status === true) {
@@ -516,7 +546,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching district-wise stats:", error);
         }
-
+  
         try {
           const departmentWiseResponse = await api.get("/supervisor/department-wise-complaint");
           if (departmentWiseResponse.data.status === true) {
@@ -526,7 +556,7 @@ const SearchReports = () => {
           console.error("Error fetching department-wise stats:", error);
         }
         setIsLoadingGeneral(false);
-
+  
         try {
           const monthlyTrendsResponse = await api.get("/supervisor/montly-trends");
           if (monthlyTrendsResponse.data.status === true) {
@@ -535,7 +565,7 @@ const SearchReports = () => {
         } catch (error) {
           console.error("Error fetching monthly trends:", error);
         }
-
+  
         try {
           const avgProcessingResponse = await api.get("/supervisor/detail-by-complaintype");
           if (avgProcessingResponse.data.status === true) {
@@ -545,7 +575,7 @@ const SearchReports = () => {
           console.error("Error fetching average processing times:", error);
         }
         setIsLoadingStatistical(false);
-
+  
         try {
           const complianceReportResponse = await api.get("/supervisor/compliance-report");
           if (complianceReportResponse.data.status === true) {
@@ -555,20 +585,22 @@ const SearchReports = () => {
           console.error("Error fetching compliance report:", error);
         }
         setIsLoadingCompliance(false);
-
+  
       } catch (error) {
+        console.error("Error in fetchInitialData:", error);
         setSearchResults([]);
         setDistricts([]);
-        toast.error("Error loading data");
+        // toast.error("Error loading data");
         setIsLoadingSearch(false);
         setIsLoadingGeneral(false);
         setIsLoadingStatistical(false);
         setIsLoadingCompliance(false);
       }
     };
-
+  
     fetchInitialData();
   }, []);
+  
 
   const handleSearch = async () => {
     setIsSearching(true);
@@ -734,7 +766,6 @@ const SearchReports = () => {
             </div>
 
             <div className="overflow-hidden">
-              {/* ✅ UPDATED: Advanced Search Tab */}
               {activeTab === "search" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="space-y-3 sm:space-y-4 overflow-hidden px-2 sm:px-0 md:px-0 lg:px-0">
@@ -818,7 +849,6 @@ const SearchReports = () => {
                       </div>
                     </div>
 
-                    {/* ✅ UPDATED: Search Results with Loading State */}
                     <div className="bg-white p-3 sm:p-4 border-gray-200 shadow-sm overflow-hidden">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-base font-semibold text-gray-900">
@@ -965,7 +995,6 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: General Reports Tab */}
               {activeTab === "general" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:space-y-6 overflow-hidden">
@@ -1044,7 +1073,6 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Statistical Reports Tab */}
               {activeTab === "statistical" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   {isLoadingStatistical ? (
@@ -1120,7 +1148,6 @@ const SearchReports = () => {
                 </div>
               )}
 
-              {/* ✅ UPDATED: Compliance Reports Tab */}
               {activeTab === "compliance" && (
                 <div className="mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                   {isLoadingCompliance ? (
@@ -1139,28 +1166,25 @@ const SearchReports = () => {
                                   {parseFloat(complianceReport.approved_percentage).toFixed(1)}%
                                 </div>
                                 <div className="text-xs sm:text-sm text-gray-500">Within Target</div>
-
                               </div>
                               <div className="text-center p-4 border rounded-lg">
                                 <div className="text-xl sm:text-2xl font-bold text-yellow-600 mb-1">
                                   {parseFloat(complianceReport.pending_percentage).toFixed(1)}%
                                 </div>
-                                                                <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
-
+                                <div className="text-xs sm:text-sm text-gray-500">Delayed</div>
                               </div>
                               <div className="text-center p-4 border rounded-lg">
                                 <div className="text-xl sm:text-2xl font-bold text-red-600 mb-1">
                                   {parseFloat(complianceReport.rejected_percentage).toFixed(1)}%
                                 </div>
-                                                               <div className="text-xs sm:text-sm text-gray-500">Critical Delay</div>
-
+                                <div className="text-xs sm:text-sm text-gray-500">Critical Delay</div>
                               </div>
                             </>
                           ) : (
                             <>
                               <div className="col-span-3 text-center py-8 flex justify-center items-center">
-                <h1 className="text-gray-500 font-semibold text-md">No Data Found</h1>
-              </div>
+                                <h1 className="text-gray-500 font-semibold text-md">No Data Found</h1>
+                              </div>
                             </>
                           )}
                         </div>
@@ -1173,10 +1197,12 @@ const SearchReports = () => {
           </div>
         </div>
 
+        {/* ✅ PASS targetDate TO FORWARDMODAL */}
         <ForwardModal
           isOpen={isForwardModalOpen}
           onClose={() => setIsForwardModalOpen(false)}
           complaintId={selectedComplaintId}
+          targetDate={targetDate}
           onSubmit={handleForwardSubmit}
         />
       </div>
