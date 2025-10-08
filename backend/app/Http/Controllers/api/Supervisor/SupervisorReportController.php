@@ -40,31 +40,76 @@ class SupervisorReportController extends Controller
         $districtData = DB::table('district_master')->orderBy('district_name')->get();
                    $userSubrole = Auth::user()->subrole->name; 
          if($userSubrole){
-                        $records = DB::table('complaints')
-                ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
-                ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
-                ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
-                ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
-                ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
-                ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
-               ->leftJoin('complaint_actions as ca', 'complaints.id', '=', 'ca.complaint_id')
-                ->select(
-                    'complaints.id',
-                    'complaints.complain_no',
-                    'complaints.name',
-                    'complaints.status',
-                    'complaints.created_at',
-                    'dd.district_name as district_name',
-                    'dd.district_code as district_id',
-                    'ds.name as designation_name',
-                    'ca.target_date as target_date',
+            //             $records = DB::table('complaints')
+            //     ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+            //     ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
+            //     ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+            //     ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+            //     ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+            //     ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+            //    ->leftJoin('complaint_actions as ca', 'complaints.id', '=', 'ca.complaint_id')
+            //     ->select(
+            //         'complaints.id',
+            //         'complaints.complain_no',
+            //         'complaints.name',
+            //         // 'complaints.status',
+            //         'complaints.created_at',
+            //         'dd.district_name as district_name',
+            //         'dd.district_code as district_id',
+            //         'ds.name as designation_name',
+            //         'ca.target_date as target_date',
+            //         'ca.status',
+            //         // 'ca.forward_by_ds_js as forward_by_ds_js',
+            //         'ca.forward_by_sec as forward_by_sec',
+            //         // 'ca.forward_by_cio_io as forward_by_cio_io',
 
-                    // Concatenate multiple related fields
-                    DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
-                    DB::raw("GROUP_CONCAT(DISTINCT ds.name SEPARATOR ', ') as designation_name"),
-                    DB::raw("GROUP_CONCAT(DISTINCT ct.name SEPARATOR ', ') as complaintype_name"),
-                    DB::raw("GROUP_CONCAT(DISTINCT sub.name SEPARATOR ', ') as subject_name")
-                );
+            //         // Concatenate multiple related fields
+            //         DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
+            //         DB::raw("GROUP_CONCAT(DISTINCT ds.name SEPARATOR ', ') as designation_name"),
+            //         DB::raw("GROUP_CONCAT(DISTINCT ct.name SEPARATOR ', ') as complaintype_name"),
+            //         DB::raw("GROUP_CONCAT(DISTINCT sub.name SEPARATOR ', ') as subject_name")
+            //     );
+            $latestActionSubquery = DB::table('complaint_actions as ca1')
+    ->select('ca1.*')
+    // ->select('ca1.complaint_id', 'ca1.status', 'ca1.target_date', 'ca1.forward_by_sec','ca1.forward_by_ds_js','ca1.forward_by_cio_io','ca1.type')
+    ->whereRaw('ca1.id = (
+        SELECT MAX(ca2.id)
+        FROM complaint_actions as ca2
+        WHERE ca2.complaint_id = ca1.complaint_id
+    )');
+
+$records = DB::table('complaints')
+    ->leftJoinSub($latestActionSubquery, 'ca', function($join) {
+        $join->on('complaints.id', '=', 'ca.complaint_id');
+    })
+    ->leftJoin('complaints_details as cd', 'complaints.id', '=', 'cd.complain_id')
+    ->leftJoin('district_master as dd', 'complaints.district_id', '=', 'dd.district_code')
+    ->leftJoin('departments as dp', 'cd.department_id', '=', 'dp.id')
+    ->leftJoin('designations as ds', 'cd.designation_id', '=', 'ds.id')
+    ->leftJoin('complaintype as ct', 'cd.complaintype_id', '=', 'ct.id')
+    ->leftJoin('subjects as sub', 'cd.subject_id', '=', 'sub.id')
+    ->select(
+        'complaints.id',
+        'complaints.complain_no',
+        'complaints.name',
+        'complaints.status',
+        'complaints.created_at',
+        'dd.district_name as district_name',
+        'dd.district_code as district_id',
+        DB::raw("GROUP_CONCAT(DISTINCT dp.name SEPARATOR ', ') as department_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT ds.name SEPARATOR ', ') as designation_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT ct.name SEPARATOR ', ') as complaintype_name"),
+        DB::raw("GROUP_CONCAT(DISTINCT sub.name SEPARATOR ', ') as subject_name"),
+
+        // Latest complaint action fields
+        'ca.status as ca_status',
+        'ca.target_date',
+        'ca.forward_by_ds_js',
+        'ca.forward_by_sec',
+        'ca.forward_by_cio_io',
+    );
+
+
                     if (!empty($districtId)) {
                         $records->where('complaints.district_id', $districtId);
                     }
@@ -101,20 +146,21 @@ class SupervisorReportController extends Controller
                         // ->where('form_status', 1)
                         //         ->where('approved_rejected_by_ro', 1)
                                 ->where('ca.type', 2)
-                                ->where('ca.status', 'Verified')
-                                ->whereNotNull('ca.forward_to_ds_js')
-                                ->where('ca.forward_to_ds_js',$user_id);
+                                ->where('ca.status', ['Verified','Forwarded'])
+                                ->where('ca.forward_to_ds_js',$user_id)
+                                ->orWhere('ca.forward_by_ds_js',$user_id);
                                 // ->whereOr('approved_rejected_by_so', 1);
                                 //   ->where('forward_so', 1)
                                 //   ->whereOr('forward_to_uplokayukt', 1);
                             break;
 
                         case "sec":
-                        $records->groupBy('target_date');    
+                        //   $records->where('ca.forward_by_sec',$user_id);
+                        // $records->groupBy('target_date','forward_by_sec','ca.status');    
                         $records->where('ca.type', 2)
-                                ->where('ca.status', 'Verified')
-                                ->whereNotNull('ca.forward_to_sec')
-                                 ->where('ca.forward_to_sec',$user_id);
+                                ->where('ca.status', ['Verified','Forwarded'])
+                                 ->where('ca.forward_to_sec',$user_id)
+                                 ->OrWhere('ca.forward_by_sec',$user_id);
                                 // ->where('form_status', 1)
                                 // // ->where('approved_rejected_by_ro', 1)
                                 // ->where('forward_to_lokayukt', 1)
@@ -122,10 +168,15 @@ class SupervisorReportController extends Controller
                             break;
 
                         case "cio-io":
-                        $records->where('ca.type', 2)
-                                ->where('ca.status', 'Report Requested')
-                                ->whereNotNull('ca.forward_to_cio_io')
-                                 ->where('ca.forward_to_cio_io',$user_id);
+                        $records
+                        ->where('ca.type', 2)
+                                ->where('ca.status', ['Verified','Forwarded'])
+                        ->where('ca.forward_to_cio_io',$user_id)
+                                 ->OrWhere('ca.forward_by_cio_io',$user_id);
+                        // ->where('ca.type', 2)
+                        //         ->where('ca.status', 'Report Requested')
+                        //         ->whereNotNull('ca.forward_to_cio_io')
+                        //          ->where('ca.forward_to_cio_io',$user_id);
                         // ->where('form_status', 1)
                         //         // ->where('approved_rejected_by_ro', 1)
                         //         ->where('forward_to_lokayukt', 1)
@@ -206,17 +257,23 @@ class SupervisorReportController extends Controller
                     'complaints.status',
                     'dd.district_code',
                     'ds.name',
+                    'forward_by_ds_js',
+                    'forward_by_sec',
+                    'forward_by_cio_io',
                 )
                 // ->where('approved_rejected_by_ro', 1)
                         // ->toSql();
-                    ->get();
-        }
+                    // ->get();
+        
  
         // return json_encode($records->toSql());
         // $records = $records->paginate(50);
         // $roles = Role::whereNotIn('id', [5, 6])->get();
         // dd($roles);
         // dd($districtData);
+        //   $records->groupBy('complaints.id','complaints.complain_no','complaints.name','dd.district_name','dd.district_code','ca.status','ca.target_date','ca.forward_by_ds_js','ca.forward_by_sec','ca.forward_by_cio_io')
+        
+         ->get();
         if(!$records->isEmpty()){
             
             return response()->json([
@@ -231,6 +288,7 @@ class SupervisorReportController extends Controller
                'message' => 'No Records Found',
            ]);
         }
+    }
       
     }
 
@@ -291,42 +349,121 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $user  = Auth::user()->name;
         $userSubroleRole = Auth::user()->subrole->name;
         
-         $records = DB::table('complaints')
+        //  $records = DB::table('complaints')
+        //     // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+        //     // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
+        //     // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
+        //     // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
+        //     // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+        //     ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+        //     ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+        //     ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            
+        //     ->select(
+        //         'complaints.*',
+        //         'ca.*',
+        //         'u.id as user_id',
+        //         'u.name as user_name',
+        //         'srole.name as subrole_name',
+        //         // 'subrole_name.'-'.user_name as assigned_to'
+        //         // 'ca.*',
+        //         // 'dd.district_name as district_name',
+        //         // 'dp.name as department_name',
+        //         // 'ds.name as designation_name',
+        //         // 'ct.name as complaintype_name',
+        //         // 'sub.name as subject_name',
+        //     )
+        //     // ->groupBy('complaints.id','u.id','srole.name')
+        //     ->where('approved_rejected_by_ro', 1)
+        //     ->where('approved_rejected_by_ds_js', 0)
+        //     ->get();
+            // CIO - राज कुमार
+            //  $records->assigned_to = $records->subrole_name.'-'.$records->user_name;
+            
+            
+         $userSubrole = Auth::user()->subrole->name; 
+  if($userSubrole){
+      $records = DB::table('complaints')
+            //   ->leftJoin('complaints_details as cd', 'complaints.id','=', 'cd.complain_id')
             // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
             // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
             // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
             // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
             // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-            ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
-            ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+            // ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+            // ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
             ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
             
             ->select(
-                'complaints.*',
+                // 'complaints.*',
                 'ca.*',
-                'u.id as user_id',
-                'u.name as user_name',
-                'srole.name as subrole_name',
-                // 'subrole_name.'-'.user_name as assigned_to'
-                // 'ca.*',
+                'complaints.complain_no',
+                'complaints.name',
+                'complaints.approved_rejected_by_ro',
+                'complaints.approved_rejected_by_so_us',
+                'complaints.approved_rejected_by_ds_js',
+                'complaints.approved_rejected_by_d_a',
+                'complaints.approved_rejected_by_lokayukt',
+                // 'u.id as user_id',
+                // 'srole.name as subrole_name',
+                
+                // 'cd.*'
                 // 'dd.district_name as district_name',
                 // 'dp.name as department_name',
                 // 'ds.name as designation_name',
                 // 'ct.name as complaintype_name',
                 // 'sub.name as subject_name',
-            )
-            // ->groupBy('complaints.id','u.id','srole.name')
-            ->where('approved_rejected_by_ro', 1)
-            ->where('approved_rejected_by_ds_js', 0)
+            )->where('in_draft','0')
+             ->where('ca.status','<>', "Report Requested")
+            //  ->where('ca.type', 1)
+            ->orderBy('complaints.id','desc')
             ->get();
-            // CIO - राज कुमार
-            //  $records->assigned_to = $records->subrole_name.'-'.$records->user_name;
-                                                                                
-            
+          
+        
+                // switch ($userSubrole) {
+                      
+        
+                //         case "so-us":
+                             
+                //             break;
+
+                //         case "ds-js":
+                     
+                      
+                //             break;
+
+                //         case "sec":
+                       
+                //             break;
+
+                //         case "cio-io":
+                            
+                //              break;
+
+                //         case "dea-assis":
+                      
+                //             break;
+
+                //         default:
+                //             return response()->json([
+                //                 'status' => false,
+                //                 'message' => 'Invalid subrole',
+                //                 'data' => [],
+                //             ], 400);
+                //     }
+
+        
+
+
+  }
+     
+    
+             
               return response()->json([
                 'status' => true,
                 'message' => 'Records Fetch successfully',
                 'data' => $records,
+                // 'subrole' => $userSubroleRole
             ]);
             // dd($records);
     }
@@ -506,7 +643,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
             'forward_to' => 'required|exists:users,id',
-            // 'remark' => 'required',
+            'target_date' => 'required|date',
+            'remark' => 'required',
          
           
         ], [
@@ -575,6 +713,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 
                 
                 $cmpAction->remarks = $request->remark;
+                $cmpAction->target_date = $request->target_date;
                 $cmpAction->type = "2";
                 $cmpAction->status = "Forwarded";
                 $cmpAction->save();
@@ -611,7 +750,8 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
             'forward_to' => 'required|exists:users,id',
-            // 'remark' => 'required',
+            'target_date' => 'required|date',
+            'remark' => 'required',
          
           
         ], [
@@ -680,6 +820,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 
                 
                 $cmpAction->remarks = $request->remark;
+                 $cmpAction->target_date = $request->target_date;
                 $cmpAction->type = "2";
                 $cmpAction->status = "Forwarded";
                 $cmpAction->save();
@@ -708,6 +849,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         $validation = Validator::make($request->all(), [
             // 'forward_by_ds_js' => 'required|exists:users,id',
             'forward_to' => 'required|exists:users,id',
+            'target_date' => 'required|date',
             // 'remark' => 'required',
          
           
@@ -752,6 +894,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
                 
                 
                 $cmpAction->remarks = $request->remark;
+                 $cmpAction->target_date = $request->target_date;
                 $cmpAction->type = "2";
                 $cmpAction->status = "Forwarded";
                 $cmpAction->save();

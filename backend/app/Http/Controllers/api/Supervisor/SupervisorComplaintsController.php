@@ -107,10 +107,15 @@ class SupervisorComplaintsController extends Controller
         //           ->where('approved_rejected_by_ro', 1);
                 //    ->where('forward_to_lokayukt', 1)
                 //   ->whereOr('forward_to_uplokayukt', 1);
-                 $query->where('rep.type', 2)
-                                ->where('rep.status', 'Report Requested')
+                // $query->groupBy('rep.target_date');    
+                        $query->where('rep.type', 2)
+                                ->where('rep.status', 'Verified')
                                 ->whereNotNull('rep.forward_to_sec')
                                  ->where('rep.forward_to_sec',$user);
+                //  $query->where('rep.type', 2)
+                //                 ->where('rep.status', 'Report Requested')
+                //                 ->whereNotNull('rep.forward_to_sec')
+                //                  ->where('rep.forward_to_sec',$user);
             break;
 
         case "cio-io":
