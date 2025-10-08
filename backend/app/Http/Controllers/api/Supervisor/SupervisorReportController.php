@@ -107,7 +107,7 @@ $records = DB::table('complaints')
         'ca.forward_by_ds_js',
         'ca.forward_by_sec',
         'ca.forward_by_cio_io',
-    );
+     );
 
 
                     if (!empty($districtId)) {
