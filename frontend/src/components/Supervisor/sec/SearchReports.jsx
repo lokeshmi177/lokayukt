@@ -246,7 +246,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
         target_date: targetDate
       };
 
-      const response = await api.post(`/supervisor/forward-report-by-ds/${complaintId}`, payload);
+      const response = await api.post(`/supervisor/forward-report-by-sec/${complaintId}`, payload);
       
       if (response.data.status !== false) {
         toast.success("Complaint forwarded successfully!");
