@@ -86,7 +86,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-2 pr-8 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-left cursor-pointer flex items-center justify-between ${
+        className={`w-full p-2 pr-8 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] bg-white text-left cursor-pointer flex items-center justify-between ${
           error ? 'border-red-500' : 'border-gray-300'
         }`}
         required={required}
@@ -125,7 +125,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
                 placeholder="Search Options..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] outline-none text-sm"
                 onClick={(e) => e.stopPropagation()}
               />
             </div>
@@ -167,7 +167,7 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
   );
 };
 
-// ✅ UPDATED: Forward Modal Component with targetDate
+// Forward Modal Component
 const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -240,7 +240,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
     setErrors({});
 
     try {
-      // ✅ Include target_date in the payload
       const payload = {
         ...forward,
         target_date: targetDate
@@ -250,7 +249,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
       
       if (response.data.status !== false) {
         toast.success("Complaint forwarded successfully!");
-        onSubmit && onSubmit();
+        onSubmit && onSubmit(); // Auto-refresh trigger
         onClose();
       } else {
         if (response.data.errors) {
@@ -281,7 +280,9 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
+    <div 
+    style={{margin: "0 auto"}}
+    className="fixed  inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
       <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg">
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <h3 className="text-lg font-semibold">Forward Report</h3>
@@ -328,7 +329,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
                     setErrors((prev) => ({ ...prev, remark: null }));
                   }
                 }}
-                className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] ${
                   errors.remark ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter Forwarding Remarks..."
@@ -341,7 +342,6 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
               )}
             </div>
 
-            
             <input 
               type="hidden" 
               name="target_date"
@@ -364,7 +364,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !forward.forward_to || isLoadingData
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  : "bg-[#123463] hover:bg-[#123463]"
               } text-white`}
             >
               {isSubmitting ? (
@@ -393,28 +393,20 @@ const SearchReports = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchResults, setSearchResults] = useState([]);
   const [districts, setDistricts] = useState([]);
-  
-  // ✅ ADD TARGET DATE STATE
   const [targetDate, setTargetDate] = useState("");
-  
   const [overallStats, setOverallStats] = useState(null);
   const [districtWiseStats, setDistrictWiseStats] = useState(null);
   const [departmentWiseStats, setDepartmentWiseStats] = useState(null);
-
   const [monthlyTrends, setMonthlyTrends] = useState(null);
   const [complianceReport, setComplianceReport] = useState(null);
   const [avgProcessingTimes, setAvgProcessingTimes] = useState(null);
-
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [isLoadingGeneral, setIsLoadingGeneral] = useState(true);
   const [isLoadingStatistical, setIsLoadingStatistical] = useState(true);
   const [isLoadingCompliance, setIsLoadingCompliance] = useState(true);
-
   const [isSearching, setIsSearching] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
-
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
@@ -425,8 +417,38 @@ const SearchReports = () => {
     setIsForwardModalOpen(true);
   };
 
-  const handleForwardSubmit = () => {
-    console.log("Complaint forwarded");
+  // UPDATED: Auto-refresh after forwarding
+  const handleForwardSubmit = async () => {
+    try {
+      setIsSearching(true);
+      
+      const response = await api.get("/supervisor/complain-report");
+      
+      if (response.data.status === true) {
+        const complaintData = response.data.data;
+        const dataArray = ensureArray(complaintData);
+        
+        // Update search results
+        setSearchResults(dataArray);
+        
+        // Update target date if available
+        if (Array.isArray(dataArray) && dataArray.length > 0 && dataArray[0].target_date) {
+          setTargetDate(dataArray[0].target_date);
+        } else if (complaintData && !Array.isArray(complaintData) && complaintData.target_date) {
+          setTargetDate(complaintData.target_date);
+        }
+        
+        // Reset to first page
+        setCurrentPage(1);
+        
+        console.log("✅ Data automatically refreshed - Forwarded status updated");
+      }
+    } catch (error) {
+      console.error("Error refreshing data after forward:", error);
+      toast.error("Failed to refresh data");
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleHeaderExport = () => {
@@ -492,7 +514,6 @@ const SearchReports = () => {
     }
   };
 
-  // ✅ UPDATED: useEffect with target_date functionality
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoadingSearch(true);
@@ -507,28 +528,21 @@ const SearchReports = () => {
           setDistricts(districtsArray);
         }
   
-        // ✅ FETCH TARGET DATE FROM API - FIXED
         const reportsResponse = await api.get("/supervisor/complain-report");
         if (reportsResponse.data.status === true) {
           const complaintData = reportsResponse.data.data;
-          console.log("Complaint Report Data:", complaintData);
-          
           const dataArray = ensureArray(complaintData);
           
-          // ✅ FIX: Check if array and get first item's target_date
           if (Array.isArray(dataArray) && dataArray.length > 0 && dataArray[0].target_date) {
             setTargetDate(dataArray[0].target_date);
-            console.log("Target Date Set:", dataArray[0].target_date);
           } else if (complaintData && !Array.isArray(complaintData) && complaintData.target_date) {
             setTargetDate(complaintData.target_date);
-            console.log("Target Date Set:", complaintData.target_date);
           }
           
           setSearchResults(dataArray);
         }
         setIsLoadingSearch(false);
   
-        // REST OF THE CODE REMAINS SAME...
         try {
           const overallResponse = await api.get("/supervisor/all-complains");
           if (overallResponse.data.status === true) {
@@ -600,7 +614,6 @@ const SearchReports = () => {
   
     fetchInitialData();
   }, []);
-  
 
   const handleSearch = async () => {
     setIsSearching(true);
@@ -834,10 +847,14 @@ const SearchReports = () => {
                             className="w-full flex items-center justify-center gap-2 px-6 py-2 rounded-md transition-colors text-sm font-medium h-[38px]"
                           >
                             {isSearching ? (
+                              // <>
+                              //   <FaSpinner className="w-4 h-4 text-white animate-spin" />
+                              //   <span className="text-white">Search...</span>
+                              // </>
                               <>
-                                <FaSpinner className="w-4 h-4 text-white animate-spin" />
-                                <span className="text-white">Search...</span>
-                              </>
+                              <FaSearch className="w-4 h-4 text-white" />
+                              <span className="text-white">Search</span>
+                            </>
                             ) : (
                               <>
                                 <FaSearch className="w-4 h-4 text-white" />
@@ -955,13 +972,26 @@ const SearchReports = () => {
                                           <FaFileAlt className="w-3 text-green-600 h-3" />
                                           <span className="hidden text-green-600 font-semibold sm:inline">View</span>
                                         </button>
-                                        <button 
-                                          onClick={() => handleForward(result.id)}
-                                          className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
-                                        >
-                                          <FaArrowRight className="w-3 text-blue-600 h-3" />
-                                          <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
-                                        </button>
+                                        
+                                        {/* UPDATED: Conditional button with not-allowed cursor */}
+                                        {result.ca_status === "Forwarded" ? (
+                                         <button 
+  title="Already Forwarded"
+  className="flex items-center gap-1 px-2 py-1 bg-red-600 border border-red-700 rounded text-white text-[10px] cursor-not-allowed opacity-60"
+  disabled
+>
+  <span className="hidden font-semibold sm:inline">Forwarded</span>
+</button>
+
+                                        ) : result.ca_status === "Verified" ? (
+                                          <button 
+                                            onClick={() => handleForward(result.id)}
+                                            className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
+                                          >
+                                            <FaArrowRight className="w-3 text-blue-600 h-3" />
+                                            <span className="hidden text-blue-600 font-semibold sm:inline">Forward</span>
+                                          </button>
+                                        ) : null}
                                       </div>
                                     </td>
                                   </tr>
@@ -1197,7 +1227,6 @@ const SearchReports = () => {
           </div>
         </div>
 
-        {/* ✅ PASS targetDate TO FORWARDMODAL */}
         <ForwardModal
           isOpen={isForwardModalOpen}
           onClose={() => setIsForwardModalOpen(false)}
