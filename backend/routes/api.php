@@ -254,6 +254,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/all-approved-complaints',[LokAyuktComplaintsController::class,'allComplainsapproved']);
         Route::get('/view-complaint/{id}',[LokAyuktComplaintsController::class,'viewComplaint']);
         Route::post('/forward-by-so/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbySO']);
+        Route::post('/dispose-complain/{complainId}',[LokAyuktComplaintsController::class,'disposeComplaints']);
         Route::get('/get-users',[LokAyuktComplaintsController::class,'getSubROleUsers']);
         // Route::post('/forward-by-ds-js/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyds']);
         // Route::post('/forward-by-da/{complainId}',[LokAyuktComplaintsController::class,'forwardComplaintbyda']);
@@ -297,6 +298,7 @@ Route::middleware('auth:sanctum')->group(function(){
         Route::get('/all-approved-complaints',[UpLokAyuktComplaintsController::class,'allComplainsapproved']);
         Route::get('/view-complaint/{id}',[UpLokAyuktComplaintsController::class,'viewComplaint']);
         Route::post('/forward-by-so/{complainId}',[UpLokAyuktComplaintsController::class,'forwardComplaintbySO']);
+         Route::post('/dispose-complain/{complainId}',[UpLokAyuktComplaintsController::class,'disposeComplaints']);
         Route::get('/get-users',[UpLokAyuktComplaintsController::class,'getSubROleUsers']);
         // Route::post('/forward-by-ds-js/{complainId}',[UpLokAyuktComplaintsController::class,'forwardComplaintbyds']);
         // Route::post('/forward-by-da/{complainId}',[UpLokAyuktComplaintsController::class,'forwardComplaintbyda']);

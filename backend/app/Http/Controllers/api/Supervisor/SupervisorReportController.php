@@ -346,165 +346,420 @@ $complainDetails->details = DB::table('complaints_details as cd')
     }
     
     public function progress_report(){
-        $user  = Auth::user()->name;
-        $userSubroleRole = Auth::user()->subrole->name;
         
-        //  $records = DB::table('complaints')
-        //     // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-        //     // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-        //     // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-        //     // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-        //     // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-        //     ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
-        //     ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-        //     ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
-            
-        //     ->select(
-        //         'complaints.*',
-        //         'ca.*',
-        //         'u.id as user_id',
-        //         'u.name as user_name',
-        //         'srole.name as subrole_name',
-        //         // 'subrole_name.'-'.user_name as assigned_to'
-        //         // 'ca.*',
-        //         // 'dd.district_name as district_name',
-        //         // 'dp.name as department_name',
-        //         // 'ds.name as designation_name',
-        //         // 'ct.name as complaintype_name',
-        //         // 'sub.name as subject_name',
-        //     )
-        //     // ->groupBy('complaints.id','u.id','srole.name')
-        //     ->where('approved_rejected_by_ro', 1)
-        //     ->where('approved_rejected_by_ds_js', 0)
-        //     ->get();
-            // CIO - राज कुमार
-            //  $records->assigned_to = $records->subrole_name.'-'.$records->user_name;
-            
-            
-         $userSubrole = Auth::user()->subrole->name; 
-  if($userSubrole){
-      $records = DB::table('complaints')
-            //   ->leftJoin('complaints_details as cd', 'complaints.id','=', 'cd.complain_id')
-            // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-            // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-            // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-            // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-            // ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
-            // ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-            ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
-            
-            ->select(
-                // 'complaints.*',
-                'ca.*',
-                'complaints.complain_no',
-                'complaints.name',
-                'complaints.approved_rejected_by_ro',
-                'complaints.approved_rejected_by_so_us',
-                'complaints.approved_rejected_by_ds_js',
-                'complaints.approved_rejected_by_d_a',
-                'complaints.approved_rejected_by_lokayukt',
-                // 'u.id as user_id',
-                // 'srole.name as subrole_name',
-                
-                // 'cd.*'
-                // 'dd.district_name as district_name',
-                // 'dp.name as department_name',
-                // 'ds.name as designation_name',
-                // 'ct.name as complaintype_name',
-                // 'sub.name as subject_name',
-            )->where('in_draft','0')
-             ->where('ca.status','<>', "Report Requested")
-            //  ->where('ca.type', 1)
-            ->orderBy('complaints.id','desc')
-            ->get();
-          
-        
-                // switch ($userSubrole) {
-                      
-        
-                //         case "so-us":
-                             
-                //             break;
+//         $user_id  = Auth::user()->id;
+//          $userSubrole = Auth::user()->subrole->name; 
+//   if($userSubrole){
 
-                //         case "ds-js":
+
+//       $records = DB::table('complaints')
+//             ->join('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            
+//             ->select(
+//                 // 'complaints.*',
+//                 'ca.*',
+//                 'complaints.complain_no',
+//                 'complaints.name',
+//                 'complaints.approved_rejected_by_ro',
+//                 'complaints.approved_rejected_by_so_us',
+//                 'complaints.approved_rejected_by_ds_js',
+//                 'complaints.approved_rejected_by_d_a',
+//                 'complaints.approved_rejected_by_lokayukt',
+   
+//             )->where('in_draft','0')
+//                 ->where('ca.status','<>', "Report Requested");
+           
+          
+//           $ca = DB::table('complaint_actions')
+//                                 ->where('forward_to_sec', $user_id)
+//                                 ->OrderBy('id','desc')
+//                                 ->first();
+           
+
+//                 switch ($userSubrole) {
+//                         case "so-us":
+                             
+//                             break;
+
+//                         case "ds-js":
                      
                       
-                //             break;
+//                             break;
 
-                //         case "sec":
-                       
-                //             break;
+//                         case "sec":
+                             
+//                                   $records->where('ca.complaint_id',$ca->complaint_id);
+//                             break;
 
-                //         case "cio-io":
+//                         case "cio-io":
                             
-                //              break;
+//                              break;
 
-                //         case "dea-assis":
+//                         case "dea-assis":
                       
-                //             break;
+//                             break;
 
-                //         default:
-                //             return response()->json([
-                //                 'status' => false,
-                //                 'message' => 'Invalid subrole',
-                //                 'data' => [],
-                //             ], 400);
-                //     }
+//                         default:
+//                             return response()->json([
+//                                 'status' => false,
+//                                 'message' => 'Invalid subrole',
+//                                 'data' => [],
+//                             ], 400);
+//                     }
 
-        
+//           $records->orderBy('complaints.id','desc')
+//                 ->get();
+
+$user_id  = Auth::user()->id;
+$userSubrole = Auth::user()->subrole->name;
+
+if ($userSubrole) {
+
+    $records = DB::table('complaints')
+        ->join('complaint_actions as ca', 'complaints.id', '=', 'ca.complaint_id')
+        ->select(
+            'ca.*',
+            'complaints.complain_no',
+            'complaints.name',
+            'complaints.approved_rejected_by_ro',
+            'complaints.approved_rejected_by_so_us',
+            'complaints.approved_rejected_by_ds_js',
+            'complaints.approved_rejected_by_d_a',
+            'complaints.approved_rejected_by_lokayukt'
+        )
+        ->where('in_draft', '0')
+        ->where('ca.status', '<>', 'Report Requested');
+
+    // Get latest complaint action assigned to this user
+    $cadsjs = DB::table('complaint_actions')
+        ->where('forward_to_ds_js', $user_id)
+        ->orderBy('id', 'desc')
+       ->pluck('complaint_id')->toArray();
+    $ca = DB::table('complaint_actions')
+        ->where('forward_to_sec', $user_id)
+        ->orderBy('id', 'desc')
+        ->pluck('complaint_id')->toArray();
+        // dd($ca );
+    $cacio = DB::table('complaint_actions')
+        ->where('forward_to_cio_io', $user_id)
+        ->orderBy('id', 'desc')
+       ->pluck('complaint_id')->toArray();
+
+    switch ($userSubrole) {
+        case "so-us":
+            // Add condition(s) for so-us here if needed
+            break;
+
+        case "ds-js":
+            // Add condition(s) for ds-js here if needed
+              if ($cadsjs) { // check to prevent null error
+                $records->whereIn('ca.complaint_id', $cadsjs);
+            }
+            break;
+
+        case "sec":
+            if ($ca) { // check to prevent null error
+                $records->whereIn('ca.complaint_id', $ca);
+            }
+            break;
+
+        case "cio-io":
+               if ($cacio) { // check to prevent null error
+                $records->whereIn('ca.complaint_id', $cacio);
+            }
+            // Add condition(s) for cio-io here if needed
+            break;
+
+        case "dea-assis":
+            // Add condition(s) for dea-assis here if needed
+            break;
+
+        default:
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid subrole',
+                'data' => [],
+            ], 400);
+    }
+
+    // Execute and return data
+    $records = $records->orderBy('complaints.id', 'desc')->get();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Records fetched successfully',
+        'data' => $records,
+    ]);
+
 
 
   }
      
     
              
-              return response()->json([
-                'status' => true,
-                'message' => 'Records Fetch successfully',
-                'data' => $records,
-                // 'subrole' => $userSubroleRole
-            ]);
+            //   return response()->json([
+            //     'status' => true,
+            //     'message' => 'Records Fetch successfully',
+            //     'data' => $records,
+            //     // 'subrole' => $userSubroleRole
+            // ]);
             // dd($records);
     }
     
-
      public function current_report(){
-        // $userSubroleRole = Auth::user()->subrole->name;
+       $userSubrole = Auth::user()->subrole->name;
+
+       if($userSubrole){
+//            $latestActions = DB::table('complaint_actions as ca1')
+//                 ->select('ca1.*')
+//                 //  ->where('ca1.type', 1)
+//                 ->join(DB::raw("(SELECT complaint_id, MAX(id) AS max_id
+//                         FROM complaint_actions
+//                         GROUP BY complaint_id
+//                     ) as ca2"),
+//                     function ($join) {
+//                         $join->on('ca1.id', '=', 'ca2.max_id');
+//                     }
+//                 );
+//                 // ->toSql();
+//                 // dd($latestActions);
+
+//  $records = DB::table('complaints')
+//     ->joinSub($latestActions, 'ca', function ($join) {
+//         $join->on('complaints.id', '=', 'ca.complaint_id');
+//     })
+//     ->leftJoin('users as u', 'ca.forward_by_ro', '=', 'u.id')
+//     ->leftJoin('users as so_us', 'ca.forward_by_so_us', '=', 'so_us.id')
+//     ->leftJoin('users as ds_js', 'ca.forward_by_ds_js', '=', 'ds_js.id')
+//     ->leftJoin('users as sec', 'ca.forward_by_sec', '=', 'sec.id')
+//     ->leftJoin('users as secto', 'ca.forward_to_sec', '=', 'secto.id')
+//     ->leftJoin('users as cio', 'ca.forward_by_cio_io', '=', 'cio.id')
+//     ->leftJoin('users as cioto', 'ca.forward_to_cio_io', '=', 'cioto.id')
+//     ->leftJoin('users as d_a', 'ca.forward_by_d_a', '=', 'd_a.id')
+//     ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
+//     ->select(
+//         'complaints.*',
+//         'complaints.name',
+//         'complaints.complain_no',
+//         'complaints.status as current_status',
+//         'ca.*',
+//         'u.name as ro_name',
+//         'so_us.name as so_name',
+//         'ds_js.name as ds_name',
+//         'sec.name as sec_name',
+//         'secto.name as sec_to_name',
+//         'cio.name as cio_name',
+//         'cioto.name as cio_to_name',
+//         'd_a.name as da_name',
+//         'srole.name as subrole_name',
+//         DB::raw('DATEDIFF(NOW(), complaints.created_at) as days')
+//     );
+ 
+
+//          switch ($userSubrole) {
+//             case "so-us":
+//                 // Add condition(s) for so-us here if needed
+//                 break;
+
+//             case "ds-js":
+//                 // Add condition(s) for ds-js here if needed
+              
+//                 break;
+
+//             case "sec":
+             
+//                 break;
+
+//             case "cio-io":
+               
+//                 // Add condition(s) for cio-io here if needed
+//                 break;
+
+//             case "dea-assis":
+//                 // Add condition(s) for dea-assis here if needed
+//                 break;
+
+//             default:
+//                 return response()->json([
+//                     'status' => false,
+//                     'message' => 'Invalid subrole',
+//                     'data' => [],
+//                 ], 400);
+//         }
+
+//            $records->where('in_draft', '0')
+//             ->orderBy('complaints.id', 'desc')
+//             // ->whereNotNull('target_date')
+//             // ->toSql();
+//             ->get();
+//        }
+     
+//             //    dd($records);
+//               return response()->json([
+//                 'status' => true,
+//                 'message' => 'Records Fetch successfully',
+//                 'data' => $records,
+//             ]);
+        //  ------------------------------------------------------------
+        $user_id = Auth::user()->id;
+$userSubrole = Auth::user()->subrole->name;
+
+if ($userSubrole) {
+
+    // Step 1: Subquery to get the latest action per complaint
+    $latestActions = DB::table('complaint_actions as ca1')
+        ->select('ca1.*')
+        ->join(
+            DB::raw("(SELECT complaint_id, MAX(id) AS max_id
+                      FROM complaint_actions
+                      GROUP BY complaint_id) as ca2"),
+            function ($join) {
+                $join->on('ca1.id', '=', 'ca2.max_id');
+            }
+        );
+
+    // Step 2: Main query with joins
+    $records = DB::table('complaints')
+        ->joinSub($latestActions, 'ca', function ($join) {
+            $join->on('complaints.id', '=', 'ca.complaint_id');
+        })
+        ->leftJoin('users as u', 'ca.forward_by_ro', '=', 'u.id')
+        ->leftJoin('users as so_us', 'ca.forward_by_so_us', '=', 'so_us.id')
+        ->leftJoin('users as ds_js', 'ca.forward_by_ds_js', '=', 'ds_js.id')
+        ->leftJoin('users as sec', 'ca.forward_by_sec', '=', 'sec.id')
+        ->leftJoin('users as secto', 'ca.forward_to_sec', '=', 'secto.id')
+        ->leftJoin('users as cio', 'ca.forward_by_cio_io', '=', 'cio.id')
+        ->leftJoin('users as cioto', 'ca.forward_to_cio_io', '=', 'cioto.id')
+        ->leftJoin('users as d_a', 'ca.forward_by_d_a', '=', 'd_a.id')
+        ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
+        ->select(
+            'complaints.*',
+            'complaints.name',
+            'complaints.complain_no',
+            'complaints.status as current_status',
+            'ca.*',
+            'u.name as ro_name',
+            'so_us.name as so_name',
+            'ds_js.name as ds_name',
+            'sec.name as sec_name',
+            'secto.name as sec_to_name',
+            'cio.name as cio_name',
+            'cioto.name as cio_to_name',
+            'd_a.name as da_name',
+            'srole.name as subrole_name',
+            DB::raw('DATEDIFF(NOW(), complaints.created_at) as days')
+        )
+        ->where('complaints.in_draft', '=', '0');
         
-         $records = DB::table('complaints')
-            // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
-            // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
-            // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
-            // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
-            // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
-            ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
-            ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
-            ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
-            
-            ->select(
-                'complaints.*',
-                'u.id as user_id',
-                'srole.name as subrole_name',
-                'ca.*',
-                DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
-                // 'dd.district_name as district_name',
-                // 'dp.name as department_name',
-                // 'ds.name as designation_name',
-                // 'ct.name as complaintype_name',
-                // 'sub.name as subject_name',
-            )
-            // ->groupBy('complaints.id','u.id','srole.name')
-            ->where('approved_rejected_by_ro', 1)
-            ->get();
-            //    dd($records);
-              return response()->json([
-                'status' => true,
-                'message' => 'Records Fetch successfully',
-                'data' => $records,
-            ]);
-         
+     $cadsjs = DB::table('complaint_actions')
+        ->where('forward_to_ds_js', $user_id)
+        ->orderBy('id', 'desc')
+        ->pluck('complaint_id')->toArray();
+    $casec = DB::table('complaint_actions')
+        ->where('forward_to_sec', $user_id)
+        ->orderBy('id', 'desc')
+        ->pluck('complaint_id')->toArray();
+        // dd($casec);
+    //     $ids = [];
+    // foreach ($casec as $key => $value) {
+    //   $ids[] = $value;
+    // }
+    // dd($ids);
+        
+    $cacio = DB::table('complaint_actions')
+        ->where('forward_to_cio_io', $user_id)
+        ->orderBy('id', 'desc')
+        ->pluck('complaint_id')->toArray();
+
+    // Step 3: Subrole-specific conditions
+    switch ($userSubrole) {
+        case "so-us":
+            // $records->where('ca.forward_to_so_us', $user_id);
+            break;
+
+        case "ds-js":
+               if ($cadsjs) { // check to prevent null error
+                $records->whereIn('ca.complaint_id', $cadsjs);
+            }
+            break;
+
+        case "sec":
+            if ($casec) { // check to prevent null error
+                $records->whereIn('ca.complaint_id', $casec);
+            }
+            // $records->where('ca.forward_to_sec', $user_id);
+            break;
+
+        case "cio-io":
+             if ($cacio) { // check to prevent null error
+                $records->where('ca.complaint_id', $cacio);
+            }
+            break;
+
+        case "dea-assis":
+            // $records->where('ca.forward_to_d_a', $user_id);
+            break;
+
+        default:
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid subrole',
+                'data' => [],
+            ], 400);
     }
+
+    // Step 4: Final ordering + execution
+    $records = $records
+        ->orderBy('complaints.id', 'desc')
+        ->get();
+
+    // Step 5: Return response
+    return response()->json([
+        'status' => true,
+        'message' => 'Records fetched successfully',
+        'data' => $records,
+    ]);
+}
+
+    }
+}
+
+    //  public function current_report(){
+    //     // $userSubroleRole = Auth::user()->subrole->name;
+        
+    //      $records = DB::table('complaints')
+    //         // ->leftJoin('district_master as dd', DB::raw("complaints.district_id"), '=', DB::raw("dd.district_code"))
+    //         // ->leftJoin('departments as dp', DB::raw("complaints.department_id"), '=', DB::raw("dp.id"))
+    //         // ->leftJoin('designations as ds', DB::raw("complaints.designation_id"), '=', DB::raw("ds.id"))
+    //         // ->leftJoin('complaintype as ct', DB::raw("complaints.complaintype_id"), '=', DB::raw("ct.id"))
+    //         // ->leftJoin('subjects as sub', DB::raw("complaints.department_id"), '=', DB::raw("sub.id"))
+    //         ->leftJoin('users as u', DB::raw("complaints.added_by"), '=', DB::raw("u.id"))
+    //         ->leftJoin('sub_roles as srole', DB::raw("u.sub_role_id"), '=', DB::raw("srole.id"))
+    //         ->leftJoin('complaint_actions as ca', DB::raw("complaints.id"), '=', DB::raw("ca.complaint_id"))
+            
+    //         ->select(
+    //             'complaints.*',
+    //             'u.id as user_id',
+    //             'srole.name as subrole_name',
+    //             'ca.*',
+    //             DB::raw('DATEDIFF(NOW(), ca.target_date) as days')
+    //             // 'dd.district_name as district_name',
+    //             // 'dp.name as department_name',
+    //             // 'ds.name as designation_name',
+    //             // 'ct.name as complaintype_name',
+    //             // 'sub.name as subject_name',
+    //         )
+    //         // ->groupBy('complaints.id','u.id','srole.name')
+    //         ->where('approved_rejected_by_ro', 1)
+    //         ->get();
+    //         //    dd($records);
+    //           return response()->json([
+    //             'status' => true,
+    //             'message' => 'Records Fetch successfully',
+    //             'data' => $records,
+    //         ]);
+         
+    // }
 
     public function analytics(){
         $stats = DB::table('complaints')

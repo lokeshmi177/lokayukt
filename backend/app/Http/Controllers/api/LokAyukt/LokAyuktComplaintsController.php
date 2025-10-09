@@ -262,6 +262,60 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
+    public function disposeComplaints(Request $request,$complainId){
+        //    dd($request->all());
+        $user = Auth::user()->id;
+        // dd($usersubrole);
+   
+
+        $validation = Validator::make($request->all(), [
+            // 'forward_by_so_us' => 'required|exists:users,id',
+          
+            'remark' => 'required|string|max:500',
+         
+          
+        ], [
+            'remark.required' => 'Remark is required.',
+           
+        ]);
+
+        if ($validation->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validation->errors()
+            ], 422);
+        }
+        if(isset($complainId) && $request->isMethod('post')){
+
+             $cmp =  Complaint::findOrFail($complainId);
+             
+            if($cmp){
+                $cmp->status = "Disposed - Accepted";
+               
+                if($cmp->save()){
+                    $apcAction = new ComplaintAction();
+                    $apcAction->complaint_id = $complainId;
+                    $apcAction->status = 'Final Decision';
+                    $apcAction->remarks = $request->remark;
+                    $apcAction->save();
+                }
+              
+            }
+             return response()->json([
+                    'status' => true,
+                    'message' => 'Forwarded Successfully',
+                    'data' => $cmp
+                ], 200);
+        }else{
+            
+             return response()->json([
+                    'status' => false,
+                    'message' => 'Please check Id'
+                ], 401);
+        }
+
+    }
+
         public function forwardComplaintbylokayukt(Request $request,$complainId){
         //    dd($request->all());
         $user = Auth::user()->id;
