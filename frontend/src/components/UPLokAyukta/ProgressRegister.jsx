@@ -338,7 +338,7 @@ const ProgressRegister = () => {
     const fetchComplaints = async () => {
       setLoadingMovements(true);
       try {
-        const response = await api.get("/supervisor/progress-register");
+        const response = await api.get("/uplokayukt/progress-register");
         if (response.data.status && response.data.data) {
           setComplaintsData(response.data.data);
           console.log(response.data.data);
@@ -361,7 +361,7 @@ const ProgressRegister = () => {
     const fetchCurrentReport = async () => {
       setLoadingStatus(true);
       try {
-        const response = await api.get("/supervisor/current-report");
+        const response = await api.get("/uplokayukt/current-report");
         console.log("Current Report API Response:", response.data);
 
         if (response.data.status && response.data.data) {
@@ -386,7 +386,7 @@ const ProgressRegister = () => {
     const fetchAnalytics = async () => {
       setLoadingAnalytics(true);
       try {
-        const response = await api.get("/supervisor/analytic-report");
+        const response = await api.get("/uplokayukt/analytic-report");
         console.log("Analytics API Response:", response.data);
 
         if (response.data.status && response.data.data) {
