@@ -709,6 +709,16 @@ const AllComplaints = () => {
       });
     }
 
+    if (complaint.approved_rejected_by_lokayukt === 1) {
+      statuses.push({
+        status: 'approved_by_lokayukt',
+        label: 'Approved by LokAyukt',
+        color: 'bg-green-500'
+      });
+    }
+    
+    
+
      if (complaint.approved_rejected_by_uplokayukt === 1) {
       statuses.push({
         status: 'approved_by_uplokayukt',
@@ -782,11 +792,11 @@ const AllComplaints = () => {
         </div>
 
 
-        {/* JUSTIFY-BETWEEN TABS COMPONENT */}
+        {/* JUSTIFY-BETWEEN TABS COMPONENT
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
           <div className="">
-            <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
-              <button
+            <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500"> */}
+              {/* <button
                 onClick={() => handleTabChange('all')}
                 className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   activeTab === "all"
@@ -795,8 +805,8 @@ const AllComplaints = () => {
                 }`}
               >
                 All Complaints
-              </button>
-              <button
+              </button> */}
+              {/* <button
                 onClick={() => handleTabChange('pending')}
                 className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                   activeTab === "pending"
@@ -815,10 +825,10 @@ const AllComplaints = () => {
                 }`}
               >
                 Approved Complaints
-              </button>
-            </div>
+              </button> */}
+            {/* </div>
           </div>
-        </div>
+        </div> */}
 
 
         {/* Loading State */}
@@ -923,7 +933,7 @@ const AllComplaints = () => {
     >
       View Details
     </button>
-
+{/* 
     {isForwarded(complaint) ? (
       <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
         ✓ Forwarded
@@ -935,7 +945,7 @@ const AllComplaints = () => {
       >
         Forward
       </button>
-    )}
+    )} */}
   </div>
 </div>
 
