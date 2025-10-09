@@ -458,12 +458,15 @@ const DisposedModal = ({
       console.error("Disposed error:", error);
       
       if (error.response?.status === 404) {
-        toast.error("API endpoint not found. Please check the server configuration.");
-      } else if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please login again.");
-      } else if (error.response?.status === 403) {
-        toast.error("You don't have permission to dispose this complaint.");
-      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
+        // toast.error("API endpoint not found. Please check the server configuration.");
+      } 
+      // else if (error.response?.status === 401) {
+      //   toast.error("Authentication failed. Please login again.");
+      // } 
+      // else if (error.response?.status === 403) {
+      //   toast.error("You don't have permission to dispose this complaint.");
+      // } 
+      else if (error.response?.status === 422 || error.response?.data?.status === false) {
         const errors = error.response?.data?.errors;
         if (errors && errors.remark) {
           setValidationError(errors.remark[0]);
@@ -985,7 +988,7 @@ const ApprovedComplaints = () => {
                           </button>
 
                           {isDisposed(complaint) ? (
-                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white cursor-default">
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                               ✓ Disposed
                             </span>
                           ) : (
@@ -993,7 +996,7 @@ const ApprovedComplaints = () => {
                               onClick={(e) => handleDisposed(e, complaint.id)}
                               className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
                             >
-                              Disposed
+                              Dispose
                             </button>
                           )}
 

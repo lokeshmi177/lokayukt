@@ -258,26 +258,26 @@ const ForwardModal = ({
     } catch (error) {
       console.error("Forward error:", error);
       
-      if (error.response?.status === 404) {
-        toast.error("API endpoint not found. Please check the server configuration.");
-      } else if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please login again.");
-      } else if (error.response?.status === 403) {
-        toast.error("You don't have permission to forward this complaint.");
-      } else if (error.response?.status === 422) {
-        const errors = error.response.data.errors;
-        if (errors) {
-          Object.keys(errors).forEach(key => {
-            toast.error(errors[key][0]);
-          });
-        } else {
-          toast.error("Validation failed. Please check your input.");
-        }
-      } else {
-        toast.error('Error forwarding complaint. Please try again.');
-      }
+      // if (error.response?.status === 404) {
+      //   toast.error("API endpoint not found. Please check the server configuration.");
+      // } else if (error.response?.data?.message) {
+      //   toast.error(error.response.data.message);
+      // } else if (error.response?.status === 401) {
+      //   toast.error("Authentication failed. Please login again.");
+      // } else if (error.response?.status === 403) {
+      //   toast.error("You don't have permission to forward this complaint.");
+      // } else if (error.response?.status === 422) {
+      //   const errors = error.response.data.errors;
+      //   if (errors) {
+      //     Object.keys(errors).forEach(key => {
+      //       toast.error(errors[key][0]);
+      //     });
+      //   } else {
+      //     toast.error("Validation failed. Please check your input.");
+      //   }
+      // } else {
+      //   toast.error('Error forwarding complaint. Please try again.');
+      // }
     } finally {
       setIsSubmitting(false);
     }
@@ -433,12 +433,12 @@ const DisposedModal = ({
         remark: remarks
       });
 
-      console.log("=== DISPOSED API RESPONSE START ===");
-      console.log("Full Response:", response);
-      console.log("Response Data:", response.data);
-      console.log("Response Status:", response.status);
-      console.log("Response Message:", response.data?.message);
-      console.log("=== DISPOSED API RESPONSE END ===");
+      // console.log("=== DISPOSED API RESPONSE START ===");
+      // console.log("Full Response:", response);
+      // console.log("Response Data:", response.data);
+      // console.log("Response Status:", response.status);
+      // console.log("Response Message:", response.data?.message);
+      // console.log("=== DISPOSED API RESPONSE END ===");
 
       if (response.data.success || response.data.status === true || response.status === 200) {
         const successMessage = response.data.message || 'Complaint disposed successfully!';
@@ -466,19 +466,22 @@ const DisposedModal = ({
         }
       }
     } catch (error) {
-      console.error("=== DISPOSED ERROR START ===");
-      console.error("Error:", error);
-      console.error("Error Response:", error.response);
-      console.error("Error Response Data:", error.response?.data);
-      console.error("=== DISPOSED ERROR END ===");
+      // console.error("=== DISPOSED ERROR START ===");
+      // console.error("Error:", error);
+      // console.error("Error Response:", error.response);
+      // console.error("Error Response Data:", error.response?.data);
+      // console.error("=== DISPOSED ERROR END ===");
       
       if (error.response?.status === 404) {
-        toast.error("API endpoint not found. Please check the server configuration.");
-      } else if (error.response?.status === 401) {
-        toast.error("Authentication failed. Please login again.");
-      } else if (error.response?.status === 403) {
-        toast.error("You don't have permission to dispose this complaint.");
-      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
+        // toast.error("API endpoint not found. Please check the server configuration.");
+      }
+      //  else if (error.response?.status === 401) {
+      //   toast.error("Authentication failed. Please login again.");
+      // }
+      //  else if (error.response?.status === 403) {
+      //   toast.error("You don't have permission to dispose this complaint.");
+      // } 
+      else if (error.response?.status === 422 || error.response?.data?.status === false) {
         const errors = error.response?.data?.errors;
         if (errors && errors.remark) {
           setValidationError(errors.remark[0]);
@@ -1016,7 +1019,7 @@ const AllComplaints = () => {
                           </button>
 
                           {isDisposed(complaint) ? (
-                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white cursor-default">
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                               ✓ Disposed
                             </span>
                           ) : (
@@ -1024,7 +1027,7 @@ const AllComplaints = () => {
                               onClick={(e) => handleDisposed(e, complaint.id)}
                               className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
                             >
-                              Disposed
+                              Dispose
                             </button>
                           )}
 
