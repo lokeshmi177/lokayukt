@@ -257,27 +257,6 @@ const ForwardModal = ({
       }
     } catch (error) {
       console.error("Forward error:", error);
-      
-      // if (error.response?.status === 404) {
-      //   toast.error("API endpoint not found. Please check the server configuration.");
-      // } else if (error.response?.data?.message) {
-      //   toast.error(error.response.data.message);
-      // } else if (error.response?.status === 401) {
-      //   toast.error("Authentication failed. Please login again.");
-      // } else if (error.response?.status === 403) {
-      //   toast.error("You don't have permission to forward this complaint.");
-      // } else if (error.response?.status === 422) {
-      //   const errors = error.response.data.errors;
-      //   if (errors) {
-      //     Object.keys(errors).forEach(key => {
-      //       toast.error(errors[key][0]);
-      //     });
-      //   } else {
-      //     toast.error("Validation failed. Please check your input.");
-      //   }
-      // } else {
-      //   toast.error('Error forwarding complaint. Please try again.');
-      // }
     } finally {
       setIsSubmitting(false);
     }
@@ -314,7 +293,6 @@ const ForwardModal = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Forward To / भेजें *
               </label>
-
               
               {isLoadingOptions ? (
                 <div className="w-full p-2 border rounded-md bg-gray-50 flex items-center justify-center">
@@ -429,16 +407,13 @@ const DisposedModal = ({
     setIsSubmitting(true);
     
     try {
+      // ✅ BACKEND KO "Disposed - Accepted" STATUS BHEJENGE
       const response = await api.post(`/uplokayukt/dispose-complain/${complaintId}`, {
-        remark: remarks
+        remark: remarks,
+        status: "Disposed - Accepted"  // YEH STATUS BACKEND KO JAYEGI
       });
 
-      // console.log("=== DISPOSED API RESPONSE START ===");
-      // console.log("Full Response:", response);
-      // console.log("Response Data:", response.data);
-      // console.log("Response Status:", response.status);
-      // console.log("Response Message:", response.data?.message);
-      // console.log("=== DISPOSED API RESPONSE END ===");
+      console.log("Disposed API Response:", response.data);
 
       if (response.data.success || response.data.status === true || response.status === 200) {
         const successMessage = response.data.message || 'Complaint disposed successfully!';
@@ -466,22 +441,11 @@ const DisposedModal = ({
         }
       }
     } catch (error) {
-      // console.error("=== DISPOSED ERROR START ===");
-      // console.error("Error:", error);
-      // console.error("Error Response:", error.response);
-      // console.error("Error Response Data:", error.response?.data);
-      // console.error("=== DISPOSED ERROR END ===");
+      console.error("Disposed error:", error);
       
       if (error.response?.status === 404) {
         // toast.error("API endpoint not found. Please check the server configuration.");
-      }
-      //  else if (error.response?.status === 401) {
-      //   toast.error("Authentication failed. Please login again.");
-      // }
-      //  else if (error.response?.status === 403) {
-      //   toast.error("You don't have permission to dispose this complaint.");
-      // } 
-      else if (error.response?.status === 422 || error.response?.data?.status === false) {
+      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
         const errors = error.response?.data?.errors;
         if (errors && errors.remark) {
           setValidationError(errors.remark[0]);
@@ -567,7 +531,7 @@ const DisposedModal = ({
               disabled={isSubmitting || !remarks.trim()}
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !remarks.trim()
-                    ? 'bg-gray-400 cursor-not-allowed' 
+                  ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-[#123463] text-white'
               }`}
             >
@@ -612,7 +576,6 @@ const AllComplaints = () => {
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-  // Disposed Modal State
   const [isDisposedModalOpen, setIsDisposedModalOpen] = useState(false);
   const [selectedDisposedComplaintId, setSelectedDisposedComplaintId] = useState(null);
 
@@ -763,7 +726,6 @@ const AllComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // Handle Disposed button click
   const handleDisposed = (e, complaintId) => {
     e.stopPropagation();
     console.log("Disposed button clicked for complaint ID:", complaintId);
@@ -787,22 +749,20 @@ const AllComplaints = () => {
     console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
   };
 
-  // Handle disposed submit with local state update
+  // ✅ HANDLE DISPOSED SUBMIT - STATUS "Disposed - Accepted" SET HOGI
   const handleDisposedSubmit = (disposedComplaintId) => {
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
         complaint.id === disposedComplaintId 
           ? { 
               ...complaint, 
-              approved_rejected_by_uplokayukt: 1,
-              disposed: 1,
-              status: 'Disposed'
+              status: 'Disposed - Accepted'  // YEH STATUS LOCAL STATE ME SET HOGI
             }
           : complaint
       )
     );
     
-    console.log(`Complaint ${disposedComplaintId} marked as disposed with approved_rejected_by_uplokayukt = 1`);
+    console.log(`Complaint ${disposedComplaintId} marked as disposed with status: "Disposed - Accepted"`);
   };
 
   const formatDate = (dateString) => {
@@ -872,9 +832,9 @@ const AllComplaints = () => {
     return complaint.approved_rejected_by_uplokayukt === 1;
   };
 
-  // Disposed status helper
+  // ✅ DISPOSED STATUS HELPER - "Disposed - Accepted" CHECK KAREGI
   const isDisposed = (complaint) => {
-    return complaint.disposed === 1;
+    return complaint.status === "Disposed - Accepted";
   };
 
   const getTabTitle = () => {
@@ -998,7 +958,7 @@ const AllComplaints = () => {
                       </div>
 
                       <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div className="flex  flex-wrap gap-2 sm:max-w-[90%]">
+                        <div className="flex flex-wrap gap-2 sm:max-w-[90%]">
                           {approvalStatuses.map((status, index) => (
                             <span
                               key={index}
@@ -1018,6 +978,7 @@ const AllComplaints = () => {
                             View Details
                           </button>
 
+                          {/* ✅ DISPOSED BUTTON - AGAR STATUS "Disposed - Accepted" HAI TO GREEN BUTTON DIKHEGA */}
                           {isDisposed(complaint) ? (
                             <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                               ✓ Disposed
@@ -1030,19 +991,6 @@ const AllComplaints = () => {
                               Dispose
                             </button>
                           )}
-
-                          {/* {isForwarded(complaint) ? (
-                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
-                              ✓ Forwarded
-                            </span>
-                          ) : (
-                            <button
-                              onClick={(e) => handleForward(e, complaint.id)}
-                              className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-                            >
-                              Forward
-                            </button>
-                          )} */}
                         </div>
                       </div>
                     </div>

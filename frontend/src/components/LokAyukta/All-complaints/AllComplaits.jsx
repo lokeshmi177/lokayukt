@@ -432,8 +432,10 @@ const DisposedModal = ({
     setIsSubmitting(true);
     
     try {
+      // ✅ BACKEND KO "Disposed - Accepted" STATUS BHEJENGE
       const response = await api.post(`/lokayukt/dispose-complain/${complaintId}`, {
-        remark: remarks
+        remark: remarks,
+        status: "Disposed - Accepted"  // YEH STATUS BACKEND KO JAYEGI
       });
 
       console.log("Disposed API Response:", response.data);
@@ -465,28 +467,15 @@ const DisposedModal = ({
       
       if (error.response?.status === 404) {
         // toast.error("");
-      } 
-      // else if (error.response?.status === 401) {
-      //   toast.error("Authentication failed. Please login again.");
-      // } 
-      // else if (error.response?.status === 403) {
-      //   toast.error("You don't have permission to dispose this complaint.");
-      // } 
-      else if (error.response?.status === 422 || error.response?.data?.status === false) {
+      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
         // Handle validation errors from backend
         const errors = error.response?.data?.errors;
         if (errors && errors.remark) {
           setValidationError(errors.remark[0]);
         } else if (error.response?.data?.message) {
           toast.error(error.response.data.message);
-        } 
-        // else {
-        //   toast.error("Validation failed. Please check your input.");
-        // }
-      } 
-      // else {
-      //   toast.error('Error disposing complaint. Please try again.');
-      // }
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -563,7 +552,7 @@ const DisposedModal = ({
               disabled={isSubmitting || !remarks.trim()}
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !remarks.trim()
-                    ? 'bg-gray-400 cursor-not-allowed' 
+                  ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-[#123463] text-white'
               }`}
             >
@@ -799,7 +788,7 @@ const AllComplaints = () => {
     console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
   };
 
-  // Handle disposed submit with local state update
+  // ✅ HANDLE DISPOSED SUBMIT - STATUS "Disposed - Accepted" SET HOGI
   const handleDisposedSubmit = (disposedComplaintId) => {
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
@@ -807,13 +796,13 @@ const AllComplaints = () => {
           ? { 
               ...complaint, 
               disposed: 1,
-              status: 'Disposed'
+              status: 'Disposed - Accepted'  // YEH STATUS LOCAL STATE ME SET HOGI
             }
           : complaint
       )
     );
     
-    console.log(`Complaint ${disposedComplaintId} marked as disposed locally`);
+    console.log(`Complaint ${disposedComplaintId} marked as disposed with status: "Disposed - Accepted"`);
   };
 
   // Format date helper
@@ -878,9 +867,9 @@ const AllComplaints = () => {
     return complaint.approved_rejected_by_lokayukt === 1;
   };
 
-  // Disposed status helper
+  // ✅ DISPOSED STATUS HELPER - "Disposed - Accepted" CHECK KAREGI
   const isDisposed = (complaint) => {
-    return complaint.disposed === 1;
+    return complaint.status === "Disposed - Accepted";
   };
 
   // Get tab title
@@ -1051,7 +1040,7 @@ const AllComplaints = () => {
                       {/* Actions and Badges in Same Row */}
                       <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         {/* Approval Badges */}
-                        <div className="flex  flex-wrap gap-2 sm:max-w-[90%]">
+                        <div className="flex flex-wrap gap-2 sm:max-w-[90%]">
                           {approvalStatuses.map((status, index) => (
                             <span
                               key={index}
@@ -1072,6 +1061,7 @@ const AllComplaints = () => {
                             View Details
                           </button>
 
+                          {/* ✅ DISPOSED BUTTON - AGAR STATUS "Disposed - Accepted" HAI TO GREEN BUTTON DIKHEGA */}
                           {isDisposed(complaint) ? (
                             <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
                               ✓ Disposed
