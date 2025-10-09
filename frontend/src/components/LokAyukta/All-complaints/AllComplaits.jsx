@@ -14,14 +14,13 @@ import {
   FaTimes,
   FaSpinner,
   FaArrowRight,
-  FaCheck
+  FaCheck,
+  FaBan
 } from "react-icons/fa";
-
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
 const subRole = localStorage.getItem("subrole");
-
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -30,7 +29,6 @@ const api = axios.create({
     ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
-
 
 // Custom Searchable Select Component - ID save होगी, Name display होगी
 const CustomSearchableSelect = ({ 
@@ -44,7 +42,6 @@ const CustomSearchableSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-
   // Filter options based on search (केवल name में search)
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
@@ -54,16 +51,13 @@ const CustomSearchableSelect = ({
     );
   };
 
-
   const selectedOption = options.find(opt => opt.value === value);
-
 
   const handleSelect = (optionValue) => {
     onChange(optionValue); // यहाँ ID pass होती है
     setIsOpen(false);
     setSearchTerm("");
   };
-
 
   return (
     <div className="relative">
@@ -83,7 +77,6 @@ const CustomSearchableSelect = ({
           </option>
         ))}
       </select>
-
 
       {/* Custom Dropdown Button - केवल name दिखेगा */}
       <button
@@ -107,7 +100,6 @@ const CustomSearchableSelect = ({
         <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
@@ -125,7 +117,6 @@ const CustomSearchableSelect = ({
               />
             </div>
           </div>
-
 
           {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
@@ -169,7 +160,6 @@ const CustomSearchableSelect = ({
   );
 };
 
-
 // Forward Modal Component
 const ForwardModal = ({ 
   isOpen, 
@@ -184,7 +174,6 @@ const ForwardModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
-
 
   // Fetch dealing assistants from API
   useEffect(() => {
@@ -206,27 +195,20 @@ const ForwardModal = ({
        
           setDropdownOptions(assistantOptions);
         } else {
-          // अगर data नहीं मिला या empty है
           setDropdownOptions([]);
           toast.warning("No dealing assistants found");
         }
       } catch (error) {
         console.error("Error fetching dealing assistants:", error);
-        
-        // Error के case में empty array set करें
         setDropdownOptions([]);
-        
-        // User को error message दें
         toast.error("Failed to load dealing assistants. Please try again.");
       } finally {
         setIsLoadingOptions(false);
       }
     };
 
-
     fetchDealingAssistants();
   }, [isOpen]);
-
 
   useEffect(() => {
     if (isOpen) {
@@ -237,7 +219,6 @@ const ForwardModal = ({
     }
   }, [isOpen]);
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -246,12 +227,10 @@ const ForwardModal = ({
       return;
     }
 
-
     if (!formData.remarks.trim()) {
       toast.error("Please enter remarks");
       return;
     }
-
 
     setIsSubmitting(true);
     
@@ -261,11 +240,8 @@ const ForwardModal = ({
         remarks: formData.remarks
       });
 
-
       console.log("API Response:", response.data);
 
-
-      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
         toast.success(response.data.message || 'Complaint forwarded successfully!', {
           position: "top-right",
@@ -276,9 +252,8 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // Pass the complaint ID to parent for local update
-        onSubmit(complaintId); // Pass complaint ID to parent
-        onClose(); // Close modal
+        onSubmit(complaintId);
+        onClose();
       } else {
         toast.error(response.data.message || 'Error forwarding complaint');
       }
@@ -286,7 +261,6 @@ const ForwardModal = ({
       console.error("Forward error:", error);
       console.error("Error response:", error.response);
       
-      // Handle specific error responses
       if (error.response?.status === 404) {
         toast.error("API endpoint not found. Please check the server configuration.");
       } else if (error.response?.data?.message) {
@@ -296,7 +270,6 @@ const ForwardModal = ({
       } else if (error.response?.status === 403) {
         toast.error("You don't have permission to forward this complaint.");
       } else if (error.response?.status === 422) {
-        // Validation errors
         const errors = error.response.data.errors;
         if (errors) {
           Object.keys(errors).forEach(key => {
@@ -313,17 +286,13 @@ const ForwardModal = ({
     }
   };
 
-
-  // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-
   if (!isOpen) return null;
-
 
   return (
     <div 
@@ -342,7 +311,6 @@ const ForwardModal = ({
           </button>
         </div>
 
-
         <form onSubmit={handleSubmit}>
           <div className="p-4 space-y-4">
             <div>
@@ -356,7 +324,6 @@ const ForwardModal = ({
                   <span className="text-gray-500 text-sm">Loading options...</span>
                 </div>
               ) : (
-                
                 <CustomSearchableSelect
                   name="forward_to_d_a"
                   value={formData.forwardTo}
@@ -370,7 +337,6 @@ const ForwardModal = ({
                 />
               )}
               
-              {/* Debug के लिए - production में remove करें */}
               {formData.forwardTo && (
                 <div className="mt-1 text-xs text-gray-500">
                   Selected ID: {formData.forwardTo} 
@@ -380,7 +346,6 @@ const ForwardModal = ({
                 </div>
               )}
             </div>
-
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -398,7 +363,6 @@ const ForwardModal = ({
             </div>
           </div>
 
-
           <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
             <button
               type="button"
@@ -414,7 +378,7 @@ const ForwardModal = ({
               className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
                 isSubmitting || !formData.forwardTo || !formData.remarks.trim() || isLoadingOptions
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-[#123463]  text-white'
+                  : 'bg-[#123463] text-white'
               }`}
             >
               {isSubmitting ? (
@@ -436,6 +400,186 @@ const ForwardModal = ({
   );
 };
 
+// Disposed Modal Component
+const DisposedModal = ({ 
+  isOpen, 
+  onClose, 
+  complaintId,
+  onSubmit 
+}) => {
+  const [remarks, setRemarks] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setRemarks('');
+      setValidationError('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Clear previous validation errors
+    setValidationError('');
+    
+    if (!remarks.trim()) {
+      setValidationError("Please enter remarks");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.post(`/lokayukt/dispose-complain/${complaintId}`, {
+        remark: remarks
+      });
+
+      console.log("Disposed API Response:", response.data);
+
+      if (response.data.success || response.data.status === true || response.status === 200) {
+        toast.success(response.data.message || 'Complaint disposed successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        
+        onSubmit(complaintId);
+        onClose();
+      } else {
+        // Handle backend status false
+        if (response.data.message) {
+          toast.error(response.data.message);
+        }
+        if (response.data.errors && response.data.errors.remark) {
+          setValidationError(response.data.errors.remark[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Disposed error:", error);
+      console.error("Error response:", error.response);
+      
+      if (error.response?.status === 404) {
+        toast.error("API endpoint not found. Please check the server configuration.");
+      } else if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please login again.");
+      } else if (error.response?.status === 403) {
+        toast.error("You don't have permission to dispose this complaint.");
+      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
+        // Handle validation errors from backend
+        const errors = error.response?.data?.errors;
+        if (errors && errors.remark) {
+          setValidationError(errors.remark[0]);
+        } else if (error.response?.data?.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error("Validation failed. Please check your input.");
+        }
+      } else {
+        toast.error('Error disposing complaint. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      onClick={handleBackdropClick}
+    >
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Dispose Complaint</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FaTimes className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remarks / टिप्पणी *
+              </label>
+              <textarea
+                name="remarks"
+                value={remarks}
+                onChange={(e) => {
+                  setRemarks(e.target.value);
+                  // Clear validation error when user starts typing
+                  if (validationError) {
+                    setValidationError('');
+                  }
+                }}
+                className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] ${
+                  validationError ? 'border-red-500' : ''
+                }`}
+                placeholder="Enter Disposal Remarks..."
+                rows="4"
+                required
+              />
+              {/* Backend Validation Error Display */}
+              {validationError && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationError}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !remarks.trim()}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+                isSubmitting || !remarks.trim()
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-[#123463] text-white'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  Disposing...
+                </>
+              ) : (
+                <>
+                  <FaArrowRight className="w-4 h-4" />
+                  Disposed
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const AllComplaints = () => {
   const navigate = useNavigate();
@@ -453,17 +597,18 @@ const AllComplaints = () => {
   const [complaintToApprove, setComplaintToApprove] = useState(null);
   const [isApproving, setIsApproving] = useState(false);
 
-
   // Loading states for each tab
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [isLoadingApproved, setIsLoadingApproved] = useState(false);
 
-
   // Forward Modal State
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
+  // Disposed Modal State
+  const [isDisposedModalOpen, setIsDisposedModalOpen] = useState(false);
+  const [selectedDisposedComplaintId, setSelectedDisposedComplaintId] = useState(null);
 
   // Determine active tab from URL
   const getActiveTabFromURL = () => {
@@ -472,18 +617,15 @@ const AllComplaints = () => {
     return 'all';
   };
 
-
   // Set active tab based on URL on mount
   useEffect(() => {
     setActiveTab(getActiveTabFromURL());
   }, [location.pathname]);
 
-
   // Handle tab change with routing
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     
-    // Route navigation
     switch(tab) {
       case 'all':
         navigate('/lokayukt/all-complaints');
@@ -498,7 +640,6 @@ const AllComplaints = () => {
         navigate('/lokayukt/all-complaints');
     }
   };
-
 
   // Fetch all complaints data from API
   const fetchAllComplaints = async () => {
@@ -519,7 +660,6 @@ const AllComplaints = () => {
       setIsLoadingAll(false);
     }
   };
-
 
   // Fetch pending complaints data
   const fetchPendingComplaints = async () => {
@@ -542,7 +682,6 @@ const AllComplaints = () => {
     }
   };
 
-
   // Fetch approved complaints data
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
@@ -564,7 +703,6 @@ const AllComplaints = () => {
     }
   };
 
-
   // Fetch data based on active tab
   useEffect(() => {
     switch(activeTab) {
@@ -582,7 +720,6 @@ const AllComplaints = () => {
     }
   }, [activeTab]);
 
-
   // Get current data based on active tab
   const getCurrentData = () => {
     switch(activeTab) {
@@ -596,7 +733,6 @@ const AllComplaints = () => {
         return complaintsData;
     }
   };
-
 
   // Get current loading state
   const getCurrentLoadingState = () => {
@@ -612,22 +748,18 @@ const AllComplaints = () => {
     }
   };
 
-
   // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
     navigate(`/lokayukt/all-complaints/view/${complaintId}`);
-      window.scrollTo({ top: 2, behavior: 'smooth' }); // Scroll to top smoothly
-
+    window.scrollTo({ top: 2, behavior: 'smooth' });
   };
-
 
   // Handle modal view
   const handleModalView = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
   };
-
 
   // Handle Forward button click
   const handleForward = (e, complaintId) => {
@@ -637,16 +769,22 @@ const AllComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
+  // Handle Disposed button click
+  const handleDisposed = (e, complaintId) => {
+    e.stopPropagation();
+    console.log("Disposed button clicked for complaint ID:", complaintId);
+    setSelectedDisposedComplaintId(complaintId);
+    setIsDisposedModalOpen(true);
+  };
 
   // Handle forward submit with local state update
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // Update local state immediately without API call
     setComplaintsData(prevComplaints => 
       prevComplaints.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              approved_rejected_by_so_us: 1, 
+              approved_rejected_by_lokayukt: 1, 
               status: 'Forwarded'
             }
           : complaint
@@ -656,6 +794,22 @@ const AllComplaints = () => {
     console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
   };
 
+  // Handle disposed submit with local state update
+  const handleDisposedSubmit = (disposedComplaintId) => {
+    setComplaintsData(prevComplaints => 
+      prevComplaints.map(complaint => 
+        complaint.id === disposedComplaintId 
+          ? { 
+              ...complaint, 
+              disposed: 1,
+              status: 'Disposed'
+            }
+          : complaint
+      )
+    );
+    
+    console.log(`Complaint ${disposedComplaintId} marked as disposed locally`);
+  };
 
   // Format date helper
   const formatDate = (dateString) => {
@@ -667,15 +821,10 @@ const AllComplaints = () => {
     });
   };
 
-
   // Get approval statuses
-   const getApprovalStatuses = (complaint) => {
+  const getApprovalStatuses = (complaint) => {
     const statuses = [];
     
-    // ✅ DA approval - Full text with green background
-   
-    
-    // ✅ RO approval - Full text with green background
     if (complaint.approved_rejected_by_ro === 1) {
       statuses.push({
         status: 'approved_by_ro', 
@@ -684,7 +833,6 @@ const AllComplaints = () => {
       });
     }
     
-
     if (complaint.approved_rejected_by_so_us === 1) {
       statuses.push({
         status: 'approved_by_so',
@@ -693,7 +841,6 @@ const AllComplaints = () => {
       });
     }
     
-    // ✅ DS approval - Full text with green background
     if (complaint.approved_rejected_by_ds_js === 1) {
       statuses.push({
         status: 'approved_by_ds',
@@ -701,7 +848,8 @@ const AllComplaints = () => {
         color: 'bg-green-500'
       });
     }
-     if (complaint.approved_rejected_by_d_a === 1) {
+    
+    if (complaint.approved_rejected_by_d_a === 1) {
       statuses.push({
         status: 'approved_by_da',
         label: 'Approved by DA',
@@ -709,7 +857,7 @@ const AllComplaints = () => {
       });
     }
 
-     if (complaint.approved_rejected_by_lokayukt === 1) {
+    if (complaint.approved_rejected_by_lokayukt === 1) {
       statuses.push({
         status: 'approved_by_lokayukt',
         label: 'Approved by Lokayukt',
@@ -720,12 +868,15 @@ const AllComplaints = () => {
     return statuses;
   };
 
-  // Forward status helper - Updated logic
+  // Forward status helper
   const isForwarded = (complaint) => {
     return complaint.approved_rejected_by_lokayukt === 1;
   };
 
-
+  // Disposed status helper
+  const isDisposed = (complaint) => {
+    return complaint.disposed === 1;
+  };
 
   // Get tab title
   const getTabTitle = () => {
@@ -741,7 +892,6 @@ const AllComplaints = () => {
     }
   };
 
-
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -752,10 +902,8 @@ const AllComplaints = () => {
     );
   }
 
-
   const currentData = getCurrentData();
   const isLoading = getCurrentLoadingState();
-
 
   return (
     <>
@@ -773,14 +921,12 @@ const AllComplaints = () => {
         style={{ zIndex: 9999 }}
       />
 
-
       <div className="min-h-screen p-2 sm:p-4">
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
             {getTabTitle()} / सभी शिकायतें
           </h1>
         </div>
-
 
         {/* JUSTIFY-BETWEEN TABS COMPONENT */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
@@ -820,131 +966,139 @@ const AllComplaints = () => {
           </div>
         </div>
 
-
         {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="flex flex-col items-center space-y-4">
-              {/* <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div> */}
               <p className="text-gray-700 text-md font-semibold">Loading...</p>
             </div>
           </div>
         ) : (
           <>
-          <div className="space-y-4">
-  {currentData.map((complaint) => {
-    const approvalStatuses = getApprovalStatuses(complaint);
-    
-    return (
-      <div
-        key={complaint.id}
-        className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
-      >
-        {/* Header Section */}
-        <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
-          <div className="mt-2 sm:mt-0">
-            <span className="text-xs text-gray-600">Current Stage:</span>
-            <span
-              className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                isForwarded(complaint)
-                  ? "bg-green-100 text-green-700 border border-green-200"
-                  : "bg-yellow-100 text-yellow-700 border border-yellow-200"
-              }`}
-            >
-              {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
-            </span>
-          </div>
-        </div>
+            <div className="space-y-4">
+              {currentData.map((complaint) => {
+                const approvalStatuses = getApprovalStatuses(complaint);
+                
+                return (
+                  <div
+                    key={complaint.id}
+                    className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
+                  >
+                    {/* Header Section */}
+                    <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                      <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
+                      <div className="mt-2 sm:mt-0">
+                        <span className="text-xs text-gray-600">Current Stage:</span>
+                        <span
+                          className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                            isForwarded(complaint)
+                              ? "bg-green-100 text-green-700 border border-green-200"
+                              : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+                          }`}
+                        >
+                          {isForwarded(complaint) ? 'Forwarded (Completed)' : 'Pending Review'}
+                        </span>
+                      </div>
+                    </div>
 
-        {/* Main Content */}
-        <div className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            {/* Column 1 */}
-            <div className="space-y-2">
-              <div className="flex gap-x-2">
-                <span className="text-gray-600 font-medium">Complaint No:</span>
-                <span className="bg-blue-100 px-2 py-0.5 rounded text-blue-800 font-semibold text-xs">
-                  {complaint.complain_no}
-                </span>
-              </div>
-              <div className="flex gap-x-2">
-                <span className="text-gray-600 font-medium">Complainant:</span>
-                <span className="text-gray-900 font-medium">{complaint.name}</span>
-              </div>
-              <div className="flex gap-x-2">
-                <span className="text-gray-600 font-medium">Mobile No:</span>
-                <span className="text-gray-900">{complaint.mobile}</span>
-              </div>
+                    {/* Main Content */}
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                        {/* Column 1 */}
+                        <div className="space-y-2">
+                          <div className="flex gap-x-2">
+                            <span className="text-gray-600 font-medium">Complaint No:</span>
+                            <span className="bg-blue-100 px-2 py-0.5 rounded text-blue-800 font-semibold text-xs">
+                              {complaint.complain_no}
+                            </span>
+                          </div>
+                          <div className="flex gap-x-2">
+                            <span className="text-gray-600 font-medium">Complainant:</span>
+                            <span className="text-gray-900 font-medium">{complaint.name}</span>
+                          </div>
+                          <div className="flex gap-x-2">
+                            <span className="text-gray-600 font-medium">Mobile No:</span>
+                            <span className="text-gray-900">{complaint.mobile}</span>
+                          </div>
+                        </div>
+
+                        {/* Column 2 */}
+                        <div className="space-y-2">
+                          <div className="flex gap-x-2">
+                            <span className="text-gray-600 font-medium">Email:</span>
+                            <span className="text-gray-900">{complaint.email}</span>
+                          </div>
+                          <div className="flex gap-x-2">
+                            <span className="text-gray-600 font-medium">District:</span>
+                            <span className="text-gray-900">{complaint.district_name}</span>
+                          </div>
+                        </div>
+
+                        {/* Column 3 */}
+                        <div className="flex flex-col sm:items-end">
+                          <span className="text-xs text-gray-600">Created:</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {formatDate(complaint.created_at)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Actions and Badges in Same Row */}
+                      <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        {/* Approval Badges */}
+                        <div className="flex  flex-wrap gap-2 sm:max-w-[90%]">
+                          {approvalStatuses.map((status, index) => (
+                            <span
+                              key={index}
+                              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${status.color}`}
+                            >
+                              <FaCheck className="w-3 h-3 mr-1" />
+                              {status.label}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:flex-shrink-0">
+                          <button
+                            onClick={(e) => handleViewDetails(e, complaint.id)}
+                            className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                          >
+                            View Details
+                          </button>
+
+                          {isDisposed(complaint) ? (
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white cursor-default">
+                              ✓ Disposed
+                            </span>
+                          ) : (
+                            <button
+                              onClick={(e) => handleDisposed(e, complaint.id)}
+                              className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                            >
+                              Disposed
+                            </button>
+                          )}
+
+                          {isForwarded(complaint) ? (
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+                              ✓ Forwarded
+                            </span>
+                          ) : (
+                            <button
+                              onClick={(e) => handleForward(e, complaint.id)}
+                              className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                            >
+                              Forward
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Column 2 */}
-            <div className="space-y-2">
-              <div className="flex gap-x-2">
-                <span className="text-gray-600 font-medium">Email:</span>
-                <span className="text-gray-900">{complaint.email}</span>
-              </div>
-              <div className="flex gap-x-2">
-                <span className="text-gray-600 font-medium">District:</span>
-                <span className="text-gray-900">{complaint.district_name}</span>
-              </div>
-           
-            </div>
-
-            {/* Column 3 */}
-            <div className="flex flex-col sm:items-end">
-              <span className="text-xs text-gray-600">Created:</span>
-              <span className="text-sm font-medium text-gray-900">
-                {formatDate(complaint.created_at)}
-              </span>
-            </div>
-          </div>
-
-          {/* Actions and Badges in Same Row */}
-        <div className="mt-5 pt-4 border-t border-gray-200 flex  flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-  {/* Approval Badges */}
-  <div className="flex sm:flex-nowrap md:flex-nowrap lg:flex-nowrap flex-wrap gap-2 sm:max-w-[90%]  ">
-    {approvalStatuses.map((status, index) => (
-      <span
-        key={index}
-        className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${status.color}`}
-      >
-        <FaCheck className="w-3 h-3 mr-1" />
-        {status.label}
-      </span>
-    ))}
-  </div>
-
-  {/* Action Buttons */}
-  <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:flex-shrink-0">
-    <button
-      onClick={(e) => handleViewDetails(e, complaint.id)}
-      className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-    >
-      View Details
-    </button>
-
-    {isForwarded(complaint) ? (
-      <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
-        ✓ Forwarded
-      </span>
-    ) : (
-      <button
-        onClick={(e) => handleForward(e, complaint.id)}
-        className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-      >
-        Forward
-      </button>
-    )}
-  </div>
-</div>
-
-        </div>
-      </div>
-    );
-  })}
-</div>
-
 
             {/* Empty State */}
             {currentData.length === 0 && (
@@ -958,7 +1112,6 @@ const AllComplaints = () => {
         )}
       </div>
 
-
       {/* Forward Modal */}
       <ForwardModal
         isOpen={isForwardModalOpen}
@@ -967,6 +1120,13 @@ const AllComplaints = () => {
         onSubmit={handleForwardSubmit}
       />
 
+      {/* Disposed Modal */}
+      <DisposedModal
+        isOpen={isDisposedModalOpen}
+        onClose={() => setIsDisposedModalOpen(false)}
+        complaintId={selectedDisposedComplaintId}
+        onSubmit={handleDisposedSubmit}
+      />
 
       {/* Details Modal */}
       {isModalOpen && selectedComplaint && (
@@ -1004,5 +1164,4 @@ const AllComplaints = () => {
   );
 };
 
- 
 export default AllComplaints;

@@ -184,7 +184,6 @@ const ForwardModal = ({
         const response = await api.get("/lokayukt/get-dealing-assistant");
         
         if (response.data && Array.isArray(response.data)) {
-          // Options बनाते time: value में ID (string), display में name
           const assistantOptions = response.data.map(assistant => ({
             value: assistant.id.toString(), 
             displayName: assistant.name,    
@@ -194,17 +193,12 @@ const ForwardModal = ({
        
           setDropdownOptions(assistantOptions);
         } else {
-          // अगर data नहीं मिला या empty है
           setDropdownOptions([]);
           toast.warning("No dealing assistants found");
         }
       } catch (error) {
         console.error("Error fetching dealing assistants:", error);
-        
-        // Error के case में empty array set करें
         setDropdownOptions([]);
-        
-        // User को error message दें
         toast.error("Failed to load dealing assistants. Please try again.");
       } finally {
         setIsLoadingOptions(false);
@@ -246,9 +240,8 @@ const ForwardModal = ({
 
       console.log("API Response:", response.data);
 
-      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
-        toast.success(response.data.message || 'Complaint forwarded successfully!', {
+        toast.success('Complaint forwarded successfully!', {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -257,17 +250,14 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // Pass the complaint ID to parent for local update
-        onSubmit(complaintId); // Pass complaint ID to parent
-        onClose(); // Close modal
+        onSubmit(complaintId);
+        onClose();
       } else {
         toast.error(response.data.message || 'Error forwarding complaint');
       }
     } catch (error) {
       console.error("Forward error:", error);
-      console.error("Error response:", error.response);
       
-      // Handle specific error responses
       if (error.response?.status === 404) {
         toast.error("API endpoint not found. Please check the server configuration.");
       } else if (error.response?.data?.message) {
@@ -277,7 +267,6 @@ const ForwardModal = ({
       } else if (error.response?.status === 403) {
         toast.error("You don't have permission to forward this complaint.");
       } else if (error.response?.status === 422) {
-        // Validation errors
         const errors = error.response.data.errors;
         if (errors) {
           Object.keys(errors).forEach(key => {
@@ -294,7 +283,6 @@ const ForwardModal = ({
     }
   };
 
-  // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -346,7 +334,6 @@ const ForwardModal = ({
                 />
               )}
               
-              {/* Debug के लिए - production में remove करें */}
               {formData.forwardTo && (
                 <div className="mt-1 text-xs text-gray-500">
                   Selected ID: {formData.forwardTo} 
@@ -365,7 +352,7 @@ const ForwardModal = ({
                 name="remarks"
                 value={formData.remarks}
                 onChange={(e) => setFormData(prev => ({ ...prev, remarks: e.target.value }))}
-                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]"
                 placeholder="Enter forwarding remarks..."
                 rows="4"
                 required
@@ -410,11 +397,185 @@ const ForwardModal = ({
   );
 };
 
+// Disposed Modal Component
+const DisposedModal = ({ 
+  isOpen, 
+  onClose, 
+  complaintId,
+  onSubmit 
+}) => {
+  const [remarks, setRemarks] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setRemarks('');
+      setValidationError('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    setValidationError('');
+    
+    if (!remarks.trim()) {
+      setValidationError("Please enter remarks");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.post(`/lokayukt/dispose-complain/${complaintId}`, {
+        remark: remarks
+      });
+
+      console.log("Disposed API Response:", response.data);
+
+      if (response.data.success || response.data.status === true || response.status === 200) {
+        toast.success(response.data.message || 'Complaint disposed successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        
+        onSubmit(complaintId);
+        onClose();
+      } else {
+        if (response.data.message) {
+          toast.error(response.data.message);
+        }
+        if (response.data.errors && response.data.errors.remark) {
+          setValidationError(response.data.errors.remark[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Disposed error:", error);
+      
+      if (error.response?.status === 404) {
+        toast.error("API endpoint not found. Please check the server configuration.");
+      } else if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please login again.");
+      } else if (error.response?.status === 403) {
+        toast.error("You don't have permission to dispose this complaint.");
+      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
+        const errors = error.response?.data?.errors;
+        if (errors && errors.remark) {
+          setValidationError(errors.remark[0]);
+        } else if (error.response?.data?.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error("Validation failed. Please check your input.");
+        }
+      } else {
+        toast.error('Error disposing complaint. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      onClick={handleBackdropClick}
+    >
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Dispose Complaint</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FaTimes className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remarks / टिप्पणी *
+              </label>
+              <textarea
+                name="remarks"
+                value={remarks}
+                onChange={(e) => {
+                  setRemarks(e.target.value);
+                  if (validationError) {
+                    setValidationError('');
+                  }
+                }}
+                className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463]${
+                  validationError ? 'border-red-500' : ''
+                }`}
+                placeholder="Enter disposal remarks..."
+                rows="4"
+                required
+              />
+              {validationError && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationError}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !remarks.trim()}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+                isSubmitting || !remarks.trim()
+                     ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-[#123463] text-white'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  Disposing...
+                </>
+              ) : (
+                <>
+                  <FaArrowRight className="w-4 h-4" />
+                  Disposed
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const ApprovedComplaints = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // State for tabs and data
   const [activeTab, setActiveTab] = useState("approved");
   const [complaintsData, setComplaintsData] = useState([]);
   const [pendingData, setPendingData] = useState([]);
@@ -423,32 +584,29 @@ const ApprovedComplaints = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  // Loading states for each tab - ADDED
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [isLoadingApproved, setIsLoadingApproved] = useState(false);
 
-  // Forward Modal State
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-  // Determine active tab from URL
+  const [isDisposedModalOpen, setIsDisposedModalOpen] = useState(false);
+  const [selectedDisposedComplaintId, setSelectedDisposedComplaintId] = useState(null);
+
   const getActiveTabFromURL = () => {
     if (location.pathname.includes('/pending-complaints')) return 'pending';
     if (location.pathname.includes('/approved-complaints')) return 'approved';
     return 'all';
   };
 
-  // Set active tab based on URL on mount
   useEffect(() => {
     setActiveTab(getActiveTabFromURL());
   }, [location.pathname]);
 
-  // Handle tab change with routing
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     
-    // Route navigation
     switch(tab) {
       case 'all':
         navigate('/lokayukt/all-complaints');
@@ -464,7 +622,6 @@ const ApprovedComplaints = () => {
     }
   };
 
-  // Fetch approved complaints data - UPDATED WITH LOADING
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
     try {
@@ -472,7 +629,7 @@ const ApprovedComplaints = () => {
       
       if (response.data.status === true) {
         setApprovedData(response.data.data);
-        setComplaintsData(response.data.data); // Also set main data for consistency
+        setComplaintsData(response.data.data);
         setError("");
       } else {
         setApprovedData([]);
@@ -488,7 +645,6 @@ const ApprovedComplaints = () => {
     }
   };
 
-  // Fetch data based on active tab
   useEffect(() => {
     switch(activeTab) {
       case 'approved':
@@ -499,7 +655,6 @@ const ApprovedComplaints = () => {
     }
   }, [activeTab]);
 
-  // Get current data based on active tab
   const getCurrentData = () => {
     switch(activeTab) {
       case 'all':
@@ -513,7 +668,6 @@ const ApprovedComplaints = () => {
     }
   };
 
-  // Get current loading state - ADDED
   const getCurrentLoadingState = () => {
     switch(activeTab) {
       case 'all':
@@ -527,20 +681,17 @@ const ApprovedComplaints = () => {
     }
   };
 
-  // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
     navigate(`/lokayukt/approved-complaints/view/${complaintId}`);
     window.scrollTo({ top: 2, behavior: 'smooth' }); 
   };
 
-  // Handle modal view
   const handleModalView = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
   };
 
-  // Handle Forward button click
   const handleForward = (e, complaintId) => {
     e.stopPropagation();
     console.log("Forward button clicked for complaint ID:", complaintId);
@@ -548,15 +699,20 @@ const ApprovedComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // Handle forward submit with local state update
+  const handleDisposed = (e, complaintId) => {
+    e.stopPropagation();
+    console.log("Disposed button clicked for complaint ID:", complaintId);
+    setSelectedDisposedComplaintId(complaintId);
+    setIsDisposedModalOpen(true);
+  };
+
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // Update local state immediately without API call
     const updateData = (prevData) => 
       prevData.map(complaint => 
         complaint.id === forwardedComplaintId 
           ? { 
               ...complaint, 
-              approved_rejected_by_so_us: 1, 
+              approved_rejected_by_lokayukt: 1, 
               status: 'Forwarded'
             }
           : complaint
@@ -568,7 +724,25 @@ const ApprovedComplaints = () => {
     console.log(`Complaint ${forwardedComplaintId} marked as forwarded locally`);
   };
 
-  // Format date helper
+  const handleDisposedSubmit = (disposedComplaintId) => {
+    const updateData = (prevData) => 
+      prevData.map(complaint => 
+        complaint.id === disposedComplaintId 
+          ? { 
+              ...complaint, 
+              approved_rejected_by_lokayukt: 1,
+              disposed: 1,
+              status: 'Disposed'
+            }
+          : complaint
+      );
+
+    setComplaintsData(updateData);
+    setApprovedData(updateData);
+    
+    console.log(`Complaint ${disposedComplaintId} marked as disposed with approved_rejected_by_lokayukt = 1`);
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', {
@@ -581,7 +755,6 @@ const ApprovedComplaints = () => {
   const getApprovalStatuses = (complaint) => {
     const statuses = [];
     
-    // ✅ RO approval - Full text with green background
     if (complaint.approved_rejected_by_ro === 1) {
       statuses.push({
         status: 'approved_by_ro', 
@@ -598,7 +771,6 @@ const ApprovedComplaints = () => {
       });
     }
     
-    // ✅ DS approval - Full text with green background
     if (complaint.approved_rejected_by_ds_js === 1) {
       statuses.push({
         status: 'approved_by_ds',
@@ -606,7 +778,8 @@ const ApprovedComplaints = () => {
         color: 'bg-green-500'
       });
     }
-     if (complaint.approved_rejected_by_d_a === 1) {
+    
+    if (complaint.approved_rejected_by_d_a === 1) {
       statuses.push({
         status: 'approved_by_da',
         label: 'Approved by DA',
@@ -614,7 +787,7 @@ const ApprovedComplaints = () => {
       });
     }
 
-     if (complaint.approved_rejected_by_lokayukt === 1) {
+    if (complaint.approved_rejected_by_lokayukt === 1) {
       statuses.push({
         status: 'approved_by_lokayukt',
         label: 'Approved by Lokayukt',
@@ -625,12 +798,14 @@ const ApprovedComplaints = () => {
     return statuses;
   };
 
-  // Forward status helper - Updated logic
   const isForwarded = (complaint) => {
     return complaint.approved_rejected_by_lokayukt === 1;
   };
 
-  // Get tab title
+  const isDisposed = (complaint) => {
+    return complaint.disposed === 1;
+  };
+
   const getTabTitle = () => {
     switch(activeTab) {
       case 'all':
@@ -655,7 +830,7 @@ const ApprovedComplaints = () => {
   }
 
   const currentData = getCurrentData();
-  const isLoading = getCurrentLoadingState(); // ADDED
+  const isLoading = getCurrentLoadingState();
 
   return (
     <>
@@ -680,7 +855,6 @@ const ApprovedComplaints = () => {
           </h1>
         </div>
 
-        {/* JUSTIFY-BETWEEN TABS COMPONENT */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
           <div className="">
             <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
@@ -718,7 +892,6 @@ const ApprovedComplaints = () => {
           </div>
         </div>
 
-        {/* Loading State - ADDED */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="flex flex-col items-center space-y-4">
@@ -727,7 +900,6 @@ const ApprovedComplaints = () => {
           </div>
         ) : (
           <>
-            {/* FIXED: Single complaint list without duplication */}
             <div className="space-y-3 sm:space-y-4">
               {currentData.map((complaint) => {
                 const approvalStatuses = getApprovalStatuses(complaint);
@@ -737,7 +909,6 @@ const ApprovedComplaints = () => {
                     key={complaint.id}
                     className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
                   >
-                    {/* Header Section */}
                     <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
                       <div className="mt-2 sm:mt-0">
@@ -754,10 +925,8 @@ const ApprovedComplaints = () => {
                       </div>
                     </div>
 
-                    {/* Main Content */}
                     <div className="p-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                        {/* Column 1 */}
                         <div className="space-y-2">
                           <div className="flex gap-x-2">
                             <span className="text-gray-600 font-medium">Complaint No:</span>
@@ -775,11 +944,10 @@ const ApprovedComplaints = () => {
                           </div>
                         </div>
 
-                        {/* Column 2 */}
                         <div className="space-y-2">
                           <div className="flex gap-x-2">
                             <span className="text-gray-600 font-medium">Email:</span>
-                            <span className="text-gray-900 ">{complaint.email}</span>
+                            <span className="text-gray-900">{complaint.email}</span>
                           </div>
                           <div className="flex gap-x-2">
                             <span className="text-gray-600 font-medium">District:</span>
@@ -787,7 +955,6 @@ const ApprovedComplaints = () => {
                           </div>
                         </div>
 
-                        {/* Column 3 */}
                         <div className="flex flex-col sm:items-end">
                           <span className="text-xs text-gray-600">Created:</span>
                           <span className="text-sm font-medium text-gray-900">
@@ -796,51 +963,60 @@ const ApprovedComplaints = () => {
                         </div>
                       </div>
 
-                      {/* Actions and Badges in Same Row */}
-                            <div className="mt-5 pt-4 border-t border-gray-200 flex  flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-  {/* Approval Badges */}
-  <div className="flex sm:flex-nowrap md:flex-nowrap lg:flex-nowrap flex-wrap gap-2 sm:max-w-[90%]  ">
-    {approvalStatuses.map((status, index) => (
-      <span
-        key={index}
-        className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${status.color}`}
-      >
-        <FaCheck className="w-3 h-3 mr-1" />
-        {status.label}
-      </span>
-    ))}
-  </div>
+                      <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex  flex-wrap gap-2 sm:max-w-[90%]">
+                          {approvalStatuses.map((status, index) => (
+                            <span
+                              key={index}
+                              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${status.color}`}
+                            >
+                              <FaCheck className="w-3 h-3 mr-1" />
+                              {status.label}
+                            </span>
+                          ))}
+                        </div>
 
-  {/* Action Buttons */}
-  <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:flex-shrink-0">
-    <button
-      onClick={(e) => handleViewDetails(e, complaint.id)}
-      className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-    >
-      View Details
-    </button>
+                        <div className="flex flex-col sm:flex-row gap-2 sm:justify-end sm:flex-shrink-0">
+                          <button
+                            onClick={(e) => handleViewDetails(e, complaint.id)}
+                            className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                          >
+                            View Details
+                          </button>
 
-    {isForwarded(complaint) ? (
-      <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
-        ✓ Forwarded
-      </span>
-    ) : (
-      <button
-        onClick={(e) => handleForward(e, complaint.id)}
-        className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-      >
-        Forward
-      </button>
-    )}
-  </div>
-</div>
+                          {isDisposed(complaint) ? (
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white cursor-default">
+                              ✓ Disposed
+                            </span>
+                          ) : (
+                            <button
+                              onClick={(e) => handleDisposed(e, complaint.id)}
+                              className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                            >
+                              Disposed
+                            </button>
+                          )}
+
+                          {isForwarded(complaint) ? (
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+                              ✓ Forwarded
+                            </span>
+                          ) : (
+                            <button
+                              onClick={(e) => handleForward(e, complaint.id)}
+                              className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                            >
+                              Forward
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Empty State */}
             {currentData.length === 0 && (
               <div className="text-center py-8 sm:py-12">
                 <p className="text-gray-500 text-sm sm:text-base">
@@ -852,7 +1028,6 @@ const ApprovedComplaints = () => {
         )}
       </div>
 
-      {/* Forward Modal */}
       <ForwardModal
         isOpen={isForwardModalOpen}
         onClose={() => setIsForwardModalOpen(false)}
@@ -860,7 +1035,13 @@ const ApprovedComplaints = () => {
         onSubmit={handleForwardSubmit}
       />
 
-      {/* Details Modal */}
+      <DisposedModal
+        isOpen={isDisposedModalOpen}
+        onClose={() => setIsDisposedModalOpen(false)}
+        complaintId={selectedDisposedComplaintId}
+        onSubmit={handleDisposedSubmit}
+      />
+
       {isModalOpen && selectedComplaint && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4">
           <div className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-lg sm:rounded-2xl bg-white mt-2 sm:mt-0">
