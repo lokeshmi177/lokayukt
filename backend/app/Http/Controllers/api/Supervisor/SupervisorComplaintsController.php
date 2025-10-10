@@ -120,7 +120,7 @@ class SupervisorComplaintsController extends Controller
 
         case "cio-io":
              $query->where('rep.type', 2)
-                                ->where('rep.status', 'Report Requested')
+                                ->where('rep.status', 'Investigation Report')
                                 ->whereNotNull('rep.forward_to_cio_io')
                                  ->where('rep.forward_to_cio_io',$user);
         //    $query->where('form_status', 1)

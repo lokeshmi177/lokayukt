@@ -168,11 +168,15 @@ $records = DB::table('complaints')
                             break;
 
                         case "cio-io":
-                        $records
-                        ->where('ca.type', 2)
-                                ->where('ca.status', ['Verified','Forwarded'])
-                        ->where('ca.forward_to_cio_io',$user_id)
+                             $records->where('ca.type', 2)
+                                ->where('ca.status', ['Investigation Report','Forwarded'])
+                                 ->where('ca.forward_to_cio_io',$user_id)
                                  ->OrWhere('ca.forward_by_cio_io',$user_id);
+                        // $records
+                        // ->where('ca.type', 2)
+                        //         ->where('ca.status', ['Verified','Forwarded'])
+                        // ->where('ca.forward_to_cio_io',$user_id)
+                        //          ->OrWhere('ca.forward_by_cio_io',$user_id);
                         // ->where('ca.type', 2)
                         //         ->where('ca.status', 'Report Requested')
                         //         ->whereNotNull('ca.forward_to_cio_io')
@@ -659,13 +663,7 @@ if ($userSubrole) {
         ->where('forward_to_sec', $user_id)
         ->orderBy('id', 'desc')
         ->pluck('complaint_id')->toArray();
-        // dd($casec);
-    //     $ids = [];
-    // foreach ($casec as $key => $value) {
-    //   $ids[] = $value;
-    // }
-    // dd($ids);
-        
+      
     $cacio = DB::table('complaint_actions')
         ->where('forward_to_cio_io', $user_id)
         ->orderBy('id', 'desc')
@@ -692,7 +690,7 @@ if ($userSubrole) {
 
         case "cio-io":
              if ($cacio) { // check to prevent null error
-                $records->where('ca.complaint_id', $cacio);
+                $records->whereIn('ca.complaint_id', $cacio);
             }
             break;
 
