@@ -955,7 +955,7 @@ const SearchReports = () => {
                                           result.status
                                         )}`}
                                       >
-                                        {result.status || "N/A"}
+                                         {result.status == "Disposed - Accepted" ? "Disposed, Accepted" : result.status}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
