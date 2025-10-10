@@ -245,7 +245,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, targetDate, onSubmit }) =>
         target_date: targetDate
       };
 
-      const response = await api.post(`/supervisor/forward-report-by-cio-io/${complaintId}`, payload);
+      const response = await api.post(`/supervisor/forward-report-by-cio/${complaintId}`, payload);
       
       if (response.data.status !== false) {
         toast.success("Complaint forwarded successfully!");
@@ -932,7 +932,7 @@ const SearchReports = () => {
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       <span 
-                                      
+                                        
                                         title={`District Code: ${result.district_id}`}
                                       >
                                         {result.district_name || "N/A"}
