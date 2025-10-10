@@ -434,6 +434,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
 
     }
 
+  
     public function requestReportList($complainid){
         $userId = Auth::user()->id;
         $records = DB::table('complaint_actions as ca')
@@ -442,6 +443,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
         ->leftJoin('users as p', 'ca.forward_by_ds_js', '=', 'p.id')
         ->leftJoin('users as r', 'ca.forward_by_sec', '=', 'r.id')
         ->leftJoin('users as s', 'ca.forward_by_cio_io', '=', 's.id')
+         ->leftJoin('users as e', 'ca.forward_to_ds_js', '=', 'e.id')
+        ->leftJoin('users as f', 'ca.forward_to_sec', '=', 'f.id')
+        ->leftJoin('users as g', 'ca.forward_to_cio_io', '=', 'g.id')
         ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
         ->select(
             'ca.*',
@@ -453,6 +457,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
             'r.name as sec_name',
             'p.name as ds_js_name',
             's.name as cio_name',
+            'e.name as sec_to_name',
+            'f.name as ds_js_to_name',
+            'g.name as cio_to_name',
             // 'u.name as forward_by_name',
             // 'srole.name as forward_by_subrole'
         )
@@ -461,7 +468,9 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // ->orWhere('ca.forward_to_sec', $userId)
         // ->orWhere('ca.forward_to_cio_io', $userId)
         ->where('ca.type', 2)
-        ->where('ca.status', 'Forwarded')
+        ->whereNull('ca.forward_to_cio_io')
+        ->whereNull('ca.forward_by_cio_io')
+        ->whereIn('ca.status', ['Investigation Report','Forwarded'])
         ->get();
 
          return response()->json([
@@ -479,6 +488,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         ->leftJoin('users as p', 'ca.forward_by_ds_js', '=', 'p.id')
         ->leftJoin('users as r', 'ca.forward_by_sec', '=', 'r.id')
         ->leftJoin('users as s', 'ca.forward_by_cio_io', '=', 's.id')
+        ->leftJoin('users as t', 'ca.forward_to_cio_io', '=', 't.id')
         ->leftJoin('sub_roles as srole', 'u.sub_role_id', '=', 'srole.id')
         ->select(
             'ca.*',
@@ -490,6 +500,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
             'r.name as sec_name',
             'p.name as ds_js_name',
             's.name as cio_name',
+            't.name as cio_to_name',
             // 'u.name as forward_by_name',
             // 'srole.name as forward_by_subrole'
         )
@@ -498,8 +509,13 @@ $complainDetails->details = DB::table('complaints_details as cd')
         // ->orWhere('ca.forward_to_sec', $userId)
         // ->orWhere('ca.forward_to_cio_io', $userId)
         ->where('ca.type', 2)
-        ->whereNotNull('ca.forward_to_cio_io')
-        ->where('ca.status', 'Investigation Report')
+        // // ->whereNotNull('ca.forward_to_cio_io')
+        // ->whereNotNull('ca.forward_by_cio_io')
+        ->where(function ($query) {
+            $query->whereNotNull('ca.forward_to_cio_io')
+                ->orWhereNotNull('ca.forward_by_cio_io');
+        })
+        ->whereIn('ca.status', ['Investigation Report','Forwarded'])
         ->get();
 
          return response()->json([

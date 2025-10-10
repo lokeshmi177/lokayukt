@@ -469,7 +469,7 @@ $complainDetails->details = DB::table('complaints_details as cd')
         ->where('ca.type', 2)
         ->whereNull('ca.forward_to_cio_io')
         ->whereNull('ca.forward_by_cio_io')
-        ->where('ca.status', 'Forwarded')
+        ->whereIn('ca.status', ['Investigation Report','Forwarded'])
         ->get();
 
          return response()->json([
