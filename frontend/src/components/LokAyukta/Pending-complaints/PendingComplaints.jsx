@@ -14,12 +14,15 @@ import {
   FaTimes,
   FaSpinner,
   FaArrowRight,
-  FaCheck
+  FaCheck,
+  FaBan
 } from "react-icons/fa";
+
 
 const BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:8000/api";
 const token = localStorage.getItem("access_token");
 const subRole = localStorage.getItem("subrole");
+
 
 // Create axios instance with token if it exists
 const api = axios.create({
@@ -29,7 +32,8 @@ const api = axios.create({
   },
 });
 
-// Custom Searchable Select Component - ID save होगी, Name display होगी
+
+// Custom Searchable Select Component
 const CustomSearchableSelect = ({ 
   value, 
   onChange, 
@@ -41,7 +45,6 @@ const CustomSearchableSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Filter options based on search (केवल name में search)
   const filteredOptions = () => {
     if (!searchTerm.trim()) return options;
     
@@ -53,7 +56,7 @@ const CustomSearchableSelect = ({
   const selectedOption = options.find(opt => opt.value === value);
 
   const handleSelect = (optionValue) => {
-    onChange(optionValue); // यहाँ ID pass होती है
+    onChange(optionValue);
     setIsOpen(false);
     setSearchTerm("");
   };
@@ -61,7 +64,6 @@ const CustomSearchableSelect = ({
   
   return (
     <div className="relative">
-      {/* Hidden select element - यह form submit के लिए है */}
       <select
         name={name}
         value={value || ""}
@@ -73,12 +75,11 @@ const CustomSearchableSelect = ({
         <option value="">-- Select Option --</option>
         {options.map(option => (
           <option key={option.value} value={option.value}>
-            {option.value} {/* केवल ID submit होगी */}
+            {option.value}
           </option>
         ))}
       </select>
 
-      {/* Custom Dropdown Button - केवल name दिखेगा */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -100,10 +101,8 @@ const CustomSearchableSelect = ({
         <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-hidden">
-          {/* Search Input */}
           <div className="p-2 border-b">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -118,17 +117,14 @@ const CustomSearchableSelect = ({
             </div>
           </div>
 
-          {/* Options List */}
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions().length > 0 ? (
               <>
-                {/* Dealing Assistant Header */}
                 <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b flex items-center">
                   <FaUsers className="w-4 h-4 text-blue-500" />
                   <span className="ml-2">Dealing Assistant</span>
                 </div>
                 
-                {/* Dealing Assistant Options - केवल name दिखेगा */}
                 {filteredOptions()
                   .filter(option => option.type === 'assistant')
                   .map((item) => (
@@ -160,6 +156,7 @@ const CustomSearchableSelect = ({
   );
 };
 
+
 // Forward Modal Component
 const ForwardModal = ({ 
   isOpen, 
@@ -175,7 +172,6 @@ const ForwardModal = ({
   const [dropdownOptions, setDropdownOptions] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
 
-  // Fetch dealing assistants from API
   useEffect(() => {
     const fetchDealingAssistants = async () => {
       if (!isOpen) return;
@@ -185,7 +181,6 @@ const ForwardModal = ({
         const response = await api.get("/lokayukt/get-dealing-assistant");
         
         if (response.data && Array.isArray(response.data)) {
-          // Options बनाते time: value में ID (string), display में name
           const assistantOptions = response.data.map(assistant => ({
             value: assistant.id.toString(), 
             displayName: assistant.name,    
@@ -195,17 +190,12 @@ const ForwardModal = ({
        
           setDropdownOptions(assistantOptions);
         } else {
-          // अगर data नहीं मिला या empty है
           setDropdownOptions([]);
           toast.warning("No dealing assistants found");
         }
       } catch (error) {
         console.error("Error fetching dealing assistants:", error);
-        
-        // Error के case में empty array set करें
         setDropdownOptions([]);
-        
-        // User को error message दें
         toast.error("Failed to load dealing assistants. Please try again.");
       } finally {
         setIsLoadingOptions(false);
@@ -247,7 +237,6 @@ const ForwardModal = ({
 
       console.log("API Response:", response.data);
 
-      // Check for success response based on your API
       if (response.data.success || response.data.status === true || response.status === 200) {
         toast.success(response.data.message || 'Complaint forwarded successfully!', {
           position: "top-right",
@@ -258,17 +247,14 @@ const ForwardModal = ({
           draggable: true,
         });
         
-        // Pass the complaint ID to parent for local update
-        onSubmit(complaintId); // Pass complaint ID to parent
-        onClose(); // Close modal
+        onSubmit(complaintId);
+        onClose();
       } else {
         toast.error(response.data.message || 'Error forwarding complaint');
       }
     } catch (error) {
       console.error("Forward error:", error);
-      console.error("Error response:", error.response);
       
-      // Handle specific error responses
       if (error.response?.status === 404) {
         toast.error("API endpoint not found. Please check the server configuration.");
       } else if (error.response?.data?.message) {
@@ -278,7 +264,6 @@ const ForwardModal = ({
       } else if (error.response?.status === 403) {
         toast.error("You don't have permission to forward this complaint.");
       } else if (error.response?.status === 422) {
-        // Validation errors
         const errors = error.response.data.errors;
         if (errors) {
           Object.keys(errors).forEach(key => {
@@ -295,7 +280,6 @@ const ForwardModal = ({
     }
   };
 
-  // Close modal when clicking outside
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -347,7 +331,6 @@ const ForwardModal = ({
                 />
               )}
               
-              {/* Debug के लिए - production में remove करें */}
               {formData.forwardTo && (
                 <div className="mt-1 text-xs text-gray-500">
                   Selected ID: {formData.forwardTo} 
@@ -411,11 +394,184 @@ const ForwardModal = ({
   );
 };
 
+
+// Disposed Modal Component
+const DisposedModal = ({ 
+  isOpen, 
+  onClose, 
+  complaintId,
+  onSubmit 
+}) => {
+  const [remarks, setRemarks] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationError, setValidationError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setRemarks('');
+      setValidationError('');
+    }
+  }, [isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    setValidationError('');
+    
+    if (!remarks.trim()) {
+      setValidationError("Please enter remarks");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.post(`/lokayukt/dispose-complain/${complaintId}`, {
+        remark: remarks,
+        status: "Disposed - Accepted"
+      });
+
+      console.log("Disposed API Response:", response.data);
+
+      if (response.data.success || response.data.status === true || response.status === 200) {
+        toast.success(response.data.message || 'Complaint disposed successfully!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        
+        onSubmit(complaintId);
+        onClose();
+      } else {
+        if (response.data.message) {
+          toast.error(response.data.message);
+        }
+        if (response.data.errors && response.data.errors.remark) {
+          setValidationError(response.data.errors.remark[0]);
+        }
+      }
+    } catch (error) {
+      console.error("Disposed error:", error);
+      
+      if (error.response?.status === 404) {
+        toast.error("API endpoint not found.");
+      } else if (error.response?.status === 422 || error.response?.data?.status === false) {
+        const errors = error.response?.data?.errors;
+        if (errors && errors.remark) {
+          setValidationError(errors.remark[0]);
+        } else if (error.response?.data?.message) {
+          toast.error(error.response.data.message);
+        }
+      } else if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please login again.");
+      } else {
+        toast.error("Error disposing complaint. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+      onClick={handleBackdropClick}
+    >
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Dispose Complaint</h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FaTimes className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remarks / टिप्पणी *
+              </label>
+              <textarea
+                name="remarks"
+                value={remarks}
+                onChange={(e) => {
+                  setRemarks(e.target.value);
+                  if (validationError) {
+                    setValidationError('');
+                  }
+                }}
+                className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#123463] focus:border-[#123463] ${
+                  validationError ? 'border-red-500' : ''
+                }`}
+                placeholder="Enter disposal remarks..."
+                rows="4"
+                required
+              />
+              {validationError && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationError}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-2 border rounded-md text-sm hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !remarks.trim()}
+              className={`px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+                isSubmitting || !remarks.trim()
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-[#123463] text-white'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  Disposing...
+                </>
+              ) : (
+                <>
+                  <FaArrowRight className="w-4 h-4" />
+                  Dispose
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
 const PendingComplaints = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // State for tabs and data
   const [activeTab, setActiveTab] = useState("pending");
   const [complaintsData, setComplaintsData] = useState([]);
   const [pendingData, setPendingData] = useState([]);
@@ -424,32 +580,30 @@ const PendingComplaints = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  // Loading states for each tab
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const [isLoadingPending, setIsLoadingPending] = useState(false);
   const [isLoadingApproved, setIsLoadingApproved] = useState(false);
 
-  // Forward Modal State
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState(null);
 
-  // Determine active tab from URL
+  // Disposed Modal State
+  const [isDisposedModalOpen, setIsDisposedModalOpen] = useState(false);
+  const [selectedDisposedComplaintId, setSelectedDisposedComplaintId] = useState(null);
+
   const getActiveTabFromURL = () => {
     if (location.pathname.includes('/pending-complaints')) return 'pending';
     if (location.pathname.includes('/approved-complaints')) return 'approved';
     return 'all';
   };
 
-  // Set active tab based on URL on mount
   useEffect(() => {
     setActiveTab(getActiveTabFromURL());
   }, [location.pathname]);
 
-  // Handle tab change with routing
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     
-    // Route navigation
     switch(tab) {
       case 'all':
         navigate('/lokayukt/all-complaints');
@@ -465,7 +619,6 @@ const PendingComplaints = () => {
     }
   };
 
-  // Fetch all complaints data from API
   const fetchAllComplaints = async () => {
     setIsLoadingAll(true);
     try {
@@ -489,7 +642,6 @@ const PendingComplaints = () => {
     }
   };
 
-  // Fetch pending complaints data
   const fetchPendingComplaints = async () => {
     setIsLoadingPending(true);
     try {
@@ -515,7 +667,6 @@ const PendingComplaints = () => {
     }
   };
 
-  // Fetch approved complaints data
   const fetchApprovedComplaints = async () => {
     setIsLoadingApproved(true);
     try {
@@ -538,7 +689,6 @@ const PendingComplaints = () => {
     }
   };
 
-  // Fetch data based on active tab
   useEffect(() => {
     switch(activeTab) {
       case 'all':
@@ -555,7 +705,6 @@ const PendingComplaints = () => {
     }
   }, [activeTab]);
 
-  // Get current data based on active tab - NO FILTERING
   const getCurrentData = () => {
     switch(activeTab) {
       case 'all':
@@ -569,7 +718,6 @@ const PendingComplaints = () => {
     }
   };
 
-  // Get current loading state
   const getCurrentLoadingState = () => {
     switch(activeTab) {
       case 'all':
@@ -583,20 +731,17 @@ const PendingComplaints = () => {
     }
   };
 
-  // Handle view details with navigation
   const handleViewDetails = (e, complaintId) => {
     e.stopPropagation();
     navigate(`/lokayukt/pending-complaints/view/${complaintId}`);
     window.scrollTo({ top: 2, behavior: 'smooth' });
   };
 
-  // Handle modal view
   const handleModalView = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
   };
 
-  // Handle Forward button click
   const handleForward = (e, complaintId) => {
     e.stopPropagation();
     console.log("Forward button clicked for complaint ID:", complaintId);
@@ -604,9 +749,15 @@ const PendingComplaints = () => {
     setIsForwardModalOpen(true);
   };
 
-  // Handle forward submit with improved local state update
+  // Handle Dispose button click
+  const handleDisposed = (e, complaintId) => {
+    e.stopPropagation();
+    console.log("Disposed button clicked for complaint ID:", complaintId);
+    setSelectedDisposedComplaintId(complaintId);
+    setIsDisposedModalOpen(true);
+  };
+
   const handleForwardSubmit = (forwardedComplaintId) => {
-    // Refresh the current tab data after forwarding
     switch(activeTab) {
       case 'all':
         fetchAllComplaints();
@@ -624,7 +775,48 @@ const PendingComplaints = () => {
     console.log(`Complaint ${forwardedComplaintId} forwarded successfully`);
   };
 
-  // Format date helper
+  // Handle disposed submit
+  const handleDisposedSubmit = (disposedComplaintId) => {
+    // Update local state
+    setComplaintsData(prevComplaints => 
+      prevComplaints.map(complaint => 
+        complaint.id === disposedComplaintId 
+          ? { 
+              ...complaint, 
+              disposed: 1,
+              status: 'Disposed - Accepted'
+            }
+          : complaint
+      )
+    );
+    
+    setPendingData(prevComplaints => 
+      prevComplaints.map(complaint => 
+        complaint.id === disposedComplaintId 
+          ? { 
+              ...complaint, 
+              disposed: 1,
+              status: 'Disposed - Accepted'
+            }
+          : complaint
+      )
+    );
+    
+    setApprovedData(prevComplaints => 
+      prevComplaints.map(complaint => 
+        complaint.id === disposedComplaintId 
+          ? { 
+              ...complaint, 
+              disposed: 1,
+              status: 'Disposed - Accepted'
+            }
+          : complaint
+      )
+    );
+    
+    console.log(`Complaint ${disposedComplaintId} marked as disposed`);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -635,11 +827,9 @@ const PendingComplaints = () => {
     });
   };
 
-  // Get approval statuses
   const getApprovalStatuses = (complaint) => {
     const statuses = [];
     
-    // RO approval
     if (complaint.approved_rejected_by_ro === 1) {
       statuses.push({
         status: 'approved_by_ro', 
@@ -648,7 +838,6 @@ const PendingComplaints = () => {
       });
     }
     
-    // SO approval
     if (complaint.approved_rejected_by_so_us === 1) {
       statuses.push({
         status: 'approved_by_so',
@@ -657,7 +846,6 @@ const PendingComplaints = () => {
       });
     }
     
-    // DS approval
     if (complaint.approved_rejected_by_ds_js === 1) {
       statuses.push({
         status: 'approved_by_ds',
@@ -666,7 +854,6 @@ const PendingComplaints = () => {
       });
     }
 
-    // DA approval
     if (complaint.approved_rejected_by_d_a === 1) {
       statuses.push({
         status: 'approved_by_da',
@@ -678,19 +865,22 @@ const PendingComplaints = () => {
     return statuses;
   };
 
-  // ✅ CORRECTED: Check if complaint can be forwarded
   const canForward = (complaint) => {
-    // If complaint is approved by LokAyukt, it's already forwarded
     if (complaint.approved_rejected_by_lokayukt === 1) {
       return false; 
     }
-    return true; // Can forward - show "Forward" button
+    return true;
   };
-   const isForwarded = (complaint) => {
+  
+  const isForwarded = (complaint) => {
     return complaint.approved_rejected_by_lokayukt === 1;
   };
 
-  // Get tab title
+  // Check if complaint is disposed
+  const isDisposed = (complaint) => {
+    return complaint.status === "Disposed - Accepted";
+  };
+
   const getTabTitle = () => {
     switch(activeTab) {
       case 'all':
@@ -750,7 +940,6 @@ const PendingComplaints = () => {
           </h1>
         </div>
 
-        {/* JUSTIFY-BETWEEN TABS COMPONENT */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-4 sm:mb-6">
           <div className="">
             <div className="flex items-center justify-between rounded-md bg-gray-100 p-1 text-gray-500">
@@ -788,7 +977,6 @@ const PendingComplaints = () => {
           </div>
         </div>
 
-        {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <div className="flex flex-col items-center space-y-4">
@@ -807,7 +995,6 @@ const PendingComplaints = () => {
                     key={complaint.id}
                     className="w-full bg-white shadow-sm hover:shadow-lg rounded-xl border border-gray-200 transition duration-300 overflow-hidden"
                   >
-                    {/* Header Section */}
                     <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-gray-700 font-semibold text-sm">Complaint Details</span>
                      <div className="mt-2 sm:mt-0">
@@ -824,10 +1011,8 @@ const PendingComplaints = () => {
                       </div>
                     </div>
 
-                    {/* Main Content */}
                     <div className="p-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                        {/* Column 1 */}
                         <div className="space-y-2">
                           <div className="flex gap-x-2">
                             <span className="text-gray-600 font-medium">Complaint No:</span>
@@ -845,7 +1030,6 @@ const PendingComplaints = () => {
                           </div>
                         </div>
 
-                        {/* Column 2 */}
                         <div className="space-y-2">
                           <div className="flex gap-x-2">
                             <span className="text-gray-600 font-medium">Email:</span>
@@ -863,19 +1047,15 @@ const PendingComplaints = () => {
                           )}
                         </div>
 
-                        {/* Column 3 */}
                         <div className="flex flex-col sm:items-end">
                           <span className="text-xs text-gray-600">Created:</span>
                           <span className="text-sm font-medium text-gray-900">
                             {formatDate(complaint.created_at)}
                           </span>
-                          
                         </div>
                       </div>
 
-                      {/* Actions and Badges in Same Row */}
                       <div className="mt-5 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        {/* Approval Badges */}
                         <div className="flex flex-wrap gap-2">
                           {approvalStatuses.length > 0 ? (
                             approvalStatuses.map((status, index) => (
@@ -892,7 +1072,6 @@ const PendingComplaints = () => {
                           )}
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
                           <button
                             onClick={(e) => handleViewDetails(e, complaint.id)}
@@ -901,6 +1080,23 @@ const PendingComplaints = () => {
                             View Details
                           </button>
 
+                          {/* Dispose Button Logic */}
+                          {!isForwarded(complaint) && (
+                            isDisposed(complaint) ? (
+                              <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+                                ✓ Disposed
+                              </span>
+                            ) : (
+                              <button
+                                onClick={(e) => handleDisposed(e, complaint.id)}
+                                className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+                              >
+                                Dispose
+                              </button>
+                            )
+                          )}
+
+                          {/* Forward Button Logic */}
                           {showForwardButton ? (
                             <button
                               onClick={(e) => handleForward(e, complaint.id)}
@@ -921,7 +1117,6 @@ const PendingComplaints = () => {
               })}
             </div>
 
-            {/* Empty State */}
             {currentData.length === 0 && (
               <div className="text-center py-8 sm:py-12 bg-white rounded-lg border border-gray-200">
                 <p className="text-gray-500 text-sm sm:text-base">
@@ -941,7 +1136,14 @@ const PendingComplaints = () => {
         onSubmit={handleForwardSubmit}
       />
 
-      {/* Details Modal */}
+      {/* Disposed Modal */}
+      <DisposedModal
+        isOpen={isDisposedModalOpen}
+        onClose={() => setIsDisposedModalOpen(false)}
+        complaintId={selectedDisposedComplaintId}
+        onSubmit={handleDisposedSubmit}
+      />
+
       {isModalOpen && selectedComplaint && (
         <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex justify-center items-start sm:items-center p-2 sm:p-4">
           <div className="relative w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto rounded-lg sm:rounded-2xl bg-white mt-2 sm:mt-0">

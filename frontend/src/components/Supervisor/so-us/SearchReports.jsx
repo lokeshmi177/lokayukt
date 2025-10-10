@@ -888,7 +888,7 @@ const SearchReports = () => {
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
                                       <span 
-                                        className="font-medium text-blue-600 px-2 py-1 bg-blue-50 rounded-md text-xs" 
+                                    
                                         title={`District Code: ${result.district_id}`}
                                       >
                                         {result.district_name || "N/A"}

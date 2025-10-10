@@ -867,7 +867,6 @@ const AllComplaints = () => {
     return complaint.approved_rejected_by_lokayukt === 1;
   };
 
-  // ✅ DISPOSED STATUS HELPER - "Disposed - Accepted" CHECK KAREGI
   const isDisposed = (complaint) => {
     return complaint.status === "Disposed - Accepted";
   };
@@ -1062,18 +1061,28 @@ const AllComplaints = () => {
                           </button>
 
                           {/* ✅ DISPOSED BUTTON - AGAR STATUS "Disposed - Accepted" HAI TO GREEN BUTTON DIKHEGA */}
-                          {isDisposed(complaint) ? (
-                            <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
-                              ✓ Disposed
-                            </span>
-                          ) : (
-                            <button
-                              onClick={(e) => handleDisposed(e, complaint.id)}
-                              className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
-                            >
-                              Dispose
-                            </button>
-                          )}
+
+
+                          {
+  complaint.approved_rejected_by_lokayukt === 1 ? (
+    ""
+  ) : (
+    isDisposed(complaint) ? (
+      <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
+        ✓ Disposed
+      </span>
+    ) : (
+      <button
+        onClick={(e) => handleDisposed(e, complaint.id)}
+        className="w-full sm:w-auto text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white px-4 py-2 rounded-lg transition duration-200 text-sm font-medium"
+      >
+        Dispose
+      </button>
+    )
+  )
+}
+
+                        
 
                           {isForwarded(complaint) ? (
                             <span className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium bg-green-500 text-white cursor-default">
