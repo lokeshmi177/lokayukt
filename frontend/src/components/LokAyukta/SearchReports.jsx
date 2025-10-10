@@ -545,7 +545,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      Forward By
+                      Forward 
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Remark
@@ -589,7 +589,7 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                      Forward By
+                      Forward 
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Remark
