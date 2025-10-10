@@ -173,22 +173,35 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     try {
       const response = await api.get(`/lokayukt/request-list-cio/${complaintId}`);
       if (response.data.status === true && Array.isArray(response.data.data)) {
-        // Process the data to match your table structure
         const processedData = response.data.data.map((item) => {
           let officerName = "N/A";
           let role = "N/A";
 
-          // Determine officer name from available fields
-          if (item.cio_name) {
-            officerName = item.cio_name;
-            role = "CIO/IO";
-          } else if (item.ds_js_name) {
-            officerName = item.ds_js_name;
-            role = "DS/JS";
-          } else if (item.sec_name) {
-            officerName = item.sec_name;
-            role = "Secretary";
-          }
+      
+            if (item.cio_name) {
+              officerName = item.cio_name;
+              role = "CIO/IO";
+            } else if (item.ds_js_name) {
+              officerName = item.ds_js_name;
+              role = "DS/JS";
+            } else if (item.sec_name) {
+              officerName = item.sec_name;
+              role = "Secretary";
+            }
+            else if (item.sec_to_name) {
+              officerName = item.sec_to_name;
+              role = "Secretary";
+            }
+            else if (item.ds_js_to_name) {
+              officerName = item.ds_js_to_name;
+              role = "DS/JS";
+            }
+            else if (item.cio_to_name) {
+              officerName = item.cio_to_name;
+              role = "CIO/IO";
+            }
+         
+
 
           return {
             name: officerName,
@@ -244,12 +257,12 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     try {
       const response = await api.get(`/lokayukt/request-list/${complaintId}`);
       if (response.data.status === true && Array.isArray(response.data.data)) {
-        // Process the data to extract name and role
+       
         const processedData = response.data.data.map((item) => {
           let forwardedBy = "";
           let role = "";
 
-          // Determine which name field is not null and set role accordingly
+
           if (item.sec_name !== null && item.sec_name !== "") {
             forwardedBy = item.sec_name;
             role = "Secretary";
@@ -259,6 +272,18 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           } else if (item.cio_name !== null && item.cio_name !== "") {
             forwardedBy = item.cio_name;
             role = "CIO";
+          }
+          else if (item.cio_to_name !== null && item.cio_to_name !== "") {
+            forwardedBy = item.cio_to_name;
+            role = "CIO";
+          }
+          else if (item.ds_js_to_name !== null && item.ds_js_to_name !== "") {
+            forwardedBy = item.ds_js_to_name;
+            role = "DS/JS";
+          }
+          else if (item.sec_to_name !== null && item.sec_to_name !== "") {
+            forwardedBy = item.sec_to_name;
+            role = "Secretary";
           }
 
           return {
