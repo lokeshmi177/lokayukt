@@ -983,7 +983,7 @@ const SearchReports = () => {
   <span className="hidden font-semibold sm:inline">Forwarded</span>
 </button>
 
-                                        ) : result.ca_status === "Under Investigation" ? (
+                                        ) : result.ca_status === "Investigation Report" ? (
                                           <button 
                                             onClick={() => handleForward(result.id)}
                                             className="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 rounded text-[10px] hover:bg-gray-50 transition-colors"
