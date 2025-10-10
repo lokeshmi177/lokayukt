@@ -33,6 +33,7 @@ const api = axios.create({
   },
 });
 
+
 // Custom Searchable Dropdown Component
 const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder = "Select Option...", required = false, error = null }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -140,6 +141,9 @@ const CustomSearchableDropdown = ({ value, onChange, options = [], placeholder =
 };
 
 // Forward Modal Component with 3 Tabs
+
+
+// Forward Modal Component with 3 Tabs
 const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [forward, setForward] = useState({
     forward_to: "",
@@ -157,13 +161,80 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   const [reportData, setReportData] = useState([]);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
 
-  // Static data for Investigation Report tab
-  const investigationData = [
-    { name: "Sahil", role: "Investigation Officer", remark: "Cio", targetDate: "2025-10-18" },
-    { name: "Pen", role: "Lead Investigator", remark: "ds-js", targetDate: "2025-10-22" },
-    { name: "Remote", role: "Forensic Analyst", remark: "Da", targetDate: "2025-10-28" },
-  ];
+  // State for Investigation Report tab API data - ADD THIS
+  const [investigationData, setInvestigationData] = useState([]);
+  const [isLoadingInvestigation, setIsLoadingInvestigation] = useState(false);
 
+  // Fetch Investigation Report data from API - ADD THIS FUNCTION
+  const fetchInvestigationData = async () => {
+    if (!complaintId) return;
+    
+    setIsLoadingInvestigation(true);
+    try {
+      const response = await api.get(`/uplokayukt/request-list-cio/${complaintId}`);
+      if (response.data.status === true && Array.isArray(response.data.data)) {
+        const processedData = response.data.data.map((item) => {
+          let officerName = "N/A";
+          let role = "N/A";
+
+      
+            if (item.cio_name) {
+              officerName = item.cio_name;
+              role = "CIO/IO";
+            } else if (item.ds_js_name) {
+              officerName = item.ds_js_name;
+              role = "DS/JS";
+            } else if (item.sec_name) {
+              officerName = item.sec_name;
+              role = "Secretary";
+            }
+            else if (item.sec_to_name) {
+              officerName = item.sec_to_name;
+              role = "Secretary";
+            }
+            else if (item.ds_js_to_name) {
+              officerName = item.ds_js_to_name;
+              role = "DS/JS";
+            }
+            else if (item.cio_to_name) {
+              officerName = item.cio_to_name;
+              role = "CIO/IO";
+            }
+         
+
+
+          return {
+            name: officerName,
+            role: role,
+            remark: item.remarks || "N/A",
+            targetDate: item.target_date || "N/A",
+            // status: item.status || "N/A"
+          };
+        });
+
+        setInvestigationData(processedData);
+      } else {
+        setInvestigationData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching investigation data:", error);
+      toast.error("Error loading investigation data");
+      setInvestigationData([]);
+    } finally {
+      setIsLoadingInvestigation(false);
+    }
+  };
+
+  // ... rest of your existing ForwardModal functions ...
+
+  // Add this useEffect for investigation data - ADD THIS
+  useEffect(() => {
+    if (isOpen && activeModalTab === "investigation") {
+      fetchInvestigationData();
+    }
+  }, [isOpen, activeModalTab, complaintId]);
+
+  // ... rest of your ForwardModal component ...
   const fetchUsersData = async () => {
     setIsLoadingData(true);
     try {
@@ -186,12 +257,12 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
     try {
       const response = await api.get(`/uplokayukt/request-list/${complaintId}`);
       if (response.data.status === true && Array.isArray(response.data.data)) {
-        // Process the data to extract name and role
+       
         const processedData = response.data.data.map((item) => {
           let forwardedBy = "";
           let role = "";
 
-          // Determine which name field is not null and set role accordingly
+
           if (item.sec_name !== null && item.sec_name !== "") {
             forwardedBy = item.sec_name;
             role = "Secretary";
@@ -201,6 +272,18 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
           } else if (item.cio_name !== null && item.cio_name !== "") {
             forwardedBy = item.cio_name;
             role = "CIO";
+          }
+          else if (item.cio_to_name !== null && item.cio_to_name !== "") {
+            forwardedBy = item.cio_to_name;
+            role = "CIO";
+          }
+          else if (item.ds_js_to_name !== null && item.ds_js_to_name !== "") {
+            forwardedBy = item.ds_js_to_name;
+            role = "DS/JS";
+          }
+          else if (item.sec_to_name !== null && item.sec_to_name !== "") {
+            forwardedBy = item.sec_to_name;
+            role = "Secretary";
           }
 
           return {
@@ -289,246 +372,258 @@ const ForwardModal = ({ isOpen, onClose, complaintId, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
-      <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
-          <h3 className="text-lg font-semibold">Request Details</h3>
+    <div style={{ marginTop: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={handleBackdropClick}>
+  <div className="w-full max-w-3xl bg-white rounded-lg shadow-lg h-[80vh] overflow-hidden flex flex-col">
+    
+    {/* Header - Dynamic based on active tab */}
+    <div className="px-6 py-4 border-b flex items-center justify-between flex-shrink-0">
+      <h3 className="text-lg font-semibold">
+        {activeModalTab === "request" && "Request Details"}
+        {activeModalTab === "report" && "Report Details"}
+        {activeModalTab === "investigation" && "Investigation Report Details"}
+      </h3>
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <FaTimes className="w-5 h-5" />
+      </button>
+    </div>
+
+    {/* Modal Tabs */}
+    <div className="px-6 pt-4 flex-shrink-0">
+      <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
+        <div className="grid grid-cols-1 sm:flex w-full gap-1">
           <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            onClick={() => setActiveModalTab("request")}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
+              activeModalTab === "request" ? "bg-white text-gray-900 shadow-sm" : ""
+            }`}
           >
-            <FaTimes className="w-5 h-5" />
+            Request Report
           </button>
-        </div>
-
-        {/* Modal Tabs */}
-        <div className="px-6 pt-4 flex-shrink-0">
-          <div className="inline-flex h-auto sm:h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 w-full">
-            <div className="grid grid-cols-1 sm:flex w-full gap-1">
-              <button
-                onClick={() => setActiveModalTab("request")}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                  activeModalTab === "request" ? "bg-white text-gray-900 shadow-sm" : ""
-                }`}
-              >
-                Request Report
-              </button>
-              <button
-                onClick={() => setActiveModalTab("report")}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                  activeModalTab === "report" ? "bg-white text-gray-900 shadow-sm" : ""
-                }`}
-              >
-                Report
-              </button>
-              <button
-                onClick={() => setActiveModalTab("investigation")}
-                className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
-                  activeModalTab === "investigation" ? "bg-white text-gray-900 shadow-sm" : ""
-                }`}
-              >
-                Investigation Report
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {/* Request Report Tab */}
-          {activeModalTab === "request" && (
-            <form className="w-full" onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Request To <span className="text-red-500">*</span>
-                  </label>
-                  <CustomSearchableDropdown
-                    name="forward_to"
-                    value={forward.forward_to}
-                    onChange={(value) => {
-                      setForward((prev) => ({ ...prev, forward_to: value }));
-                      if (errors.forward_to) {
-                        setErrors((prev) => ({ ...prev, forward_to: null }));
-                      }
-                    }}
-                    options={buildDropdownOptions()}
-                    placeholder="Select User"
-                    error={errors.forward_to && errors.forward_to[0]}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Target Date <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="target_date"
-                    value={forward.target_date || ""}
-                    min={new Date().toISOString().split("T")[0]}
-                    onChange={(e) => {
-                      setForward((prev) => ({ ...prev, target_date: e.target.value }));
-                      if (errors.target_date) {
-                        setErrors((prev) => ({ ...prev, target_date: null }));
-                      }
-                    }}
-                    className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
-                      errors.target_date ? "border-red-500" : "border-gray-300"
-                    }`}
-                  />
-                  {errors.target_date && (
-                    <div className="mt-1 text-sm text-red-600">{errors.target_date[0]}</div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Remarks <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="remark"
-                    value={forward.remark}
-                    onChange={(e) => {
-                      setForward((prev) => ({ ...prev, remark: e.target.value }));
-                      if (errors.remark) {
-                        setErrors((prev) => ({ ...prev, remark: null }));
-                      }
-                    }}
-                    className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
-                      errors.remark ? "border-red-500" : "border-gray-300"
-                    }`}
-                    placeholder="Enter Remarks..."
-                    rows={3}
-                  />
-                  {errors.remark && (
-                    <div className="mt-1 text-sm text-red-600">{errors.remark[0]}</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50"
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !forward.forward_to || isLoadingData}
-                  className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
-                    isSubmitting || !forward.forward_to || isLoadingData
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-[#13316C] hover:bg-[#0f2654]"
-                  } text-white`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <FaSpinner className="w-4 h-4 animate-spin" />
-                      Requesting...
-                    </>
-                  ) : (
-                    <>
-                      <FaArrowRight className="w-4 h-4" />
-                      Request
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Report Tab - API Integrated */}
-          {activeModalTab === "report" && (
-            <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-4">Report Details</h4>
-              
-              {isLoadingReport ? (
-                <div className="text-center py-8">
-                  {/* <FaSpinner className="w-6 h-6 animate-spin mx-auto text-gray-400" /> */}
-                  <p className="mt-2 text-sm text-gray-500">Loading...</p>
-                </div>
-              ) : reportData.length > 0 ? (
-                <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                          Forward By
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                          Remark
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                          Entry Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {reportData.map((item, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {item.forwardedBy} {item.role && <span className="text-gray-600">({item.role})</span>}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
-                          <td className="px-4 py-3 text-sm text-gray-700">{item.entryDate.split(" ")[0]}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-8 border border-gray-200 rounded-lg">
-                  <p className="text-gray-500 font-medium">No report data available</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Investigation Report Tab */}
-          {activeModalTab === "investigation" && (
-            <div>
-              <h4 className="text-md font-semibold text-gray-900 mb-4">Investigation Report Details</h4>
-              <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Remark
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Target Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {investigationData.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{item.role}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{item.targetDate}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => setActiveModalTab("report")}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
+              activeModalTab === "report" ? "bg-white text-gray-900 shadow-sm" : ""
+            }`}
+          >
+            Report
+          </button>
+          <button
+            onClick={() => setActiveModalTab("investigation")}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 sm:flex-1 ${
+              activeModalTab === "investigation" ? "bg-white text-gray-900 shadow-sm" : ""
+            }`}
+          >
+            Investigation Report
+          </button>
         </div>
       </div>
     </div>
+
+    {/* Tab Content - Scrollable */}
+    <div className="flex-1 overflow-y-auto px-6 py-4">
+      
+      {/* Request Report Tab */}
+      {activeModalTab === "request" && (
+        <form className="w-full" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Request To <span className="text-red-500">*</span>
+              </label>
+              <CustomSearchableDropdown
+                name="forward_to"
+                value={forward.forward_to}
+                onChange={(value) => {
+                  setForward((prev) => ({ ...prev, forward_to: value }));
+                  if (errors.forward_to) {
+                    setErrors((prev) => ({ ...prev, forward_to: null }));
+                  }
+                }}
+                options={buildDropdownOptions()}
+                placeholder="Select User"
+                error={errors.forward_to && errors.forward_to[0]}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Target Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                name="target_date"
+                value={forward.target_date || ""}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => {
+                  setForward((prev) => ({ ...prev, target_date: e.target.value }));
+                  if (errors.target_date) {
+                    setErrors((prev) => ({ ...prev, target_date: null }));
+                  }
+                }}
+                className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
+                  errors.target_date ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.target_date && (
+                <div className="mt-1 text-sm text-red-600">{errors.target_date[0]}</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remarks <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="remark"
+                value={forward.remark}
+                onChange={(e) => {
+                  setForward((prev) => ({ ...prev, remark: e.target.value }));
+                  if (errors.remark) {
+                    setErrors((prev) => ({ ...prev, remark: null }));
+                  }
+                }}
+                className={`w-full p-2 border rounded-md focus:ring-1 focus:ring-[#13316C] focus:border-[#13316C] ${
+                  errors.remark ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter Remarks..."
+                rows={3}
+              />
+              {errors.remark && (
+                <div className="mt-1 text-sm text-red-600">{errors.remark[0]}</div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border rounded-md text-sm hover:bg-gray-50"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || !forward.forward_to || isLoadingData}
+              className={`px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 ${
+                isSubmitting || !forward.forward_to || isLoadingData
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#13316C] hover:bg-[#0f2654]"
+              } text-white`}
+            >
+              {isSubmitting ? (
+                <>
+                  <FaSpinner className="w-4 h-4 animate-spin" />
+                  Requesting...
+                </>
+              ) : (
+                <>
+                  <FaArrowRight className="w-4 h-4" />
+                  Request
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Report Tab - API Integrated */}
+      {activeModalTab === "report" && (
+        <div>
+          {isLoadingReport ? (
+            <div className="text-center py-8">
+              <p className="mt-2 text-sm text-gray-500">Loading...</p>
+            </div>
+          ) : reportData.length > 0 ? (
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Forward 
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Remark
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Entry Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {reportData.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {item.forwardedBy} {item.role && <span className="text-gray-600">({item.role})</span>}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{item.entryDate.split(" ")[0]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-8 border border-gray-200 rounded-lg">
+              <p className="text-gray-500 font-medium">No report data available</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Investigation Report Tab - API Integrated */}
+      {activeModalTab === "investigation" && (
+        <div>
+          {isLoadingInvestigation ? (
+            <div className="text-center py-8">
+              <p className="mt-2 text-sm text-gray-500">Loading...</p>
+            </div>
+          ) : investigationData.length > 0 ? (
+            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Forward 
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Remark
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                      Entry Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {investigationData.map((item, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900 whitespace-nowrap">
+                        {item.name} ({item.role})
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{item.remark}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">{item.targetDate}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-8 border border-gray-200 rounded-lg">
+              <p className="text-gray-500 font-medium">No investigation data available</p>
+            </div>
+          )}
+        </div>
+      )}
+      
+    </div>
+  </div>
+</div>
+
   );
 };
 
@@ -1036,9 +1131,7 @@ const SearchReports = () => {
                                       {result.department_name || "N/A"}
                                     </td>
                                     <td className="py-2 px-2 sm:px-3 text-gray-700">
-                                      <span 
-                                       
-                                        title={`District Code: ${result.district_id}`}
+                                      <span    
                                       >
                                         {result.district_name || "N/A"}
                                       </span>
@@ -1060,8 +1153,7 @@ const SearchReports = () => {
                                           result.status
                                         )}`}
                                       >
-                                                                                       { result.status == "Disposed - Accepted" ? "Disposed, Accepted" : result.status}
-
+                                               { result.status == "Disposed - Accepted" ? "Disposed, Accepted" : result.status}
                                       </span>
                                     </td>
                                     <td className="py-2 px-2 sm:px-3">
